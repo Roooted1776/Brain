@@ -7,215 +7,200 @@
 <title>Orchestration Brain</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap">
 <style>
-/* Layout: question bar and phase bar on top. Below, a stage with two views (Max's team chart, or the Brain's memory graph) beside a Conversation / Memory / Settings panel. The Brain orb is draggable in both views. Stacks on phones. */
+/* Look: black and white only, one sans family, thin lines, small uppercase labels (an analyst-console feel). Roles are told apart by line style, not colour: filled = lead, double line = hub, thin line = collaborator, dashed = auditor. Layout: a console bar, a command bar, then a large living network beside a Conversation / Memory / Settings panel. */
 :root {
-  --bg: #f1f6f6; --surface: #ffffff; --surface-2: #e6eeee; --line: #c9d8da;
-  --fg: #0f2022; --muted: #4d6468; --accent: #087f6a; --accent-fg: #ffffff;
-  --good: #1a7f37; --bad: #b3261e; --warn: #8a5a00; --glow: rgba(8,127,106,.28); --arrow: #7d8a8b;
-  --lead: #a8431f; --lead-bg: #fdece7; --lead-tx: #6e2610;
-  --hub: #5b52c4; --hub-bg: #eeedfe; --hub-tx: #342d8a;
-  --collab: #0f7a5a; --collab-bg: #e1f5ee; --collab-tx: #064d39;
-  --audit: #6b6a63; --audit-bg: #f0efea; --audit-tx: #3d3d3a;
-  --t-concept: #2f6fdb; --t-entity: #8a5a00; --t-workstream: #1f7a3d;
-  --c-max: #d33a4a; --c-brain: #087f6a;
-  --font-display: "Chakra Petch", "Segoe UI", system-ui, sans-serif;
-  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0a1214; --surface: #111c1f; --surface-2: #172529; --line: #25383d;
-    --fg: #e3eeef; --muted: #8ba2a7; --accent: #3fd0b0; --accent-fg: #04201a;
-    --good: #5ad07a; --bad: #ff8a80; --warn: #f2c14e; --glow: rgba(63,208,176,.35); --arrow: #6f8588;
-    --lead: #f0976a; --lead-bg: #3a1f15; --lead-tx: #ffd9c7;
-    --hub: #9d96f0; --hub-bg: #25223f; --hub-tx: #dcd9ff;
-    --collab: #4fd3a6; --collab-bg: #10302a; --collab-tx: #bff3df;
-    --audit: #a8a79f; --audit-bg: #262826; --audit-tx: #dddcd5;
-    --t-concept: #7fb0ff; --t-entity: #e8c36a; --t-workstream: #6fd08c;
-    --c-max: #ff7a88; --c-brain: #3fd0b0;
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #0a1214; --surface: #111c1f; --surface-2: #172529; --line: #25383d;
-  --fg: #e3eeef; --muted: #8ba2a7; --accent: #3fd0b0; --accent-fg: #04201a;
-  --good: #5ad07a; --bad: #ff8a80; --warn: #f2c14e; --glow: rgba(63,208,176,.35); --arrow: #6f8588;
-  --lead: #f0976a; --lead-bg: #3a1f15; --lead-tx: #ffd9c7;
-  --hub: #9d96f0; --hub-bg: #25223f; --hub-tx: #dcd9ff;
-  --collab: #4fd3a6; --collab-bg: #10302a; --collab-tx: #bff3df;
-  --audit: #a8a79f; --audit-bg: #262826; --audit-tx: #dddcd5;
-  --t-concept: #7fb0ff; --t-entity: #e8c36a; --t-workstream: #6fd08c;
-  --c-max: #ff7a88; --c-brain: #3fd0b0;
+  --bg: #000000; --surface: #0a0a0a; --surface-2: #151515; --line: #2a2a2a; --line-2: #4d4d4d;
+  --fg: #f4f4f4; --muted: #9a9a9a; --accent: #ffffff; --accent-fg: #000000;
+  --good: #ffffff; --bad: #ffffff; --warn: #cfcfcf; --glow: rgba(255,255,255,.22); --arrow: #8c8c8c;
+  --lead: #ffffff; --lead-bg: #ffffff; --lead-tx: #000000;
+  --hub: #ffffff; --hub-bg: #060606; --hub-tx: #ffffff;
+  --collab: #c4c4c4; --collab-bg: #000000; --collab-tx: #f4f4f4;
+  --audit: #8f8f8f; --audit-bg: #080808; --audit-tx: #c4c4c4;
+  --t-concept: #ffffff; --t-entity: #d0d0d0; --t-workstream: #9a9a9a;
+  --c-max: #ffffff; --c-brain: #ffffff;
+  --font-display: "Hanken Grotesk", "Helvetica Neue", Arial, system-ui, sans-serif;
+  --font-body: "Hanken Grotesk", "Helvetica Neue", Arial, system-ui, sans-serif;
+  --font-mono: "Hanken Grotesk", "Helvetica Neue", Arial, system-ui, sans-serif;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 var(--font-body); }
-.wrap { max-width: 1240px; margin: 0 auto; padding-block: 20px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 16px; }
-h1 { font: 700 26px/1.1 var(--font-display); letter-spacing: .02em; margin: 0; text-wrap: balance; }
-h2 { font: 600 13px/1.2 var(--font-display); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0; }
-.top { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between; }
-.top p { margin: 0; color: var(--muted); max-width: 66ch; min-width: 0; }
-.badge { font: 500 12px var(--font-mono); border: 1px solid var(--line); border-radius: 4px; padding: 2px 8px; color: var(--muted); white-space: nowrap; }
-.ask { display: grid; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 var(--font-body); font-variant-numeric: tabular-nums; }
+.wrap { max-width: 1480px; margin: 0 auto; padding-block: 18px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 14px; }
+h1 { font: 700 15px/1.2 var(--font-display); letter-spacing: .24em; text-transform: uppercase; margin: 0; display: flex; align-items: center; gap: 12px; }
+h1::before { content: ""; width: 14px; height: 14px; border: 1.5px solid var(--fg); border-radius: 50%; box-shadow: inset 0 0 0 3px var(--bg), inset 0 0 0 6px var(--fg); flex: none; }
+h2 { font: 600 11px/1.2 var(--font-display); letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin: 0; }
+.top { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.top p { margin: 0; color: var(--muted); font-size: 13px; max-width: 72ch; min-width: 0; flex: 1 1 320px; }
+.badge { font: 600 10.5px var(--font-mono); letter-spacing: .14em; text-transform: uppercase; border: 1px solid var(--line-2); border-radius: 2px; padding: 3px 8px; color: var(--muted); white-space: nowrap; }
+.ask { display: grid; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 2px; padding: 12px; }
 .ask-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .ask-row input[type=text] { flex: 1 1 260px; min-width: 0; }
-input[type=text], select, textarea { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 9px 11px; }
+input[type=text], select, textarea { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line-2); border-radius: 2px; padding: 9px 11px; }
 textarea { width: 100%; font: 12.5px/1.45 var(--font-mono); min-height: 90px; resize: vertical; }
-button { font: 600 14px var(--font-body); color: var(--fg); background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 9px 14px; cursor: pointer; }
-button:hover:not(:disabled) { border-color: var(--accent); }
-button.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
-button.small { padding: 4px 9px; font-size: 12.5px; }
-button.danger { color: var(--bad); }
-button:disabled { opacity: .5; cursor: default; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.check { display: inline-flex; gap: 6px; align-items: center; font-size: 13.5px; color: var(--muted); cursor: pointer; }
+button { font: 600 12px var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: var(--fg); background: transparent; border: 1px solid var(--line-2); border-radius: 2px; padding: 9px 14px; cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
+button:hover:not(:disabled) { border-color: var(--fg); }
+button.primary { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+button.primary:hover:not(:disabled) { background: var(--bg); color: var(--fg); }
+button.small { padding: 4px 9px; font-size: 10.5px; }
+button.danger { border-style: dashed; }
+button:disabled { opacity: .4; cursor: default; }
+:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+.check { display: inline-flex; gap: 6px; align-items: center; font-size: 12.5px; color: var(--muted); cursor: pointer; }
+input[type=checkbox] { accent-color: #fff; }
 .chips { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-.chips span.lbl { font: 500 12px var(--font-mono); color: var(--muted); }
-.chip { font: 400 13px var(--font-body); padding: 4px 10px; border-radius: 999px; background: transparent; text-align: left; }
-.chip[aria-pressed=true] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 16%, transparent); }
-.phases { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
-.phase { border: 1px solid var(--line); border-radius: 6px; padding: 6px 9px; font: 500 12px var(--font-mono); color: var(--muted); background: var(--surface); min-width: 0; }
-.phase b { display: block; font: 600 12.5px var(--font-display); letter-spacing: .04em; color: var(--fg); }
-.phase.active { border-color: var(--accent); color: var(--fg); box-shadow: 0 0 0 1px var(--accent) inset; }
-.phase.done { color: var(--good); border-color: var(--good); }
-.main { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.chips span.lbl { font: 600 10.5px var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.chip { font: 400 12.5px var(--font-body); letter-spacing: 0; text-transform: none; padding: 4px 10px; border-radius: 2px; text-align: left; }
+.chip[aria-pressed=true] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.phases { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; border: 1px solid var(--line); border-radius: 2px; }
+.phase { border-left: 1px solid var(--line); padding: 7px 10px; font: 500 11.5px var(--font-mono); color: var(--muted); background: var(--surface); min-width: 0; }
+.phase:first-child { border-left: 0; }
+.phase b { display: block; font: 600 11px var(--font-display); letter-spacing: .16em; text-transform: uppercase; color: var(--fg); }
+.phase.active { background: var(--fg); color: #333; } .phase.active b { color: var(--bg); }
+.phase.done { color: var(--fg); } .phase.done b::after { content: " ✓"; }
+.main { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 14px; align-items: start; }
 .stagewrap { display: grid; gap: 8px; min-width: 0; }
 .modes { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-.modes button { border-radius: 999px; padding: 6px 14px; }
-.modes button[aria-pressed=true] { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
-.modes .hintbadge { font: 500 12px var(--font-mono); color: var(--accent); }
-.stage { position: relative; height: 580px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
-  background-image: radial-gradient(var(--line) 1px, transparent 1px); background-size: 22px 22px; }
-.stage svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-.edge { fill: none; stroke: var(--arrow); stroke-width: 2; }
-.edge.audit { stroke-dasharray: 5 5; stroke-width: 1.5; }
-.edge.tether { stroke: var(--c-brain); stroke-width: 1.5; stroke-dasharray: 2 6; opacity: .7; }
+.modes button[aria-pressed=true] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.modes .hintbadge { font: 600 10.5px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg); }
+.modes .spacer { flex: 1; }
+.stage { position: relative; height: clamp(560px, 78vh, 880px); background: #000; border: 1px solid var(--line); border-radius: 2px; overflow: hidden; touch-action: pan-y;
+  background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 64px 64px; background-position: -1px -1px; }
+.stage::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,.85) 100%); }
+.stage svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+.hud { position: absolute; top: 10px; right: 12px; z-index: 4; font: 600 10.5px var(--font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); text-align: right; pointer-events: none; }
+.edge { fill: none; stroke: var(--arrow); stroke-width: 1.25; }
+.edge.audit { stroke-dasharray: 5 5; }
+.edge.tether { stroke: var(--fg); stroke-width: 1; stroke-dasharray: 2 6; opacity: .55; }
 .ah { fill: none; stroke: var(--arrow); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
-.hand { fill: none; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 10 8; animation: flow .7s linear infinite; }
-@keyframes flow { to { stroke-dashoffset: -36; } }
+.hand { fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-dasharray: 6 7; animation: flow .6s linear infinite; opacity: .9; }
+.pkt { fill: #fff; filter: drop-shadow(0 0 5px #fff); }
+@keyframes flow { to { stroke-dashoffset: -26; } }
 .stage[data-mode="graph"] .node, .stage[data-mode="graph"] #edges { display: none; }
 .stage[data-mode="team"] #gEdges, .stage[data-mode="team"] #gNodes, .stage[data-mode="team"] .gempty { display: none; }
-.node { position: absolute; transform: translate(-50%, -50%); display: grid; align-content: center; justify-items: center; text-align: center; gap: 1px; padding: 4px 8px;
-  border: 1.5px solid var(--c); border-radius: 10px; background: var(--nbg); color: var(--ntx); transition: background .25s, color .25s, box-shadow .25s; }
-.node b { font: 600 17px/1.15 var(--font-display); }
-.node span { font: 400 13px/1.25 var(--font-body); }
-.r-lead { --c: var(--lead); --nbg: var(--lead-bg); --ntx: var(--lead-tx); }
-.r-hub { --c: var(--hub); --nbg: var(--hub-bg); --ntx: var(--hub-tx); }
-.r-collab { --c: var(--collab); --nbg: var(--collab-bg); --ntx: var(--collab-tx); }
-.r-audit { --c: var(--audit); --nbg: var(--audit-bg); --ntx: var(--audit-tx); }
-.node.on { background: var(--c); color: var(--bg); box-shadow: 0 0 0 5px color-mix(in srgb, var(--c) 28%, transparent); }
+.node { position: absolute; transform: translate(-50%, -50%); z-index: 2; display: grid; align-content: center; justify-items: center; text-align: center; gap: 2px; padding: 4px 8px; cursor: grab; touch-action: none; user-select: none;
+  border: 1px solid var(--c); border-radius: 2px; background: var(--nbg); color: var(--ntx); transition: background .2s, color .2s, box-shadow .2s; }
+.node:active { cursor: grabbing; }
+.node b { font: 700 13px/1.15 var(--font-display); letter-spacing: .16em; text-transform: uppercase; }
+.node span { font: 400 11.5px/1.25 var(--font-body); opacity: .75; }
+.r-lead { --c: #fff; --nbg: #fff; --ntx: #000; }
+.r-hub { --c: #fff; --nbg: #060606; --ntx: #fff; outline: 1px solid #fff; outline-offset: 3px; }
+.r-collab { --c: #bdbdbd; --nbg: #000; --ntx: #f4f4f4; }
+.r-audit { --c: #8f8f8f; --nbg: #080808; --ntx: #c4c4c4; border-style: dashed; }
+.node.on { background: #fff; color: #000; border-color: #fff; box-shadow: 0 0 0 2px #fff, 0 0 30px rgba(255,255,255,.55); }
 /* memory graph */
-.gn { pointer-events: all; cursor: pointer; }
-.gn .dot { fill: color-mix(in srgb, var(--k) 30%, var(--surface)); stroke: var(--k); stroke-width: 2; transition: opacity .6s, fill .6s; transform-box: fill-box; transform-origin: center; }
-.gn.sel .dot { stroke-width: 4; }
-.gn.stale .dot { fill: transparent; stroke-dasharray: 3 3; opacity: .5; }
+.gn { pointer-events: all; cursor: grab; touch-action: none; }
+.gn .dot { fill: #000; stroke: var(--k); stroke-width: 1.6; transition: opacity .6s, fill .6s; transform-box: fill-box; transform-origin: center; }
+.gn .hit { fill: transparent; stroke: none; }
+.gn.sel .dot { fill: var(--k); stroke-width: 2.5; }
+.gn.stale .dot { fill: transparent; stroke-dasharray: 3 3; opacity: .45; }
 .gn.pop .dot { animation: pop .7s cubic-bezier(.2, 1.6, .4, 1); }
 .gn.flash .dot { animation: flash .9s ease-out; }
-.gn .ring { fill: none; stroke: var(--k); stroke-width: 2; transform-box: fill-box; transform-origin: center; animation: ringout 1s ease-out forwards; }
-.gn .lbl { font: 600 11px var(--font-body); fill: var(--fg); paint-order: stroke; stroke: var(--surface); stroke-width: 3px; pointer-events: none; }
-.gn:focus-visible .dot { stroke-width: 4; }
+.gn .ring { fill: none; stroke: #fff; stroke-width: 1.5; transform-box: fill-box; transform-origin: center; animation: ringout 1s ease-out forwards; }
+.gn .lbl { font: 600 10.5px var(--font-body); letter-spacing: .06em; text-transform: uppercase; fill: var(--fg); paint-order: stroke; stroke: #000; stroke-width: 3px; pointer-events: none; }
+.gn:focus-visible .dot { stroke-width: 3; }
 @keyframes pop { from { transform: scale(0); opacity: 0; } 60% { opacity: 1; } }
-@keyframes flash { 0% { fill: var(--k); } }
+@keyframes flash { 0% { fill: #fff; } }
 @keyframes ringout { from { transform: scale(1); opacity: .9; } to { transform: scale(3.2); opacity: 0; } }
-.gl { stroke: var(--line); stroke-width: 1.2; opacity: .55; }
-.gl.link { stroke: color-mix(in srgb, var(--accent) 55%, var(--line)); stroke-width: 1.6; opacity: 1; }
-.gl.hot { stroke: var(--accent); stroke-width: 2.5; }
-.tip { position: absolute; z-index: 5; pointer-events: none; background: var(--fg); color: var(--bg); font: 500 12px var(--font-body); padding: 4px 8px; border-radius: 5px; max-width: 220px; transform: translate(-50%, -140%); }
-.gempty { position: absolute; left: 50%; bottom: 52px; transform: translateX(-50%); font: 12px var(--font-mono); color: var(--muted); text-align: center; max-width: 80%; }
-.brain { touch-action: none; position: absolute; transform: translate(-50%, -50%); width: 96px; height: 96px; border-radius: 50%; cursor: grab; display: grid; place-items: center; align-content: center; text-align: center;
-  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--c-brain) 55%, var(--surface)), var(--surface) 72%); border: 2px solid var(--c-brain);
-  box-shadow: 0 0 28px var(--glow); font: 700 13px var(--font-display); letter-spacing: .1em; color: var(--fg); user-select: none; z-index: 3; transition: filter .3s, opacity .3s; }
+.gl { stroke: #fff; stroke-width: 1; opacity: .13; }
+.gl.link { opacity: .42; stroke-width: 1.2; }
+.gl.hot { opacity: 1; stroke-width: 2; }
+.tip { position: absolute; z-index: 6; pointer-events: none; background: #fff; color: #000; font: 600 10.5px var(--font-body); letter-spacing: .08em; text-transform: uppercase; padding: 4px 8px; border-radius: 1px; max-width: 240px; transform: translate(-50%, -150%); }
+.gempty { position: absolute; left: 50%; bottom: 52px; transform: translateX(-50%); font: 12px var(--font-mono); color: var(--muted); text-align: center; max-width: 80%; z-index: 3; }
+.brain { touch-action: none; position: absolute; transform: translate(-50%, -50%); z-index: 5; width: 96px; height: 96px; border-radius: 50%; cursor: grab; display: grid; place-items: center; align-content: center; text-align: center;
+  background: radial-gradient(circle at 50% 50%, #1b1b1b 0%, #000 70%); border: 1px solid #fff; box-shadow: 0 0 0 5px #000, 0 0 0 6px var(--line-2), 0 0 34px var(--glow);
+  font: 700 12px var(--font-display); letter-spacing: .24em; color: var(--fg); user-select: none; transition: filter .3s, opacity .3s; }
+.brain > * { position: relative; z-index: 1; }
 .brain:active { cursor: grabbing; }
-.brain small { display: block; font: 500 10px/1.2 var(--font-mono); letter-spacing: 0; color: var(--muted); margin-top: 2px; }
-.brain.busy { animation: breathe 1.4s ease-in-out infinite; }
-.brain.learning { animation: learn 1.1s ease-in-out infinite; }
-.brain.off { filter: grayscale(1); opacity: .55; box-shadow: none; }
-.brain.on { box-shadow: 0 0 40px var(--glow), 0 0 0 8px color-mix(in srgb, var(--c-brain) 25%, transparent); }
-@keyframes breathe { 50% { box-shadow: 0 0 46px var(--glow), 0 0 0 10px color-mix(in srgb, var(--c-brain) 18%, transparent); } }
-@keyframes learn { 0%, 100% { box-shadow: 0 0 20px var(--glow); } 50% { box-shadow: 0 0 60px var(--glow), 0 0 0 16px color-mix(in srgb, var(--c-brain) 22%, transparent); } }
-.stage-tools { position: absolute; left: 10px; bottom: 10px; display: flex; gap: 8px; align-items: center; z-index: 4; font: 12px var(--font-mono); color: var(--muted); flex-wrap: wrap; }
-.legend { font: 12.5px var(--font-mono); color: var(--muted); text-align: center; margin: 0; }
-.legend i { font-style: normal; font-weight: 500; }
-.lg-lead { color: var(--lead); } .lg-hub { color: var(--hub); } .lg-collab { color: var(--collab); } .lg-audit { color: var(--audit); }
-.lg-concept { color: var(--t-concept); } .lg-entity { color: var(--t-entity); } .lg-workstream { color: var(--t-workstream); }
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; display: grid; grid-template-rows: auto 1fr; min-width: 0; }
+.brain small { display: block; font: 500 9.5px/1.25 var(--font-body); letter-spacing: .04em; text-transform: none; color: var(--muted); margin-top: 3px; }
+.brain::after { content: ""; position: absolute; inset: -11px; border-radius: 50%; border: 1px dashed var(--line-2); }
+.brain.busy::before, .brain.learning::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 0deg, transparent 0 300deg, rgba(255,255,255,.5) 360deg); animation: sweep 1.5s linear infinite; z-index: 0; }
+.brain.off { filter: grayscale(1); opacity: .45; box-shadow: 0 0 0 5px #000, 0 0 0 6px var(--line); }
+.brain.on { box-shadow: 0 0 0 5px #000, 0 0 0 6px #fff, 0 0 50px rgba(255,255,255,.45); }
+@keyframes sweep { to { transform: rotate(360deg); } }
+.stage-tools { position: absolute; left: 10px; bottom: 10px; display: flex; gap: 10px; align-items: center; z-index: 6; font: 600 10.5px var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); flex-wrap: wrap; }
+.stage-tools button { background: #000; }
+.legend { font: 500 11px var(--font-mono); letter-spacing: .06em; color: var(--muted); text-align: center; margin: 0; text-transform: uppercase; }
+.legend i { font-style: normal; color: var(--fg); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 2px; display: grid; grid-template-rows: auto 1fr; min-width: 0; }
 .tabs { display: flex; border-bottom: 1px solid var(--line); }
-.tabs button { flex: 1; border: 0; border-radius: 10px 10px 0 0; background: transparent; padding: 12px 6px; font: 600 12.5px var(--font-display); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border-bottom: 2px solid transparent; }
-.tabs button[aria-selected=true] { color: var(--fg); border-bottom-color: var(--accent); }
-.tabs .pill { font: 600 11px var(--font-mono); background: var(--accent); color: var(--accent-fg); border-radius: 999px; padding: 0 6px; margin-left: 4px; letter-spacing: 0; }
+.tabs button { flex: 1; border: 0; border-radius: 0; background: transparent; padding: 12px 6px; font: 600 11px var(--font-display); letter-spacing: .16em; color: var(--muted); border-bottom: 2px solid transparent; }
+.tabs button[aria-selected=true] { color: var(--fg); border-bottom-color: var(--fg); }
+.tabs .pill { font: 700 10px var(--font-mono); background: var(--fg); color: var(--bg); border-radius: 2px; padding: 0 5px; margin-left: 5px; letter-spacing: 0; }
 .tabpane { padding: 14px; min-width: 0; display: grid; gap: 12px; align-content: start; }
-.log { display: grid; gap: 10px; max-height: 540px; overflow-y: auto; align-content: start; }
-.empty { color: var(--muted); border: 1px dashed var(--line); border-radius: 8px; padding: 14px; }
-.savedbar { background: var(--surface-2); border-radius: 6px; padding: 8px 10px; font: 12.5px var(--font-mono); display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
-.msg { display: grid; grid-template-columns: 10px minmax(0, 1fr); gap: 10px; animation: rise .3s ease-out; }
+.log { display: grid; gap: 12px; max-height: 620px; overflow-y: auto; align-content: start; }
+.empty { color: var(--muted); border: 1px dashed var(--line-2); border-radius: 2px; padding: 14px; font-size: 13.5px; }
+.savedbar { background: var(--surface-2); border: 1px solid var(--line); padding: 8px 10px; font: 500 11.5px var(--font-mono); display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.msg { display: grid; grid-template-columns: 3px minmax(0, 1fr); gap: 10px; animation: rise .3s ease-out; }
 @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
-.msg .bar { border-radius: 3px; background: var(--c); }
-.msg .who { font: 600 12px var(--font-display); letter-spacing: .08em; text-transform: uppercase; color: var(--c); }
-.msg .who i { font: 400 11.5px var(--font-mono); letter-spacing: 0; text-transform: none; color: var(--muted); font-style: normal; margin-left: 6px; }
-.msg p { margin: 2px 0 0; overflow-wrap: anywhere; }
+.msg .bar { background: var(--c); }
+.msg .who { font: 700 11px var(--font-display); letter-spacing: .18em; text-transform: uppercase; color: var(--c); }
+.msg .who i { font: 400 11px var(--font-mono); letter-spacing: .02em; text-transform: none; color: var(--muted); font-style: normal; margin-left: 8px; }
+.msg p { margin: 2px 0 0; overflow-wrap: anywhere; font-size: 14px; }
 .msg p.pre { white-space: pre-wrap; }
-.msg p.warn { color: var(--warn); }
+.msg p.warn { border-left: 2px solid var(--fg); padding-left: 8px; }
 .msg ul.q { margin: 4px 0 0; padding-left: 18px; font: 12.5px var(--font-mono); }
-.answer { border: 1px solid var(--accent); border-radius: 8px; padding: 12px 14px; background: var(--bg); overflow-wrap: anywhere; margin-top: 4px; }
-.answer .lead { font-weight: 600; margin: 0 0 8px; }
-.answer h3 { font: 600 12px var(--font-display); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 12px 0 4px; }
+.answer { border: 1px solid var(--fg); border-radius: 2px; padding: 12px 14px; background: #000; overflow-wrap: anywhere; margin-top: 6px; }
+.answer .lead { font-weight: 700; margin: 0 0 8px; }
+.answer h3 { font: 700 10.5px var(--font-display); letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin: 12px 0 4px; }
 .answer ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
-.answer .gap { color: var(--bad); }
-.cite { font: 500 12px var(--font-mono); color: var(--accent); }
+.answer .gap { border-left: 2px solid var(--fg); padding-left: 8px; list-style: none; margin-left: -18px; font-style: italic; }
+.cite { font: 700 11.5px var(--font-mono); color: var(--fg); }
 .tbl { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; font-size: 13px; }
 th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
-th { font: 600 11.5px var(--font-display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+th { font: 700 10.5px var(--font-display); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
 td:first-child { font-family: var(--font-mono); white-space: nowrap; }
-.note { font: 12px var(--font-mono); color: var(--muted); margin: 0; overflow-wrap: anywhere; }
+.note { font: 400 12px/1.5 var(--font-body); color: var(--muted); margin: 0; overflow-wrap: anywhere; }
 .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .spread { justify-content: space-between; }
-/* memory tab */
-.runcard { border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: grid; gap: 10px; }
-ol.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.runcard { border: 1px solid var(--line); border-radius: 2px; padding: 12px; display: grid; gap: 10px; }
+ol.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
 ol.steps li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 8px; align-items: start; color: var(--muted); font-size: 13.5px; }
-ol.steps li .n { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--line); display: grid; place-items: center; font: 600 11.5px var(--font-mono); }
-ol.steps li.active { color: var(--fg); } ol.steps li.active .n { border-color: var(--accent); color: var(--accent); animation: learn 1.1s ease-in-out infinite; }
-ol.steps li.done { color: var(--fg); } ol.steps li.done .n { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
-.report { font: 500 13px var(--font-mono); color: var(--accent); margin: 0; overflow-wrap: anywhere; }
-.entries { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; max-height: 420px; overflow-y: auto; }
-.entry { border: 1px solid var(--line); border-left: 4px solid var(--k); border-radius: 8px; padding: 9px 11px; display: grid; gap: 5px; min-width: 0; }
-.entry.sel { box-shadow: 0 0 0 2px var(--accent); }
-.entry .hd { display: flex; gap: 6px; flex-wrap: wrap; align-items: baseline; }
-.entry .ttl { font: 600 14px var(--font-display); overflow-wrap: anywhere; }
-.tag { font: 500 11px var(--font-mono); border: 1px solid var(--line); border-radius: 4px; padding: 0 6px; color: var(--muted); }
-.tag.t { color: var(--k); border-color: var(--k); }
-.tag.stale { color: var(--warn); border-color: var(--warn); }
+ol.steps li .n { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line-2); display: grid; place-items: center; font: 700 11px var(--font-mono); }
+ol.steps li.active { color: var(--fg); } ol.steps li.active .n { border-color: #fff; color: #fff; animation: pulseb 1.1s ease-in-out infinite; }
+ol.steps li.done { color: var(--fg); } ol.steps li.done .n { background: #fff; border-color: #fff; color: #000; }
+@keyframes pulseb { 50% { box-shadow: 0 0 0 5px rgba(255,255,255,.25); } }
+.report { font: 600 12.5px var(--font-mono); color: var(--fg); margin: 0; overflow-wrap: anywhere; }
+.entries { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; max-height: 460px; overflow-y: auto; }
+.entry { border: 1px solid var(--line); border-left: 2px solid var(--k); border-radius: 2px; padding: 9px 11px; display: grid; gap: 5px; min-width: 0; }
+.entry.sel { border-color: #fff; box-shadow: 0 0 0 1px #fff; }
+.entry .hd { display: flex; gap: 8px; flex-wrap: wrap; align-items: baseline; }
+.entry .ttl { font: 700 13px var(--font-display); letter-spacing: .06em; text-transform: uppercase; overflow-wrap: anywhere; }
+.tag { font: 600 10px var(--font-mono); letter-spacing: .1em; text-transform: uppercase; border: 1px solid var(--line-2); border-radius: 2px; padding: 0 6px; color: var(--muted); }
+.tag.t { color: var(--fg); border-color: var(--fg); }
+.tag.stale { border-style: dashed; color: var(--warn); }
 .entry .body { color: var(--fg); font-size: 13.5px; overflow-wrap: anywhere; }
-.entry .meta { font: 12px var(--font-mono); color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 10px; }
-.entry .meta button, .linkbtn { all: unset; cursor: pointer; color: var(--accent); text-decoration: underline; font: inherit; }
-.entry .meta button:focus-visible, .linkbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.dots { letter-spacing: 2px; color: var(--k); }
+.entry .meta { font: 400 11.5px var(--font-mono); color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.entry .meta button, .linkbtn { all: unset; cursor: pointer; color: var(--fg); text-decoration: underline; font: inherit; }
+.entry .meta button:focus-visible, .linkbtn:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+.dots { letter-spacing: 2px; color: var(--fg); }
 form.addform { display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
-form.addform label { display: grid; gap: 3px; font: 600 12px var(--font-display); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+form.addform label { display: grid; gap: 3px; font: 700 10.5px var(--font-display); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
 form.addform input, form.addform select, form.addform textarea { font-weight: 400; letter-spacing: 0; text-transform: none; font-family: var(--font-body); font-size: 14px; }
-.switch { display: flex; gap: 10px; align-items: center; justify-content: space-between; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
-.switch b { font: 600 14px var(--font-display); } .switch span { display: block; font-size: 12.5px; color: var(--muted); }
-.switch input { width: 20px; height: 20px; accent-color: var(--accent); flex: none; }
+.switch { display: flex; gap: 10px; align-items: center; justify-content: space-between; border: 1px solid var(--line); border-radius: 2px; padding: 10px 12px; }
+.switch b { font: 700 12px var(--font-display); letter-spacing: .14em; text-transform: uppercase; } .switch span { display: block; font-size: 12.5px; color: var(--muted); }
+.switch input { width: 20px; height: 20px; flex: none; }
 .conns { display: grid; gap: 6px; margin: 0; padding: 0 0 0 4px; list-style: none; }
 details { border-top: 1px solid var(--line); padding-top: 10px; }
-details.guide { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
-summary { cursor: pointer; font: 600 12px var(--font-display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+details.guide { border: 1px solid var(--line); border-radius: 2px; padding: 10px 12px; }
+summary { cursor: pointer; font: 700 10.5px var(--font-display); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
 details > * + * { margin-top: 8px; }
 details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 13.5px; }
+a { color: var(--fg); }
 .sr { position: absolute; left: -9999px; }
-@media (max-width: 900px) {
+@media (max-width: 1000px) {
   .main { grid-template-columns: minmax(0, 1fr); }
-  .stage { height: 500px; }
+  .stage { height: clamp(480px, 70vh, 720px); }
   .phases { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .node b { font-size: 14px; } .node span { font-size: 11px; }
-  .brain { width: 76px; height: 76px; font-size: 11px; }
-  .brain small { font-size: 9px; }
+  .phase:nth-child(3) { border-left: 0; } .phase:nth-child(n+3) { border-top: 1px solid var(--line); }
+  .node b { font-size: 11.5px; letter-spacing: .1em; } .node span { font-size: 10.5px; }
+  .brain { width: 78px; height: 78px; font-size: 10.5px; }
+  .brain small { font-size: 8.5px; }
 }
-@media (max-width: 380px) { .node { padding: 3px 3px; } .node b { font-size: 12.5px; } .node span { font-size: 10px; } .tabs button { font-size: 11px; letter-spacing: .02em; } }
+@media (max-width: 380px) { .node { padding: 3px 3px; } .node b { font-size: 10.5px; letter-spacing: .06em; } .node span { font-size: 9.5px; } .tabs button { font-size: 10px; letter-spacing: .06em; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
 </style>
 </head>
@@ -223,21 +208,20 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
 <div class="wrap">
   <header class="top">
     <h1>Orchestration Brain</h1>
-    <p>A teaching model of the Brain described in Perplexity's help article: it watches your sessions, writes what it learns as linked memory, and keeps it current. Drag the Brain, ask a question, then watch it learn.</p>
+    <p>A live view of your bots working together. Tasks run on their own: Grok commands, Claude coordinates, the collaborators work, Muse audits, and the Brain learns from every task. Nothing to type. Drag any node to move it.</p>
     <span class="badge">simulation · no real AI calls</span>
   </header>
 
-  <form class="ask" id="askForm" autocomplete="off">
+  <section class="ask" id="controls" aria-label="Playback">
     <div class="ask-row">
-      <label class="sr" for="q">Your question</label>
-      <input type="text" id="q" placeholder="Ask something, e.g. What does Brain learn from?" maxlength="300">
-      <button class="primary" id="askBtn" type="submit">Ask the Brain</button>
+      <button class="primary" id="playBtn" type="button" aria-pressed="true">Pause</button>
+      <button id="nextBtn" type="button">Next task</button>
       <label class="sr" for="speed">Speed</label>
       <select id="speed"><option value="1">Normal speed</option><option value="0.35">Fast</option><option value="0">Instant</option></select>
-      <label class="check" for="incog"><input type="checkbox" id="incog"> Incognito (Brain ignores this session)</label>
+      <span class="badge" id="taskStatus" role="status">Starting</span>
     </div>
-    <div class="chips" id="samples"><span class="lbl">Try:</span></div>
-  </form>
+    <div class="chips" id="samples"><span class="lbl">Task queue · click one to run it now</span></div>
+  </section>
 
   <div class="phases" id="phases" role="group" aria-label="Progress through the four phases of a session">
     <div class="phase"><b>1 Plan</b>Grok → Claude</div>
@@ -249,8 +233,9 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
   <div class="main">
     <div class="stagewrap">
       <div class="modes" role="group" aria-label="Stage view">
-        <button type="button" id="modeTeam" aria-pressed="true">Team chart</button>
+        <button type="button" id="modeTeam" aria-pressed="true">Team network</button>
         <button type="button" id="modeGraph" aria-pressed="false">Memory graph</button>
+        <label class="check" for="driftToggle"><input type="checkbox" id="driftToggle" checked> Drift</label>
         <span class="hintbadge" id="modeHint" role="status"></span>
       </div>
       <section class="stage" id="stage" data-mode="team" aria-label="Team chart or memory graph, with a draggable Brain">
@@ -258,28 +243,28 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
           <defs><marker id="ahm" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path class="ah" d="M1.5 1.5 L8.5 5 L1.5 8.5"/></marker></defs>
           <g id="edges"></g><g id="gEdges"></g><g id="gNodes"></g><g id="hand"></g>
         </svg>
-        <div class="brain" id="brain" tabindex="0" role="group" aria-roledescription="draggable" aria-label="Brain. Drag it, or press the arrow keys, to move it."><span id="brainTitle">BRAIN</span><small id="brainSub">Max asks here<br>drag me</small></div>
+        <div class="brain" id="brain" tabindex="0" role="group" aria-roledescription="draggable" aria-label="Brain. Drag it, or press the arrow keys, to move it."><span id="brainTitle">BRAIN</span><small id="brainSub">drag me<br>or any node</small></div>
         <div class="tip" id="tip" hidden></div>
         <div class="stage-tools">
-          <button class="small" type="button" id="center">Reset brain</button>
+          <button class="small" type="button" id="center">Reset layout</button>
           <span id="coords"></span>
         </div>
       </section>
-      <p class="legend" id="legendTeam"><i class="lg-lead">coral = lead</i> · <i class="lg-hub">purple = hub</i> · <i class="lg-collab">teal = collaborator</i> · <i class="lg-audit">gray = auditor</i></p>
-      <p class="legend" id="legendGraph" hidden><i class="lg-concept">blue = concept</i> · <i class="lg-entity">gold = entity</i> · <i class="lg-workstream">green = workstream</i> · dashed = stale · bigger = reinforced more · click a dot to open it</p>
+      <p class="legend" id="legendTeam"><i>filled</i> = lead · <i>double line</i> = hub · <i>thin line</i> = collaborator · <i>dashed</i> = auditor · drag any node</p>
+      <p class="legend" id="legendGraph" hidden><i>circle</i> = concept · <i>square</i> = entity · <i>triangle</i> = workstream · <i>dashed</i> = stale · bigger = seen more · drag any dot</p>
     </div>
 
     <section class="panel">
       <div class="tabs" role="tablist" aria-label="Conversation, memory, settings">
-        <button role="tab" id="tab-chat" aria-selected="true" aria-controls="pane-chat">Conversation</button>
+        <button role="tab" id="tab-chat" aria-selected="true" aria-controls="pane-chat">Activity</button>
         <button role="tab" id="tab-mem" aria-selected="false" aria-controls="pane-mem">Memory<span class="pill" id="memBadge" hidden></span></button>
         <button role="tab" id="tab-set" aria-selected="false" aria-controls="pane-set">Settings</button>
       </div>
 
       <div class="tabpane" id="pane-chat" role="tabpanel" aria-labelledby="tab-chat">
-        <div class="row spread"><h2>Hand-off log</h2><button class="small" type="button" id="copyLog">Copy transcript</button></div>
+        <div class="row spread"><h2>Live activity</h2><button class="small" type="button" id="copyLog">Copy transcript</button></div>
         <div class="savedbar" id="savedBar" hidden><span id="savedLbl"></span><button class="small" type="button" id="backLive">Back to live</button></div>
-        <div class="log" id="log" aria-live="polite"><div class="empty">Nothing yet. Pick a sample question above, or type your own. Each program speaks in turn. When the session ends, the Brain learns from it in the background.</div></div>
+        <div class="log" id="log" aria-live="polite"><div class="empty">Waiting for the first task. Tasks start on their own. Each program speaks in turn, a packet of light travels along the line when work is handed over, and when a task ends the Brain learns from it in the background.</div></div>
       </div>
 
       <div class="tabpane" id="pane-mem" role="tabpanel" aria-labelledby="tab-mem" hidden>
@@ -337,6 +322,7 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
       <div class="tabpane" id="pane-set" role="tabpanel" aria-labelledby="tab-set" hidden>
         <h2>Brain settings</h2>
         <label class="switch" for="setBrain"><span><b>Brain</b><span>When off, Brain stops writing new memory from your activity. Existing memory stays.</span></span><input type="checkbox" id="setBrain" checked></label>
+        <label class="switch" for="incog"><span><b>Incognito tasks</b><span>When on, Brain ignores the tasks that run. Nothing from them is saved or learned.</span></span><input type="checkbox" id="incog"></label>
         <label class="switch" for="setSources"><span><b>Connected sources</b><span>Let Brain learn from linked tools. These are sample connectors, not live accounts. The article shows this toggle only in a screenshot and does not explain it.</span></span><input type="checkbox" id="setSources" checked></label>
         <ul class="conns" id="conns">
           <li><label class="check" for="cnDocs"><input type="checkbox" id="cnDocs" checked> Docs · Brain AGENTS.md (sample)</label></li>
@@ -398,11 +384,11 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
   ];
   var TREE = [["grok", "claude"], ["claude", "cursor"], ["claude", "gemini"], ["claude", "chatgpt"]];
   var KIND_VAR = { lead: "--lead", hub: "--hub", collab: "--collab", audit: "--audit" };
-  var SPEAKERS = { max: { name: "Max", sub: "owner" }, brain: { name: "Brain", sub: "orchestrates" } };
+  var SPEAKERS = { max: { name: "Max", sub: "owner" }, queue: { name: "Task queue", sub: "automatic" }, brain: { name: "Brain", sub: "orchestrates" } };
   NODES.forEach(function (n) { SPEAKERS[n.id] = { name: n.name, sub: n.sub.toLowerCase() }; });
   function color(id) {
     var n = NODES.filter(function (x) { return x.id === id; })[0];
-    return "var(" + (n ? KIND_VAR[n.kind] : id === "max" ? "--c-max" : "--c-brain") + ")";
+    return "var(" + (n ? KIND_VAR[n.kind] : (id === "max" || id === "queue") ? "--c-max" : "--c-brain") + ")";
   }
   function isNode(id) { return NODES.some(function (n) { return n.id === id; }); }
 
@@ -566,47 +552,96 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
   }
   function persist() { try { localStorage.setItem(KEY, JSON.stringify(mem)); storageOk = true; } catch (e) { storageOk = false; } }
 
-  /* ================= Stage: team chart + memory graph, one draggable Brain ================= */
+  /* ================= Stage: a living network. Bots drift, springs link them, every node can be dragged ================= */
   var stage = $("#stage"), brainEl = $("#brain"), edgesG = $("#edges"), hand = $("#hand"), gEdges = $("#gEdges"), gNodes = $("#gNodes"), tip = $("#tip");
-  var box = {}, nodeEls = {}, mode = "team";
-  var fracs = { team: { x: 0.13, y: 0.13 }, graph: { x: 0.5, y: 0.5 } }, HOME = { team: { x: 0.13, y: 0.13 }, graph: { x: 0.5, y: 0.5 } };
+  var mode = "team", REDUCED = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  var drift = !REDUCED;
+  var fracs = { team: { x: 0.12, y: 0.14 }, graph: { x: 0.5, y: 0.5 } }, HOME = { team: { x: 0.12, y: 0.14 }, graph: { x: 0.5, y: 0.5 } };
   function frac() { return fracs[mode]; }
+  var box = {}, T = {}, tEdges = [], TIME = 0, lastTs = 0, loopId = 0, hands = [], currentTask = "";
+  var TEAM_SPR = TREE.concat([["muse", "claude"]]);
+  var TEAM_EDGES = [["grok", "claude", "arrow"], ["claude", "cursor", "arrow"], ["claude", "gemini", "arrow"], ["claude", "chatgpt", "arrow"], ["muse", "claude", "audit"], ["brain", "grok", "tether"]];
+  var speed = 1;
+  function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms * speed); }); }
+  function progEntry(id) { return byKey("prog:" + id); }
 
-  NODES.forEach(function (n) {
-    var el = h("div", { class: "node r-" + n.kind }, h("b", { text: n.name }), h("span", { text: n.sub }));
-    stage.append(el); nodeEls[n.id] = el;
-  });
+  var hud = h("div", { class: "hud", id: "hud" }); stage.append(hud);
   var gempty = h("div", { class: "gempty", text: "" }); stage.append(gempty);
 
+  NODES.forEach(function (n, i) {
+    var el = h("div", { class: "node r-" + n.kind, tabindex: "0", title: n.name + ": " + n.sub + ". Drag me." }, h("b", { text: n.name }), h("span", { text: n.sub }));
+    stage.append(el);
+    var b = T[n.id] = { id: n.id, el: el, x: 0, y: 0, vx: 0, vy: 0, ax: 0, ay: 0, fx: n.x, fy: n.y, w: 0, h: 0, init: false, drag: false,
+      p: [i * 1.7 + 0.3, i * 2.3 + 1.1, 0.35 + (i % 3) * 0.12, 0.28 + (i % 4) * 0.09] };
+    dragify(el, function () { return b; }, null, function (bb) { bb.fx = bb.x / stage.clientWidth; bb.fy = bb.y / stage.clientHeight; });
+    el.addEventListener("keydown", function (e) {
+      var d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key]; if (!d) return;
+      e.preventDefault(); b.fx = Math.min(0.97, Math.max(0.03, b.fx + d[0] * 14 / stage.clientWidth)); b.fy = Math.min(0.95, Math.max(0.05, b.fy + d[1] * 14 / stage.clientHeight)); ensureLoop();
+    });
+  });
+
+  /* drag any body (a team node or a memory dot); a click without movement calls onClick */
+  function dragify(el, body, onClick, onDrop) {
+    var st = null;
+    el.addEventListener("pointerdown", function (e) {
+      if (e.button > 0) return;
+      var r = stage.getBoundingClientRect(), b = body();
+      st = { sx: e.clientX, sy: e.clientY, ox: b.x - (e.clientX - r.left), oy: b.y - (e.clientY - r.top), moved: false };
+      try { el.setPointerCapture(e.pointerId); } catch (x) {}
+      e.preventDefault();
+    });
+    el.addEventListener("pointermove", function (e) {
+      if (!st) return;
+      if (!st.moved && Math.hypot(e.clientX - st.sx, e.clientY - st.sy) < 4) return;
+      st.moved = true;
+      var b = body(), r = stage.getBoundingClientRect();
+      b.drag = true; b.x = e.clientX - r.left + st.ox; b.y = e.clientY - r.top + st.oy; b.vx = 0; b.vy = 0; tip.hidden = true; ensureLoop();
+    });
+    function end() {
+      if (!st) return;
+      var b = body();
+      if (st.moved) { b.drag = false; if (onDrop) onDrop(b); } else if (onClick) onClick(b);
+      st = null; ensureLoop();
+    }
+    el.addEventListener("pointerup", end); el.addEventListener("pointercancel", end);
+  }
+
   function sizes(w) {
-    var small = w < 520;
+    var small = w < 520, hh = small ? 52 : 60;
     return {
-      lead: { w: Math.max(110, Math.min(220, w * 0.34)), h: small ? 56 : 64 },
-      collab: { w: Math.max(72, Math.min(176, w * 0.27)), h: small ? 56 : 64 },
-      audit: { w: Math.max(150, Math.min(300, w * 0.44)), h: small ? 56 : 64 }
+      lead: { w: Math.max(112, Math.min(230, w * 0.2)), h: hh },
+      collab: { w: Math.max(74, Math.min(184, w * 0.17)), h: hh },
+      audit: { w: Math.max(150, Math.min(300, w * 0.3)), h: hh }
     };
   }
+  function buildTeamEdges() {
+    edgesG.textContent = ""; tEdges = [];
+    TEAM_EDGES.forEach(function (e) {
+      var p = svg("path", { class: "edge" + (e[2] === "audit" ? " audit" : e[2] === "tether" ? " tether" : "") });
+      if (e[2] !== "tether") p.setAttribute("marker-end", "url(#ahm)");
+      edgesG.append(p); tEdges.push({ a: e[0], b: e[1], el: p });
+    });
+  }
   function layout() {
-    var w = stage.clientWidth, hgt = stage.clientHeight, sz = sizes(w), f = frac();
+    var W = stage.clientWidth, H = stage.clientHeight, sz = sizes(W), f = frac();
     NODES.forEach(function (n) {
-      var s = n.kind === "hub" ? sz.lead : sz[n.kind];
-      box[n.id] = { x: n.x * w, y: n.y * hgt, w: s.w, h: s.h };
-      var el = nodeEls[n.id];
-      el.style.left = box[n.id].x + "px"; el.style.top = box[n.id].y + "px";
-      el.style.width = s.w + "px"; el.style.height = s.h + "px";
+      var b = T[n.id], s = n.kind === "hub" ? sz.lead : sz[n.kind];
+      b.w = s.w; b.h = s.h; b.el.style.width = s.w + "px"; b.el.style.height = s.h + "px";
+      if (!b.init) { b.x = b.fx * W; b.y = b.fy * H; b.init = true; }
+      box[n.id] = { x: b.x, y: b.y, w: b.w, h: b.h };
     });
     var bs = brainEl.offsetWidth || 96;
-    box.brain = { x: f.x * w, y: f.y * hgt, r: bs / 2 };
+    box.brain = { x: f.x * W, y: f.y * H, r: bs / 2 };
     brainEl.style.left = box.brain.x + "px"; brainEl.style.top = box.brain.y + "px";
-    edgesG.textContent = "";
-    if (mode === "team") {
-      TREE.forEach(function (e) { edgesG.append(svg("path", { class: "edge", d: pathFor(e[0], e[1]), "marker-end": "url(#ahm)" })); });
-      edgesG.append(svg("path", { class: "edge audit", d: pathFor("muse", "claude"), "marker-end": "url(#ahm)" }));
-      edgesG.append(svg("path", { class: "edge tether", d: pathFor("brain", "grok") }));
-    } else { placeGraph(); kick(); }
-    $("#coords").textContent = "brain at " + Math.round(f.x * 100) + "%, " + Math.round(f.y * 100) + "%";
+    if (!tEdges.length) buildTeamEdges();
+    if (mode === "graph") placeGraph();
+    $("#coords").textContent = "brain " + Math.round(f.x * 100) + " / " + Math.round(f.y * 100);
+    updateHud(); renderTeam(); ensureLoop();
   }
-  function isTree(a, b) { return TREE.some(function (e) { return (e[0] === a && e[1] === b) || (e[0] === b && e[1] === a); }); }
+  function updateHud() {
+    var n = mode === "team" ? NODES.length + " nodes" : mem.entries.length + " entries";
+    hud.textContent = ""; hud.append(mode === "team" ? "Team network · " + n : "Memory graph · " + n, h("br"), currentTask ? clip(currentTask, 46) : "Idle");
+  }
   function clipLine(from, to, gap) {
     var f = box[from], t = box[to], dx = t.x - f.x, dy = t.y - f.y, len = Math.hypot(dx, dy) || 1;
     function cut(b) {
@@ -617,30 +652,39 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
     var a = cut(f), b = cut(t), ux = dx / len, uy = dy / len;
     return [f.x + ux * a, f.y + uy * a, t.x - ux * b, t.y - uy * b];
   }
-  function pathFor(a, b) {
-    var f = box[a], t = box[b], p;
-    if (isTree(a, b)) {
-      var down = f.y < t.y;
-      return "M" + f.x + " " + (f.y + (down ? 1 : -1) * f.h / 2 + (down ? 2 : -2)) + " L" + t.x + " " + (t.y + (down ? -1 : 1) * t.h / 2 + (down ? -2 : 2));
-    }
+  /* geometry of one connection: a straight line, or (Muse to Claude) a curve that bows to the right, around the middle row */
+  function geomFor(a, b) {
+    if (!box[a] || !box[b]) return null;
+    var p = clipLine(a, b, 3), g = { x1: p[0], y1: p[1], x2: p[2], y2: p[3], c: null };
     if ((a === "muse" && b === "claude") || (a === "claude" && b === "muse")) {
-      var m = box.muse, c = box.claude, gx = (box.gemini.x + box.gemini.w / 2 + box.chatgpt.x - box.chatgpt.w / 2) / 2;
-      var ex = Math.min(gx, c.x + c.w / 2 - 10), top = m.y - m.h / 2, bot = c.y + c.h / 2;
-      var d = ex === gx ? "M" + gx + " " + top + " L" + gx + " " + (bot + 2) : "M" + gx + " " + top + " L" + gx + " " + (bot + 22) + " L" + ex + " " + (bot + 2);
-      return a === "claude" ? reverse(d) : d;
+      var q = clipLine("muse", "claude", 3), dx = q[2] - q[0], dy = q[3] - q[1], len = Math.hypot(dx, dy) || 1, off = Math.max(70, (box.gemini ? box.gemini.w : 120) / 2 + 26);
+      var c = { x: (q[0] + q[2]) / 2 + (-dy / len) * off * 2, y: (q[1] + q[3]) / 2 + (dx / len) * off * 2 };
+      g = a === "muse" ? { x1: q[0], y1: q[1], x2: q[2], y2: q[3], c: c } : { x1: q[2], y1: q[3], x2: q[0], y2: q[1], c: c };
     }
-    p = clipLine(a, b, 3);
-    return "M" + p[0] + " " + p[1] + " L" + p[2] + " " + p[3];
+    return g;
   }
-  function reverse(d) {
-    var pts = d.match(/-?\d+(\.\d+)?/g).map(Number), out = [];
-    for (var i = pts.length - 2; i >= 0; i -= 2) out.push(pts[i] + " " + pts[i + 1]);
-    return "M" + out.join(" L");
+  function graphGeom(a, b) {
+    var pa = a === "brain" ? box.brain : gposOf(a), pb = b === "brain" ? box.brain : gposOf(b);
+    if (!pa || !pb) return null;
+    var dx = pb.x - pa.x, dy = pb.y - pa.y, len = Math.hypot(dx, dy) || 1, ra = (pa.r || 10) + 2, rb = (pb.r || 10) + 2;
+    return { x1: pa.x + dx / len * ra, y1: pa.y + dy / len * ra, x2: pb.x - dx / len * rb, y2: pb.y - dy / len * rb, c: null };
+  }
+  function gposOf(id) { var pe = isNode(id) && progEntry(id), n = pe && G.nodes[pe.id]; return n ? { x: n.x, y: n.y, r: n.r } : null; }
+  function geom(a, b) { return mode === "graph" ? graphGeom(a, b) : geomFor(a, b); }
+  function pathD(g) { return g.c ? "M" + g.x1 + " " + g.y1 + " Q" + g.c.x + " " + g.c.y + " " + g.x2 + " " + g.y2 : "M" + g.x1 + " " + g.y1 + " L" + g.x2 + " " + g.y2; }
+  function pointOn(g, t) {
+    if (!g.c) return { x: g.x1 + (g.x2 - g.x1) * t, y: g.y1 + (g.y2 - g.y1) * t };
+    var u = 1 - t; return { x: u * u * g.x1 + 2 * u * t * g.c.x + t * t * g.x2, y: u * u * g.y1 + 2 * u * t * g.c.y + t * t * g.y2 };
+  }
+  function renderTeam() {
+    NODES.forEach(function (n) { var b = T[n.id]; box[n.id] = { x: b.x, y: b.y, w: b.w, h: b.h }; b.el.style.left = b.x.toFixed(1) + "px"; b.el.style.top = b.y.toFixed(1) + "px"; });
+    tEdges.forEach(function (e) { var g = geomFor(e.a, e.b); if (g) e.el.setAttribute("d", pathD(g)); });
   }
 
+  /* the brain orb: drag it, or press the arrow keys */
   var dragging = false;
   function clampFrac() {
-    var w = stage.clientWidth, hgt = stage.clientHeight, r = (brainEl.offsetWidth || 96) / 2 + 4, f = frac();
+    var w = stage.clientWidth, hgt = stage.clientHeight, r = (brainEl.offsetWidth || 96) / 2 + 8, f = frac();
     f.x = Math.min(1 - r / w, Math.max(r / w, f.x));
     f.y = Math.min(1 - r / hgt, Math.max(r / hgt, f.y));
   }
@@ -660,14 +704,21 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
     var f = frac(); f.x += d[0] * 14 / stage.clientWidth; f.y += d[1] * 14 / stage.clientHeight;
     clampFrac(); layout();
   });
-  $("#center").addEventListener("click", function () { var f = frac(); f.x = HOME[mode].x; f.y = HOME[mode].y; clampFrac(); layout(); });
+  $("#center").addEventListener("click", function () {
+    fracs.team = { x: HOME.team.x, y: HOME.team.y }; fracs.graph = { x: HOME.graph.x, y: HOME.graph.y };
+    NODES.forEach(function (n) { T[n.id].fx = n.x; T[n.id].fy = n.y; });
+    Object.keys(G.nodes).forEach(function (id) { G.nodes[id].ox = 0; G.nodes[id].oy = 0; });
+    clampFrac(); layout();
+  });
+  $("#driftToggle").checked = drift;
+  $("#driftToggle").addEventListener("change", function () { drift = $("#driftToggle").checked; ensureLoop(); });
   window.addEventListener("resize", function () { clampFrac(); layout(); });
 
   function setMode(m) {
     mode = m; stage.dataset.mode = m;
     $("#modeTeam").setAttribute("aria-pressed", String(m === "team")); $("#modeGraph").setAttribute("aria-pressed", String(m === "graph"));
     $("#legendTeam").hidden = m !== "team"; $("#legendGraph").hidden = m !== "graph";
-    $("#brainSub").innerHTML = ""; $("#brainSub").append(m === "team" ? "Max asks here" : mem.entries.length + " entries", h("br"), "drag me");
+    $("#brainSub").innerHTML = ""; $("#brainSub").append(m === "team" ? "drag me" : mem.entries.length + " entries", h("br"), "or any node");
     if (m === "graph") { $("#modeHint").textContent = ""; }
     clampFrac(); layout(); if (m === "graph") syncGraph();
     updateBrainState();
@@ -675,11 +726,19 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
   $("#modeTeam").addEventListener("click", function () { setMode("team"); });
   $("#modeGraph").addEventListener("click", function () { setMode("graph"); });
 
-  /* ---------- the graph ---------- */
-  var G = { nodes: {}, edges: [], raf: 0, sel: null };
+  /* ---------- the memory graph: shapes tell the types apart (circle = concept, square = entity, triangle = workstream) ---------- */
+  var G = { nodes: {}, edges: [], sel: null };
   var TYPE_VAR = { concept: "--t-concept", entity: "--t-entity", workstream: "--t-workstream" };
   var SECTOR = { concept: { c: -90, span: 150 }, entity: { c: 28, span: 100 }, workstream: { c: 152, span: 80 } };
   function radiusFor(e) { return 6 + Math.min(9, e.strength * 1.3); }
+  function shapeEl(type) { return svg(type === "concept" ? "circle" : type === "entity" ? "rect" : "polygon", { class: "dot" }); }
+  function setShape(n, e) {
+    var r = n.r, d = n.dot;
+    if (e.type === "concept") { d.setAttribute("r", r); }
+    else if (e.type === "entity") { d.setAttribute("x", -r); d.setAttribute("y", -r); d.setAttribute("width", 2 * r); d.setAttribute("height", 2 * r); }
+    else { var k = r * 1.3; d.setAttribute("points", "0," + (-k) + " " + (k * 0.95) + "," + (k * 0.7) + " " + (-k * 0.95) + "," + (k * 0.7)); }
+    n.hit.setAttribute("r", r + 9);
+  }
   function nodeFx(id, cls) {
     var n = G.nodes[id]; if (!n) return;
     n.g.classList.remove("pop", "flash"); void n.g.getBoundingClientRect();
@@ -695,71 +754,52 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
       if (!n) {
         var g = svg("g", { class: "gn", tabindex: "0", role: "button", "aria-label": e.title + ", " + TYPE_LABEL[e.type] });
         g.style.setProperty("--k", "var(" + TYPE_VAR[e.type] + ")");
-        var dot = svg("circle", { class: "dot", r: radiusFor(e), cx: 0, cy: 0 });
-        var lbl = svg("text", { class: "lbl", x: 0, y: -radiusFor(e) - 4, "text-anchor": "middle" });
-        g.append(dot, lbl); gNodes.append(g);
-        n = { id: e.id, g: g, dot: dot, lbl: lbl, x: box.brain ? box.brain.x : 0, y: box.brain ? box.brain.y : 0, tx: 0, ty: 0, r: radiusFor(e) };
+        var hit = svg("circle", { class: "hit", cx: 0, cy: 0, r: 16 }), dot = shapeEl(e.type), lbl = svg("text", { class: "lbl", x: 0, y: -12, "text-anchor": "middle" });
+        g.append(hit, dot, lbl); gNodes.append(g);
+        var k = parseInt(e.id.slice(1), 10) || 1;
+        n = { id: e.id, g: g, dot: dot, hit: hit, lbl: lbl, x: box.brain ? box.brain.x : 0, y: box.brain ? box.brain.y : 0, vx: 0, vy: 0, ax: 0, ay: 0, sx: 0, sy: 0, ox: 0, oy: 0, r: radiusFor(e), drag: false,
+          p: [k * 1.3, k * 0.7, 0.3 + (k % 5) * 0.11, 0.25 + (k % 7) * 0.07] };
         G.nodes[e.id] = n;
         (function (id) {
-          g.addEventListener("mouseenter", function () { showTip(id); });
+          g.addEventListener("mouseenter", function () { if (!G.nodes[id].drag) showTip(id); });
           g.addEventListener("mouseleave", function () { tip.hidden = true; });
           g.addEventListener("focus", function () { showTip(id); });
           g.addEventListener("blur", function () { tip.hidden = true; });
-          g.addEventListener("click", function () { selectEntry(id, true); });
           g.addEventListener("keydown", function (ev) { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); selectEntry(id, true); } });
+          dragify(g, function () { return G.nodes[id]; }, function () { selectEntry(id, true); }, function (nn) { nn.ox = nn.x - nn.sx; nn.oy = nn.y - nn.sy; });
         })(e.id);
       }
-      n.r = radiusFor(e); n.dot.setAttribute("r", n.r);
+      n.r = radiusFor(e); setShape(n, e);
       n.g.classList.toggle("stale", e.status === "stale");
       n.lbl.textContent = (e.strength >= 3 || G.sel === e.id) ? clip(e.title, 18) : "";
-      n.lbl.setAttribute("y", -n.r - 4);
+      n.lbl.setAttribute("y", -n.r - 6);
       n.g.classList.toggle("sel", G.sel === e.id);
     });
     Object.keys(G.nodes).forEach(function (id) { if (!live[id]) { G.nodes[id].g.remove(); delete G.nodes[id]; } });
     gEdges.textContent = ""; G.edges = [];
-    mem.entries.forEach(function (e) {
-      var l = svg("line", { class: "gl" }); gEdges.append(l); G.edges.push({ a: "brain", b: e.id, el: l });
-    });
+    mem.entries.forEach(function (e) { var l = svg("line", { class: "gl" }); gEdges.append(l); G.edges.push({ a: "brain", b: e.id, el: l }); });
     var seen = {};
     mem.entries.forEach(function (e) { e.links.forEach(function (o) {
       var k = e.id < o ? e.id + "|" + o : o + "|" + e.id; if (seen[k] || !G.nodes[o]) return; seen[k] = 1;
       var l = svg("line", { class: "gl link" }); gEdges.append(l); G.edges.push({ a: e.id, b: o, el: l, link: true });
     }); });
-    $("#brainSub").innerHTML = ""; $("#brainSub").append(mode === "team" ? "Max asks here" : mem.entries.length + " entries", h("br"), "drag me");
-    gempty.textContent = mem.entries.length ? "" : "Memory is empty. Ask a question or add a note.";
-    placeGraph(); kick();
+    $("#brainSub").innerHTML = ""; $("#brainSub").append(mode === "team" ? "drag me" : mem.entries.length + " entries", h("br"), "or any node");
+    gempty.textContent = mem.entries.length ? "" : "Memory is empty. Tasks will fill it.";
+    updateHud(); placeGraph(); ensureLoop();
   }
   function placeGraph() {
     if (!box.brain) return;
-    var w = stage.clientWidth, hgt = stage.clientHeight, R = Math.max(110, Math.min(w, hgt) / 2 - 30), bx = box.brain.x, by = box.brain.y;
+    var w = stage.clientWidth, hgt = stage.clientHeight, R = Math.max(120, Math.min(w, hgt) / 2 - 34), bx = box.brain.x, by = box.brain.y;
     TYPES.forEach(function (t) {
       var list = mem.entries.filter(function (e) { return e.type === t; }).sort(function (a, b) { return a.created - b.created || (a.id < b.id ? -1 : 1); });
       var sec = SECTOR[t], n = list.length;
       list.forEach(function (e, i) {
         var nd = G.nodes[e.id]; if (!nd) return;
-        var a = (sec.c + (n > 1 ? (i / (n - 1) - 0.5) * sec.span : 0)) * Math.PI / 180;
-        var tier = 0.58 + 0.2 * (i % 3);
-        nd.tx = Math.min(w - 18, Math.max(18, bx + R * tier * Math.cos(a)));
-        nd.ty = Math.min(hgt - 40, Math.max(22, by + R * tier * Math.sin(a) * 0.92));
+        var a = (sec.c + (n > 1 ? (i / (n - 1) - 0.5) * sec.span : 0)) * Math.PI / 180, tier = 0.58 + 0.2 * (i % 3);
+        nd.sx = Math.min(w - 18, Math.max(18, bx + R * tier * Math.cos(a)));
+        nd.sy = Math.min(hgt - 40, Math.max(22, by + R * tier * Math.sin(a) * 0.92));
       });
     });
-  }
-  function kick() { if (!G.raf) G.raf = requestAnimationFrame(tick); }
-  function tick() {
-    G.raf = 0;
-    if (mode !== "graph") return;
-    var moving = false, k = 0.16;
-    Object.keys(G.nodes).forEach(function (id) {
-      var n = G.nodes[id], dx = n.tx - n.x, dy = n.ty - n.y;
-      if (Math.abs(dx) > 0.25 || Math.abs(dy) > 0.25) { n.x += dx * k; n.y += dy * k; moving = true; } else { n.x = n.tx; n.y = n.ty; }
-      n.g.setAttribute("transform", "translate(" + n.x.toFixed(1) + "," + n.y.toFixed(1) + ")");
-    });
-    G.edges.forEach(function (ed) {
-      var a = ed.a === "brain" ? box.brain : G.nodes[ed.a], b = ed.b === "brain" ? box.brain : G.nodes[ed.b];
-      if (!a || !b) return;
-      ed.el.setAttribute("x1", a.x); ed.el.setAttribute("y1", a.y); ed.el.setAttribute("x2", b.x); ed.el.setAttribute("y2", b.y);
-    });
-    if (moving) G.raf = requestAnimationFrame(tick);
   }
   function showTip(id) {
     var e = byId(id), n = G.nodes[id]; if (!e || !n) return;
@@ -768,28 +808,86 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
   }
   function hotEdges(id) { G.edges.forEach(function (ed) { ed.el.classList.toggle("hot", !!id && (ed.a === id || ed.b === id) && ed.a !== "brain"); }); }
 
-  /* ================= Animation helpers ================= */
-  var speed = 1;
-  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) { $("#speed").value = "0.35"; }
-  function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms * speed); }); }
-  function progEntry(id) { return byKey("prog:" + id); }
+  /* ---------- the physics loop: springs pull each body toward its place, a slow drift keeps it alive ---------- */
+  function ensureLoop() { if (!loopId) { lastTs = 0; loopId = requestAnimationFrame(frame); } }
+  function frame(ts) {
+    loopId = 0;
+    var dt = lastTs ? Math.min(0.033, (ts - lastTs) / 1000) : 0.016; lastTs = ts; TIME += dt;
+    var W = stage.clientWidth, H = stage.clientHeight, moving = mode === "team" ? stepTeam(dt, W, H) : stepGraph(dt, W, H);
+    stepHands(ts);
+    if (drift || moving || hands.length) loopId = requestAnimationFrame(frame); else lastTs = 0;
+  }
+  function stepTeam(dt, W, H) {
+    var K = 34, C = 7.5, KE = 9, A = drift ? 8 : 0, moving = false;
+    NODES.forEach(function (n) {
+      var b = T[n.id]; b.ax = 0; b.ay = 0; if (b.drag) return;
+      b.ax += K * (b.fx * W + Math.sin(TIME * b.p[2] + b.p[0]) * A - b.x); b.ay += K * (b.fy * H + Math.cos(TIME * b.p[3] + b.p[1]) * A - b.y);
+    });
+    TEAM_SPR.forEach(function (e) {
+      var a = T[e[0]], b = T[e[1]], dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1, rest = Math.hypot((b.fx - a.fx) * W, (b.fy - a.fy) * H), f = KE * (len - rest), fx = f * dx / len, fy = f * dy / len;
+      if (!a.drag) { a.ax += fx; a.ay += fy; } if (!b.drag) { b.ax -= fx; b.ay -= fy; }
+    });
+    NODES.forEach(function (n) {
+      var b = T[n.id]; if (b.drag) { moving = true; return; }
+      b.vx = (b.vx + b.ax * dt) * Math.exp(-C * dt); b.vy = (b.vy + b.ay * dt) * Math.exp(-C * dt);
+      b.x = Math.min(W - b.w / 2 - 6, Math.max(b.w / 2 + 6, b.x + b.vx * dt)); b.y = Math.min(H - b.h / 2 - 30, Math.max(b.h / 2 + 6, b.y + b.vy * dt));
+      if (Math.abs(b.vx) + Math.abs(b.vy) > 0.4) moving = true;
+    });
+    renderTeam();
+    return moving;
+  }
+  function stepGraph(dt, W, H) {
+    var K = 26, C = 6.5, KE = 2.5, A = drift ? 5 : 0, moving = false, ids = Object.keys(G.nodes);
+    ids.forEach(function (id) {
+      var n = G.nodes[id]; n.ax = 0; n.ay = 0; if (n.drag) return;
+      n.ax += K * (n.sx + n.ox + Math.sin(TIME * n.p[2] + n.p[0]) * A - n.x); n.ay += K * (n.sy + n.oy + Math.cos(TIME * n.p[3] + n.p[1]) * A - n.y);
+    });
+    G.edges.forEach(function (ed) {
+      if (!ed.link) return;
+      var a = G.nodes[ed.a], b = G.nodes[ed.b]; if (!a || !b) return;
+      var dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1, rest = Math.hypot(b.sx + b.ox - a.sx - a.ox, b.sy + b.oy - a.sy - a.oy), f = KE * (len - rest), fx = f * dx / len, fy = f * dy / len;
+      if (!a.drag) { a.ax += fx; a.ay += fy; } if (!b.drag) { b.ax -= fx; b.ay -= fy; }
+    });
+    ids.forEach(function (id) {
+      var n = G.nodes[id];
+      if (!n.drag) {
+        n.vx = (n.vx + n.ax * dt) * Math.exp(-C * dt); n.vy = (n.vy + n.ay * dt) * Math.exp(-C * dt);
+        n.x = Math.min(W - 10, Math.max(10, n.x + n.vx * dt)); n.y = Math.min(H - 10, Math.max(10, n.y + n.vy * dt));
+        if (Math.abs(n.vx) + Math.abs(n.vy) > 0.4) moving = true;
+      } else moving = true;
+      n.g.setAttribute("transform", "translate(" + n.x.toFixed(1) + "," + n.y.toFixed(1) + ")");
+    });
+    G.edges.forEach(function (ed) {
+      var a = ed.a === "brain" ? box.brain : G.nodes[ed.a], b = ed.b === "brain" ? box.brain : G.nodes[ed.b]; if (!a || !b) return;
+      ed.el.setAttribute("x1", a.x); ed.el.setAttribute("y1", a.y); ed.el.setAttribute("x2", b.x); ed.el.setAttribute("y2", b.y);
+    });
+    return moving;
+  }
+
+  /* ---------- hand-offs: a line lights up and a packet of light travels along it ---------- */
   function light(id) {
-    var el = id === "brain" ? brainEl : nodeEls[id]; if (el) { el.classList.add("on"); setTimeout(function () { el.classList.remove("on"); }, Math.max(600, 1200 * speed)); }
+    var el = id === "brain" ? brainEl : (T[id] && T[id].el);
+    if (el) { el.classList.add("on"); setTimeout(function () { el.classList.remove("on"); }, Math.max(600, 1200 * speed)); }
     if (mode === "graph" && isNode(id)) { var pe = progEntry(id); if (pe) nodeFx(pe.id, "pulse"); }
   }
-  function gpos(id) {
-    if (id === "brain") return box.brain;
-    var pe = isNode(id) && progEntry(id), n = pe && G.nodes[pe.id];
-    return n ? { x: n.x, y: n.y } : null;
-  }
   function handoff(a, b) {
-    var d;
-    if (mode === "graph") { var pa = gpos(a), pb = gpos(b); if (!pa || !pb) { light(a); light(b); return; } d = "M" + pa.x + " " + pa.y + " L" + pb.x + " " + pb.y; }
-    else { if (!box[a] || !box[b]) return; d = pathFor(a, b); }
-    var ln = svg("path", { class: "hand", d: d, stroke: color(isNode(b) ? b : a) });
-    hand.append(ln);
-    setTimeout(function () { ln.remove(); }, Math.max(600, 1300 * speed));
-    light(a); light(b);
+    var g = geom(a, b);
+    if (!g) { light(a); light(b); return; }
+    var ln = svg("path", { class: "hand", d: pathD(g) }), dot = svg("circle", { class: "pkt", r: 3.8, cx: g.x1, cy: g.y1 });
+    hand.append(ln, dot);
+    hands.push({ a: a, b: b, ln: ln, dot: dot, t0: performance.now(), life: Math.max(800, 1400 * speed), ms: Math.max(480, 950 * speed) });
+    light(a); light(b); ensureLoop();
+  }
+  function stepHands(now) {
+    hands = hands.filter(function (hd) {
+      var age = now - hd.t0;
+      if (age > hd.life) { hd.ln.remove(); hd.dot.remove(); return false; }
+      var g = geom(hd.a, hd.b); if (!g) return true;
+      hd.ln.setAttribute("d", pathD(g));
+      var t = Math.min(1, age / hd.ms), p = pointOn(g, t);
+      hd.dot.setAttribute("cx", p.x); hd.dot.setAttribute("cy", p.y); hd.dot.style.opacity = t >= 1 ? 0 : 1;
+      return true;
+    });
   }
 
   /* ================= Conversation ================= */
@@ -956,6 +1054,7 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
     $("#brainTitle").textContent = mem.settings.brain ? "BRAIN" : "BRAIN OFF";
     $("#runNow").disabled = !mem.settings.brain || brainRunning || running;
     $("#skip30").disabled = brainRunning || running;
+    $("#nextBtn").disabled = brainRunning || running;
   }
   function findWorkstream(kws) {
     var best = null;
@@ -1026,7 +1125,7 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
   }
   async function brainRun() {
     if (brainRunning || running || !mem.settings.brain) return;
-    brainRunning = true; updateBrainState(); mem.runs++;
+    brainRunning = true; updateBrainState(); mem.runs++; setStatus("Task " + taskNo + " · Brain learning");
     var t = { fresh: 0, reinforced: 0, updated: 0, stale: 0, blocked: 0, fx: [], touched: {} };
     var inbox = mem.inbox.slice(); mem.inbox = [];
     var nSess = inbox.filter(function (i) { return i.kind === "session"; }).length, nFile = inbox.filter(function (i) { return i.kind === "file"; }).length, nCorr = inbox.filter(function (i) { return i.kind === "correction"; }).length;
@@ -1076,7 +1175,7 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
   /* ================= Run one session ================= */
   async function run(qRaw) {
     if (running || brainRunning) return;
-    running = true; $("#askBtn").disabled = true; updateBrainState();
+    running = true; updateBrainState();
     $("#savedBar").hidden = true; viewingSaved = false;
     logEl.textContent = ""; msgs = [];
     var red = redact(qRaw), q = red.text, incog = $("#incog").checked;
@@ -1086,7 +1185,7 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
       SRC = buildSources();
       var an = analyse(q), ev = evaluate(an), prior = !incog ? findWorkstream(an.kws) : null;
       setPhase(0);
-      say("max", q);
+      say("queue", "Task: " + q);
       if (red.n) { mem.filtered += red.n; say("brain", "Warning: that looked like a password or key, so I filtered it out and will not remember it. Please do not paste real secrets here.", null, null, "warn"); }
       light("brain"); await sleep(800);
       say("brain", "Question received. Four phases: Plan, Queries, Sources, Answer. I answer only from retrieved sources."
@@ -1106,7 +1205,7 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
       else {
         say("chatgpt", "Researching with " + an.queries.length + " keyword search(es):", h("ul", { class: "q" }, an.queries.map(function (x) { return h("li", { text: x }); })));
         await sleep(1000);
-        say("chatgpt", an.queries.map(function (x, i) { return "Q" + (i + 1) + " → " + search(x).length + " sample line(s)"; }).join("   ") + ". " + ev.pool.length + " distinct line(s) go forward."); await sleep(900);
+        say("chatgpt", an.queries.map(function (x, i) { return "Q" + (i + 1) + " → " + search(x).length + " sample line(s)"; }).join("  ·  ") + ". " + ev.pool.length + " distinct line(s) go forward."); await sleep(900);
       }
       handoff("claude", "gemini"); await sleep(600);
       var fromMem = ev.accepted.filter(function (s) { return s.fromMemory; }).length;
@@ -1144,12 +1243,12 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
       } else say("brain", "Brain is off, so nothing from this session was written to memory.", null, null, "warn");
       ok = true;
     } finally {
-      running = false; $("#askBtn").disabled = false; updateBrainState(); persist();
+      running = false; updateBrainState(); persist();
     }
-    if (ok && sess && mem.settings.brain) { $("#modeHint").textContent = "Brain will learn from this when the session is over…"; await sleep(1400); await brainRun(); }
+    if (ok && sess && mem.settings.brain) { $("#modeHint").textContent = "Brain will learn from this when the task is over…"; await sleep(1400); await brainRun(); }
   }
 
-  /* ================= Samples + form ================= */
+  /* ================= Autopilot: tasks run on their own ================= */
   var SAMPLES = [
     "Who is in charge of the repo, and who audits the work?",
     "What does Brain learn from?",
@@ -1158,14 +1257,44 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
     "Who decides what ships and who merges?",
     "What is the latest iPhone model price?"
   ];
-  SAMPLES.forEach(function (s) { $("#samples").append(h("button", { class: "chip", type: "button", text: s, onclick: function () { $("#q").value = s; ask(); } })); });
-  function ask() {
-    var q = $("#q").value.trim();
-    if (!q || running || brainRunning) return;
-    speed = parseFloat($("#speed").value) || 0;
-    tab("chat"); run(q);
+  var playing = !/[?&]autoplay=0/.test(location.search) && !REDUCED, queueIdx = 0, autoTimer = 0, taskNo = 0, chipEls = [];
+  SAMPLES.forEach(function (q, i) {
+    var c = h("button", { class: "chip", type: "button", "aria-pressed": "false", text: q, onclick: function () { startTask(q, true, i); } });
+    chipEls.push(c); $("#samples").append(c);
+  });
+  function setStatus(t) { $("#taskStatus").textContent = t; }
+  function startTask(q, manual, idx) {
+    if (running || brainRunning) return;
+    clearTimeout(autoTimer);
+    speed = parseFloat($("#speed").value); if (!isFinite(speed)) speed = 1;
+    if (manual) tab("chat");
+    if (idx != null) queueIdx = idx + 1;
+    taskNo++; currentTask = q; updateHud();
+    chipEls.forEach(function (c, i) { c.setAttribute("aria-pressed", String(i === idx)); });
+    setStatus("Task " + taskNo + " · running");
+    run(q).then(afterTask, afterTask);
   }
-  $("#askForm").addEventListener("submit", function (e) { e.preventDefault(); ask(); });
+  function nextTask() { var i = queueIdx % SAMPLES.length; startTask(SAMPLES[i], false, i); }
+  function afterTask() {
+    currentTask = ""; updateHud();
+    chipEls.forEach(function (c) { c.setAttribute("aria-pressed", "false"); });
+    setStatus(playing ? "Task " + taskNo + " done · next soon" : "Task " + taskNo + " done · paused");
+    scheduleNext();
+  }
+  function scheduleNext() {
+    clearTimeout(autoTimer); if (!playing) return;
+    autoTimer = setTimeout(function () { if (document.hidden || running || brainRunning) { scheduleNext(); return; } nextTask(); }, Math.max(700, 3800 * speed));
+  }
+  function showPlayState() { $("#playBtn").textContent = playing ? "Pause" : "Play"; $("#playBtn").setAttribute("aria-pressed", String(playing)); }
+  $("#playBtn").addEventListener("click", function () {
+    playing = !playing; showPlayState(); clearTimeout(autoTimer);
+    if (playing) { setStatus("Starting"); if (!running && !brainRunning) autoTimer = setTimeout(nextTask, 500); else scheduleNext(); }
+    else setStatus(running || brainRunning ? "Pausing after this task" : "Paused");
+  });
+  $("#nextBtn").addEventListener("click", function () { nextTask(); });
+  showPlayState();
+  if (playing) { setStatus("Starting"); autoTimer = setTimeout(nextTask, 1600); }
+  else setStatus(REDUCED ? "Paused · reduced motion is on" : "Paused");
   $("#copyLog").addEventListener("click", function () { copyText(transcript.join("\n\n") || "(empty)", $("#copyLog")); });
   function copyText(text, btn) {
     var done = function (m) { var o = btn.textContent; btn.textContent = m; setTimeout(function () { btn.textContent = o; }, 1400); };

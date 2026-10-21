@@ -6,7 +6,7 @@ import { pathToFileURL, fileURLToPath } from 'url';
 import path from 'path';
 const require = createRequire(import.meta.url);
 const pw = require('playwright');
-const PAGE = pathToFileURL(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'index.html')).href;
+const PAGE = pathToFileURL(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'index.html')).href + '?autoplay=0';
 const launchOpts = process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {};
 const b = await pw.chromium.launch(launchOpts);
 const errs = [];
@@ -22,10 +22,12 @@ const ok = (n, c, x='') => { if (!c) failed++; console.log((c?'PASS ':'FAIL ')+n
 const count = async () => (await p.locator('#memCount').innerText()).toLowerCase();
 const runs = async () => (await p.locator('#runBadge').innerText());
 let N = 0;
-const settle = async (expectRun=true) => { await p.waitForFunction(()=>!document.querySelector('#askBtn').disabled);
+const settle = async (expectRun=true) => { await p.waitForFunction(()=>!document.querySelector('#nextBtn').disabled);
   if (expectRun) { N++; await p.waitForFunction((n)=>document.querySelector('#runBadge').textContent==='runs: '+n && !document.querySelector('#brain').classList.contains('learning') && document.querySelector('#runReport').textContent.length>0, N, {timeout:20000}); }
   else await p.waitForTimeout(300); };
-const ask = async (q, expectRun=true) => { await p.fill('#q', q); await p.click('#askBtn'); await settle(expectRun); };
+const chip = (pg, q) => pg.getByRole('button', { name: q, exact: true }).click();
+const waitRuns = (pg, n) => pg.waitForFunction((k)=>document.querySelector('#runBadge').textContent==='runs: '+k && !document.querySelector('#brain').classList.contains('learning') && document.querySelector('#runReport').textContent.length>0, n, {timeout:20000});
+const ask = async (q, expectRun=true) => { await chip(p, q); await settle(expectRun); };
 console.log('start:', await count(), await runs());
 ok('seeded 6 programs + 5 skills = 11', (await count()).includes('11 entries'), await count());
 // session 1
@@ -76,13 +78,12 @@ await p.click('#tab-chat'); await ask('Who is in charge of the repo, and who aud
 console.log('after refresh:', await count(), '|', await p.locator('#runReport').innerText());
 // incognito
 const before = await runs(); const nSess = await p.evaluate(()=>JSON.parse(localStorage.getItem('brain.mem.v2')).sessions.length);
-await p.check('#incog'); await ask('Who decides what ships and who merges?', false); await p.uncheck('#incog');
+await p.click('#tab-set'); await p.check('#incog'); await ask('Who decides what ships and who merges?', false); await p.click('#tab-set'); await p.uncheck('#incog');
 const nSess2 = await p.evaluate(()=>JSON.parse(localStorage.getItem('brain.mem.v2')).sessions.length);
 ok('incognito not saved', nSess===nSess2 && (await runs())===before, nSess+' -> '+nSess2);
 // secret filter
-await ask('my password is hunter2 and api_key=sk-abcdefghijklmnop what does Brain learn from?');
-const l2 = await p.locator('#log').innerText();
-ok('secret filtered + warned', /\[filtered\]/.test(l2) && /Warning/.test(l2) && !/hunter2/.test(l2) && !/sk-abcdef/.test(l2));
+await p.click('#tab-mem'); await p.fill('#aTitle','probe'); await p.fill('#aNote','my password is hunter2 and api_key=sk-abcdefghijklmnop'); await p.click('#addForm button[type=submit]');
+ok('secret filtered + warned', /password or key/.test(await p.locator('#addWarn').innerText()));
 const stored = await p.evaluate(()=>localStorage.getItem('brain.mem.v2')); ok('secret not stored', !/hunter2|sk-abcdef/.test(stored));
 // brain off
 await p.click('#tab-set'); await p.uncheck('#setBrain');
@@ -136,37 +137,77 @@ ok('timestamps clamped', st2.entries.every(e=>e.seen<=8.64e15&&e.created>=0) && 
 ok('constructor speaker dropped, secret scrubbed', st2.sessions[0].msgs.length===1 && !/hunter2/.test(JSON.stringify(st2)) && !/abc123456/.test(JSON.stringify(st2)));
 await r.reload(); ok('boots after hostile import', (await r.locator('#memCount').innerText()).toLowerCase().includes('2 entries'));
 // spoof: entry e1 (key c:corpus:6) used as memory source -> label comes from CORPUS not the fake title
-await r.fill('#q','What does Brain learn from?'); await r.click('#askBtn');
-await r.waitForFunction(()=>!document.querySelector('#askBtn').disabled && !document.querySelector('#brain').classList.contains('learning'), null, {timeout:20000});
+await r.selectOption('#speed','0'); await chip(r, 'What does Brain learn from?'); await waitRuns(r, 1);
 const srcCell = await r.locator('.answer table td').nth(1).innerText();
 ok('source label not spoofable', !/Fake title/.test(srcCell), srcCell);
 await ctx2.close();
 // same-length corrections reuse
 const ctx3 = await b.newContext({ viewport: { width: 1280, height: 900 } });
 const u = await ctx3.newPage(); await u.goto(PAGE); await u.selectOption('#speed','0');
-await u.fill('#q','Does Brain send messages or take actions?'); await u.click('#askBtn');
+await chip(u, 'Does Brain send messages or take actions?');
 await u.waitForFunction(()=>document.querySelector('#runBadge').textContent==='runs: 1' && !document.querySelector('#brain').classList.contains('learning') && document.querySelector('#runReport').textContent.length>0);
 await u.click('#tab-mem');
 const cardU = u.locator('.entry').filter({ has: u.locator('.ttl', { hasText: /^Memory only$/ }) });
 await cardU.getByRole('button',{name:'Correct'}).click(); await u.locator('.entry input[type=text]').first().fill('Brain may send messages or take actions hourly.'); await u.getByRole('button',{name:'Save correction'}).click();
-await u.click('#tab-chat'); await u.fill('#q','Does Brain send messages or take actions?'); await u.click('#askBtn');
-await u.waitForFunction(()=>!document.querySelector('#askBtn').disabled && !document.querySelector('#brain').classList.contains('learning'), null, {timeout:20000});
+await u.click('#tab-chat'); await chip(u, 'Does Brain send messages or take actions?'); await waitRuns(u, 2);
 const a1 = await u.locator('.answer').last().innerText(); ok('first correction used', /actions hourly/.test(a1));
 await u.click('#tab-mem'); await cardU.getByRole('button',{name:'Correct'}).click(); await u.locator('.entry input[type=text]').first().fill('Brain may send messages or take actions weekly.');
 await u.getByRole('button',{name:'Save correction'}).click();
-await u.click('#tab-chat'); await u.fill('#q','Does Brain send messages or take actions?'); await u.click('#askBtn');
-await u.waitForFunction(()=>!document.querySelector('#askBtn').disabled && !document.querySelector('#brain').classList.contains('learning'), null, {timeout:20000});
+await u.click('#tab-chat'); await chip(u, 'Does Brain send messages or take actions?'); await waitRuns(u, 3);
 const a2 = await u.locator('.answer').last().innerText(); ok('second same-length correction used (cache)', /actions weekly/.test(a2) && !/actions hourly/.test(a2));
 // correction no longer mentions 'messages' -> should not answer a messages question via old tags
 await u.click('#tab-mem'); await cardU.getByRole('button',{name:'Correct'}).click(); await u.locator('.entry input[type=text]').first().fill('Brain is blue.');
 await u.getByRole('button',{name:'Save correction'}).click();
-await u.click('#tab-chat'); await u.fill('#q','Does Brain send messages or take actions?'); await u.click('#askBtn');
-await u.waitForFunction(()=>!document.querySelector('#askBtn').disabled && !document.querySelector('#brain').classList.contains('learning'), null, {timeout:20000});
+await u.click('#tab-chat'); await chip(u, 'Does Brain send messages or take actions?'); await waitRuns(u, 4);
 const a3 = await u.locator('.answer').last().innerText(); ok('corrected text without keywords is not cited for them', !/Brain is blue/.test(a3), a3.slice(0,120));
 // delete skill 'claude'-like title doesn't cross-block: delete entity Claude must not block ... (titles differ now) skip
 // tab keys
 await u.focus('#tab-chat'); await u.keyboard.press('ArrowRight'); ok('arrow key moves tab', (await u.getAttribute('#tab-mem','aria-selected'))==='true');
 await ctx3.close();
+
+// ---- the living network ----
+const nctx = await b.newContext({ viewport: { width: 1440, height: 900 } });
+const n = await nctx.newPage(); n.on('pageerror', e=>errs.push('PAGEERR-net '+e.message)); n.on('console', m => { if (m.type()==='error') errs.push('net:'+m.text()); });
+await n.goto(PAGE); await n.selectOption('#speed','0');
+const cx = async (loc) => { const bb = await loc.boundingBox(); return { x: bb.x + bb.width/2, y: bb.y + bb.height/2 }; };
+await n.click('#tab-chat'); await n.click('#modeTeam'); await n.waitForTimeout(600);
+await n.click('#center'); await n.waitForTimeout(1500);
+const claude = n.locator('.node', { hasText: 'Claude' });
+const c0 = await cx(claude);
+await n.mouse.move(c0.x, c0.y); await n.mouse.down(); await n.mouse.move(c0.x + 140, c0.y + 40, { steps: 8 }); await n.mouse.up();
+await n.waitForTimeout(1800);
+const c1 = await cx(claude);
+ok('a bot can be dragged and stays where dropped', Math.abs(c1.x - (c0.x + 140)) < 30 && Math.abs(c1.y - (c0.y + 40)) < 30, JSON.stringify([Math.round(c1.x-c0.x), Math.round(c1.y-c0.y)]));
+await n.click('#center'); await n.waitForTimeout(2200);
+const cBack = await cx(claude);
+ok('Reset layout brings the bot back', Math.abs(cBack.x - c0.x) < 30 && Math.abs(cBack.y - c0.y) < 30, JSON.stringify([Math.round(cBack.x-c0.x), Math.round(cBack.y-c0.y)]));
+await n.uncheck('#driftToggle'); await n.waitForTimeout(1500);
+const d1 = await cx(claude); await n.waitForTimeout(1200); const d2 = await cx(claude);
+ok('Drift off holds still', Math.abs(d1.x-d2.x) < 1.5 && Math.abs(d1.y-d2.y) < 1.5);
+await n.check('#driftToggle'); await n.waitForTimeout(300);
+await n.selectOption('#speed','0.35');
+await chip(n, 'What does Brain learn from?');
+await n.waitForSelector('#hand .pkt', { timeout: 15000 }); ok('hand-off packets travel along the lines', true);
+await n.waitForFunction(()=>/done/.test(document.querySelector('#taskStatus').textContent), null, {timeout:90000});
+await n.selectOption('#speed','0');
+// memory dot drag
+await n.click('#modeGraph'); await n.waitForTimeout(1200);
+const dot = n.locator('#gNodes .gn').first();
+const g0 = await cx(dot.locator('.hit'));
+await n.mouse.move(g0.x, g0.y); await n.mouse.down(); await n.mouse.move(g0.x + 60, g0.y + 40, { steps: 6 }); await n.mouse.up();
+await n.waitForTimeout(1500);
+const g1 = await cx(dot.locator('.hit'));
+ok('a memory dot can be dragged and stays', Math.abs(g1.x - (g0.x + 60)) < 25 && Math.abs(g1.y - (g0.y + 40)) < 25, JSON.stringify([Math.round(g1.x-g0.x), Math.round(g1.y-g0.y)]));
+await n.click('#modeTeam');
+await nctx.close();
+// autopilot: with no clicks at all, a task starts by itself
+const autoCtx = await b.newContext({ viewport: { width: 1280, height: 900 } });
+const au = await autoCtx.newPage(); au.on('pageerror', e=>errs.push('PAGEERR-auto '+e.message));
+await au.goto(PAGE.replace('?autoplay=0',''));
+await au.waitForFunction(()=>/Task 1/i.test(document.querySelector('#taskStatus').textContent), null, {timeout:15000});
+ok('autopilot starts a task with no clicks', true, await au.locator('#taskStatus').innerText());
+await au.click('#playBtn'); ok('Pause button works', (await au.locator('#playBtn').innerText()).toLowerCase()==='play');
+await autoCtx.close();
 
 // phone
 const c2 = await b.newContext({ viewport: { width: 390, height: 844 }, colorScheme: 'light' });

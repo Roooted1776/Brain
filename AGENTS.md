@@ -10,14 +10,14 @@ Max also has a separate project called RedMed. **Do not read, copy from, change,
 
 ## Who does what (Max's chart)
 
-| Program | Role | Colour | In this repo |
+| Program | Role | Look on the page | In this repo |
 | --- | --- | --- | --- |
-| **Grok** | Lead. Commands the repo. | coral | Sets the order, verifies every change, calls pass or fail. |
-| **Claude** | Hub. UI, frontend, logic. | purple | Writes and changes `index.html`. Everything flows through Claude. |
-| **Cursor** | Collaborator. Integrates and reviews. | teal | Merges work into one change and reviews it. |
-| **Gemini** | Collaborator. Studies UI together. | teal | Second reader on layout and long-context cross-checks. |
-| **ChatGPT** | Collaborator. Research together. | teal | Independent research and second opinions. |
-| **Muse** | Auditor. Audits everyone's work. | gray | Reads the finished change and reports problems. Does not edit. |
+| **Grok** | Lead. Commands the repo. | filled white | Sets the order, verifies every change, calls pass or fail. |
+| **Claude** | Hub. UI, frontend, logic. | double line | Writes and changes `index.html`. Everything flows through Claude. |
+| **Cursor** | Collaborator. Integrates and reviews. | thin line | Merges work into one change and reviews it. |
+| **Gemini** | Collaborator. Studies UI together. | thin line | Second reader on layout and long-context cross-checks. |
+| **ChatGPT** | Collaborator. Research together. | thin line | Independent research and second opinions. |
+| **Muse** | Auditor. Audits everyone's work. | dashed line | Reads the finished change and reports problems. Does not edit. |
 
 **Max** is the source of truth. He decides what ships and presses push and merge.
 
@@ -31,7 +31,7 @@ Flow: Grok commands → Claude plans and builds → Cursor, Gemini and ChatGPT w
 4. **You stay in charge.** Any entry can be opened, edited or deleted. Your corrections feed forward into the next run.
 5. **Memory only.** Brain does not take actions or message you.
 
-Wording checked against the live article on 2026-10-21 (it says it was last modified October 2, 2026). The article shows the Connected sources toggle and Instructions field only in a screenshot and does not explain them. **This page's own ideas, not in the article:** the animations, graph colors and layout; the Plan / Queries / Sources / Answer session and cited answers; the "Report" step of a run; the Skills filter; the Incognito checkbox and "Run Brain now" button; sample connectors; the 30-day stale rule and the "skip ahead" demo clock (the article gives no time rule); the rule that a deleted entry is not learned again; and the password filter (simple pattern matching, not the AI-based filtering the article describes). The page does not connect to Perplexity.
+Wording checked against the live article on 2026-10-21 (it says it was last modified October 2, 2026). The article shows the Connected sources toggle and Instructions field only in a screenshot and does not explain them. **This page's own ideas, not in the article:** the animations, the black-and-white look, the drifting network and packets of light, the graph shapes and layout; the Plan / Queries / Sources / Answer session and cited answers; the "Report" step of a run; the Skills filter; the incognito switch and "Run Brain now" button; the automatic task queue; sample connectors; the 30-day stale rule and the "skip ahead" demo clock (the article gives no time rule); the rule that a deleted entry is not learned again; and the password filter (simple pattern matching, not the AI-based filtering the article describes). The page does not connect to Perplexity.
 
 ## Working rules
 
@@ -40,10 +40,11 @@ Wording checked against the live article on 2026-10-21 (it says it was last modi
 - `index.html` stays a single self-contained file with no build step, so Max can open it by double-click.
 - The page is a **simulation**. It makes no real AI or search calls. Its sample sources are lines written for the demo from this repo's own rules and the article, and the page must say so. Never present them as live search.
 - Every fact in an answer carries a citation, citations are never reused across sources, and an unanswerable point uses the fixed sentence "The provided source documentation does not contain enough verified information to confidently answer …".
-- Keep the chart's colours and layout (coral lead, purple hub, teal collaborators, gray auditor, dashed audit line from Muse to Claude). Change them only when Max says so.
+- Look: Max asked (2026-10-21) for black and white, Palantir-style, one sans font. Roles are shown by line style, not colour: filled = lead (Grok), double line = hub (Claude), thin line = collaborators (Cursor, Gemini, ChatGPT), dashed = auditor (Muse). Keep Max's chart hierarchy and the dashed audit line from Muse to Claude. Change the look only when Max says so.
+- The page is a visualization, not a chat: there is no question box. Tasks run on their own from a built-in queue (Play / Pause / Next task, click a queued task to run it now). Bots drift, and every node and dot can be dragged. Do not add a text box for questions unless Max asks.
 
 ## Before saying "done"
 
-1. Open `index.html` in a browser. Drag the Brain in both views. Ask each sample question. Check Memory learns, reinforces, and goes stale after "Skip ahead 30 days". Correct and delete an entry. Reload and check memory is still there.
+1. Open `index.html` in a browser. Watch a task start on its own. Drag a bot, then Reset layout. Drag the Brain and a memory dot. Run each task in the queue. Check Memory learns, reinforces, and goes stale after "Skip ahead 30 days". Correct and delete an entry. Reload and check memory is still there. Or run `node tests/brain-check.mjs` (see README).
 2. Check phone width (about 400px) and light and dark mode.
 3. Muse audits. Grok verifies. Report pass or fail plainly.
