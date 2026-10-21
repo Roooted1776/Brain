@@ -1313,7 +1313,7 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
   $("#skip30").addEventListener("click", function () {
     speed = parseFloat($("#speed").value) || 0; mem.dayShift = Math.min(3650, mem.dayShift + 30); persist(); render();
     if (mem.settings.brain) brainRun();
-    else { var cut = nowTs() - STALE_DAYS * DAY; mem.entries.forEach(function (e) { if (e.seen < cut) e.status = "stale"; }); persist(); syncGraph(); render(); }
+    else { $("#runReport").textContent = "Brain is off, so nothing was marked stale. Turn Brain on and run it to apply the new date."; }
   });
 
   /* ---------- settings ---------- */

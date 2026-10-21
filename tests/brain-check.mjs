@@ -57,7 +57,6 @@ const ans = await p.locator('.answer').last().innerText();
 ok('answer uses correction', /own activity/.test(ans) && /your correction/.test(ans));
 // delete -> blocked
 await p.click('#tab-mem'); await p.fill('#memSearch','What a run does');
-const has = await card('What a run does').count();
 await ask('What does a Brain run do?');
 await p.click('#tab-mem'); await p.fill('#memSearch','What a run does');
 ok('concept created', (await card('What a run does').count())>0);
