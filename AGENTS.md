@@ -28,10 +28,10 @@ Flow: Grok commands → Claude plans and builds → Cursor, Gemini and ChatGPT w
 1. **Watch.** Brain reviews recent activity in the background: sessions, connected tools, files, and corrections. Incognito sessions are ignored.
 2. **Write.** It writes what it learns as linked entries, each pointing at its source: Concepts, Entities, Workstreams.
 3. **Maintain.** Each run reinforces what is still true, updates what changed, and marks what is stale.
-4. **You stay in charge.** Any entry can be opened, edited or deleted. Corrections feed the next run. A deleted entry is not learned again.
+4. **You stay in charge.** Any entry can be opened, edited or deleted. Your corrections feed forward into the next run.
 5. **Memory only.** Brain does not take actions or message you.
 
-Wording checked against the live article on 2026-10-21 (it says it was last modified October 2, 2026). The article shows the Connected sources toggle and Instructions field only in a screenshot and does not explain them. The article describes no animations. The moving visuals (draggable Brain, graph dots that pop, pulse and fade) are this page's own design. The page does not connect to Perplexity.
+Wording checked against the live article on 2026-10-21 (it says it was last modified October 2, 2026). The article shows the Connected sources toggle and Instructions field only in a screenshot and does not explain them. **This page's own ideas, not in the article:** the animations, graph colors and layout; the Plan / Queries / Sources / Answer session and cited answers; the "Report" step of a run; the Skills filter; the Incognito checkbox and "Run Brain now" button; sample connectors; the 30-day stale rule and the "skip ahead" demo clock (the article gives no time rule); the rule that a deleted entry is not learned again; and the password filter (simple pattern matching, not the AI-based filtering the article describes). The page does not connect to Perplexity.
 
 ## Working rules
 

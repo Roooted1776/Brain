@@ -2,13 +2,11 @@
 // Run it:  npm install --no-save playwright   then   node tests/brain-check.mjs
 // Optional: set CHROMIUM_PATH to use a browser you already have. Prints PASS/FAIL lines and ERRORS [].
 import { createRequire } from 'module';
-import { pathToFileURL } from 'url';
-import os from 'os';
+import { pathToFileURL, fileURLToPath } from 'url';
 import path from 'path';
 const require = createRequire(import.meta.url);
 const pw = require('playwright');
-const PAGE = pathToFileURL(path.resolve(new URL('../index.html', import.meta.url).pathname)).href;
-const S = os.tmpdir() + path.sep;
+const PAGE = pathToFileURL(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'index.html')).href;
 const launchOpts = process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {};
 const b = await pw.chromium.launch(launchOpts);
 const errs = [];
@@ -19,7 +17,8 @@ p.on('pageerror', e => errs.push('PAGEERR '+e.message));
 await p.goto(PAGE);
 await p.selectOption('#speed','0');
 const card = (t) => p.locator('.entry').filter({ has: p.locator('.ttl', { hasText: new RegExp('^'+t+'$') }) });
-const ok = (n, c, x='') => console.log((c?'PASS ':'FAIL ')+n, x);
+let failed = 0;
+const ok = (n, c, x='') => { if (!c) failed++; console.log((c?'PASS ':'FAIL ')+n, x); };
 const count = async () => (await p.locator('#memCount').innerText()).toLowerCase();
 const runs = async () => (await p.locator('#runBadge').innerText());
 let N = 0;
@@ -92,17 +91,18 @@ const e0 = await count(); await ask('Who decides what ships and who merges?', fa
 ok('brain off writes nothing', (await count())===e0 && /Brain is off/.test(await p.locator('#log').innerText()));
 await p.click('#tab-set'); await p.check('#setBrain');
 // backup
+const countBeforeBackup = await count();
 await p.click('#tab-mem'); await p.locator('summary', {hasText:'Backup'}).click(); await p.click('#bExport');
 const bk = await p.inputValue('#backup'); ok('backup json', bk.startsWith('{') && bk.length>1000, bk.length);
 await p.click('#tab-set');
 await p.click('#resetMem'); await p.click('#resetMem');
 await p.click('#tab-mem'); ok('reset to 11', (await count()).includes('11 entries'), await count());
-await p.fill('#backup', bk); await p.click('#bLoad'); await p.click('#bLoad'); ok('restore', !(await count()).includes('15 entries') || true, await count());
+await p.fill('#backup', bk); await p.click('#bLoad'); await p.click('#bLoad'); ok('restore brings back the same memory', (await count())===countBeforeBackup, (await count())+' vs '+countBeforeBackup);
 // hostile import
 await p.fill('#backup', '{"entries":[{"id":"e9","key":"k","type":"concept","title":"<img src=x onerror=alert(1)>","note":"n","sources":[],"links":["zz"],"strength":2,"seen":1,"created":1,"status":"fresh"},null,5]}');
 await p.click('#bLoad'); await p.click('#bLoad'); ok('hostile import safe', await p.locator('.entry .ttl', {hasText:'<img'}).count()===1 && await p.locator('.entry img').count()===0);
 // reload persistence
-await p.reload(); ok('persist after reload', (await count()).includes('1 entries'), await count());
+await p.reload(); ok('persist after reload', (await count()).startsWith('memory · 1 entries'), await count());
 await ctx.close();
 
 // ---- Muse's cases ----
@@ -111,16 +111,14 @@ const r = await ctx2.newPage(); r.on('pageerror', e=>errs.push('PAGEERR-r '+e.me
 await r.goto(PAGE); await r.selectOption('#speed','0');
 // secrets
 const secrets = ['access_token=abcd1234','client_secret: zzzz','db_password=hunter2','sk_live_abcdefghijklmnop','Bearer abcdefghijklmnopqrstuv','xoxb-1234567890-abcdef','AIzaSyA1234567890123456789012345678901','my password hunter2','postgres://bob:pw123@host/db','-----BEGIN RSA PRIVATE KEY-----\nMIIabc\n-----END RSA PRIVATE KEY-----'];
-for (const sec of secrets) {
-  const red = await r.evaluate(()=>0);
-}
 await r.click('#tab-mem');
+const NEEDLES = {'access_token=abcd1234':'abcd1234','client_secret: zzzz':'zzzz','db_password=hunter2':'hunter2','sk_live_abcdefghijklmnop':'abcdefghijklmnop','Bearer abcdefghijklmnopqrstuv':'abcdefghijklmnopqrstuv','xoxb-1234567890-abcdef':'1234567890-abcdef','AIzaSyA1234567890123456789012345678901':'AIzaSyA1234567890123456789012345678901','my password hunter2':'hunter2','postgres://bob:pw123@host/db':'pw123','-----BEGIN RSA PRIVATE KEY-----\nMIIabc\n-----END RSA PRIVATE KEY-----':'MIIabc'};
 let leaked = [];
 for (const sec of secrets) {
   await r.selectOption('#aType','concept'); await r.fill('#aTitle','note'+Math.random().toString(36).slice(2,6)); await r.fill('#aNote', 'value '+sec.replace(/\n/g,' ')); await r.click('#addForm button[type=submit]');
   await r.waitForTimeout(150);
   const st = await r.evaluate(()=>localStorage.getItem('brain.mem.v2'));
-  const needle = {'postgres://bob:pw123@host/db':'pw123'}[sec] || sec.split(/[ =:\/@\n]/).filter(x=>x.length>6).pop();
+  const needle = NEEDLES[sec];
   if (st.includes(needle)) leaked.push(sec);
 }
 ok('secret shapes filtered', leaked.length===0, JSON.stringify(leaked));
@@ -179,4 +177,6 @@ await q.click('#modeGraph'); await q.waitForTimeout(800);
 await q.click('#tab-mem'); await q.waitForTimeout(200);
 ok('phone no hscroll', !(await q.evaluate(()=>document.documentElement.scrollWidth>innerWidth)));
 console.log('ERRORS', JSON.stringify(errs));
+console.log(failed ? failed+' CHECK(S) FAILED' : 'ALL CHECKS PASSED');
+if (failed || errs.length) process.exitCode = 1;
 await b.close();

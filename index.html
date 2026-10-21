@@ -289,10 +289,11 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
             <li><b>Watch.</b> Brain reviews recent activity in the background: your <b>sessions</b>, <b>connected tools</b>, <b>files</b> you create, and your <b>corrections</b>. Incognito sessions are ignored.</li>
             <li><b>Write.</b> It writes what it learns as linked entries, each pointing to its source: <b>Concepts</b>, <b>Entities</b> and <b>Workstreams</b>.</li>
             <li><b>Maintain.</b> Every run <b>reinforces</b> what is still true, <b>updates</b> what changed, and <b>marks stale</b> what is not.</li>
-            <li><b>You stay in charge.</b> Open, edit or delete any entry. Corrections feed the next run, and a deleted entry is not learned again.</li>
+            <li><b>You stay in charge.</b> Open, edit or delete any entry. Your corrections feed forward into the next run.</li>
             <li><b>Memory only.</b> Brain does not take actions or message you.</li>
           </ol>
-          <p class="note">From Perplexity's help article <a href="https://www.perplexity.ai/help-center/en/articles/19700001-what-is-brain" target="_blank" rel="noopener">“What is Brain?”</a>. Checked against the live article on 2026-10-21 (the article says it was last changed October 2, 2026). In the article, Brain is a Research Preview for Max and Enterprise Max subscribers using Perplexity Computer. This page only teaches the idea. It does not connect to Perplexity. The article describes no animations; the moving visuals here are this page's own design.</p>
+          <p class="note"><b>From the article:</b> steps 1 to 5 above, from Perplexity's help article <a href="https://www.perplexity.ai/help-center/en/articles/19700001-what-is-brain" target="_blank" rel="noopener">“What is Brain?”</a>. Checked against the live page on 2026-10-21 (it says it was last modified October 2, 2026). In the article, Brain is a Research Preview for Max and Enterprise Max subscribers using Perplexity Computer. This page does not connect to Perplexity.</p>
+          <p class="note"><b>This page's own ideas (not in the article):</b> the animations, graph colors and layout; the Plan / Queries / Sources / Answer session with its cited answers; the “Report” step of a run; the Skills filter; the Incognito checkbox and “Run Brain now” button; sample connectors; the 30-day stale rule and the “skip ahead” demo clock (the article gives no time rule); the rule that a deleted entry is not learned again; and the password filter, which is simple pattern matching, not the AI-based filtering the article describes.</p>
         </details>
 
         <div class="runcard">
@@ -301,7 +302,7 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
             <li data-s="0"><span class="n">1</span><span><b>Review recent activity</b><br><span class="note" id="s0t">Waiting for something to learn from.</span></span></li>
             <li data-s="1"><span class="n">2</span><span><b>Write what it learns</b><br><span class="note" id="s1t"></span></span></li>
             <li data-s="2"><span class="n">3</span><span><b>Reinforce, update, mark stale</b><br><span class="note" id="s2t"></span></span></li>
-            <li data-s="3"><span class="n">4</span><span><b>Report</b><br><span class="note" id="s3t"></span></span></li>
+            <li data-s="3"><span class="n">4</span><span><b>Report</b> (this page's own step)<br><span class="note" id="s3t"></span></span></li>
           </ol>
           <p class="report" id="runReport" role="status"></p>
           <div class="row"><button class="small primary" type="button" id="runNow">Run Brain now</button><button class="small" type="button" id="skip30">Skip ahead 30 days (demo)</button></div>
@@ -511,29 +512,29 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
     });
   }
   function validEntry(e) {
-    return !!e && typeof e.id === "string" && /^e\d+$/.test(e.id) && typeof e.key === "string" && TYPES.indexOf(e.type) >= 0 && typeof e.title === "string" && e.title.trim() && e.title.length <= 80
+    return !!e && typeof e.id === "string" && /^e\d{1,9}$/.test(e.id) && typeof e.key === "string" && TYPES.indexOf(e.type) >= 0 && typeof e.title === "string" && e.title.trim() && e.title.length <= 80
       && typeof e.note === "string" && e.note.length <= 600 && Array.isArray(e.sources) && Array.isArray(e.links) && isFinite(e.strength) && isFinite(e.seen) && isFinite(e.created)
       && (e.status === "fresh" || e.status === "stale") && (!e.prog || isNode(e.prog));
   }
   function scrub(t) { return redact(String(t)).text; }
   function sanitizeMem(d) {
-    var m = blankMem(), ids = {};
+    var m = blankMem(), ids = Object.create(null);
     if (!d || typeof d !== "object" || !Array.isArray(d.entries)) return null;
     d.entries.filter(validEntry).slice(0, MAX_ENTRIES).forEach(function (e) {
       if (ids[e.id]) return; ids[e.id] = 1;
       m.entries.push({ id: e.id, key: String(e.key).slice(0, 120), type: e.type, title: scrub(e.title.trim()), note: scrub(e.note), status: e.status, strength: Math.max(1, Math.min(9, Math.round(e.strength))),
         created: okTs(e.created), seen: okTs(e.seen), corrected: !!e.corrected, skill: !!e.skill, prog: e.prog || null,
         corpusId: (e.key === "c:corpus:" + e.corpusId && CORPUS.some(function (c) { return c.id === +e.corpusId; })) ? +e.corpusId : null, manual: !!e.manual,
-        kws: Array.isArray(e.kws) ? e.kws.filter(function (k) { return typeof k === "string"; }).slice(0, 9) : null,
+        kws: Array.isArray(e.kws) ? e.kws.filter(function (k) { return typeof k === "string"; }).slice(0, 9).map(function (k) { return scrub(k.slice(0, 30)); }) : null,
         sources: e.sources.filter(function (s) { return s && typeof s.label === "string" && ["session", "tool", "file", "correction"].indexOf(s.kind) >= 0; }).slice(0, 6)
-          .map(function (s) { return { kind: s.kind, label: scrub(s.label.slice(0, 120)), ref: typeof s.ref === "string" ? s.ref : null }; }), links: [] });
+          .map(function (s) { return { kind: s.kind, label: scrub(s.label.slice(0, 120)), ref: typeof s.ref === "string" && /^[se]\d{1,9}$/.test(s.ref) ? s.ref : null }; }), links: [] });
     });
-    d.entries.forEach(function (e) { if (!e || typeof e.id !== "string") return; var t = m.entries.filter(function (x) { return x.id === e.id; })[0]; if (t && Array.isArray(e.links)) t.links = e.links.filter(function (l) { return ids[l] && l !== e.id; }); });
-    m.sessions = (Array.isArray(d.sessions) ? d.sessions : []).filter(function (s) { return s && typeof s.id === "string" && /^s\d+$/.test(s.id) && typeof s.q === "string" && Array.isArray(s.msgs); }).slice(-MAX_SESSIONS)
-      .map(function (s) { return { id: s.id, ts: okTs(s.ts), q: scrub(s.q.slice(0, 300)), kws: Array.isArray(s.kws) ? s.kws.filter(function (k) { return typeof k === "string"; }).slice(0, 9) : [],
-        accepted: Array.isArray(s.accepted) ? s.accepted.slice(0, 10).filter(function (a) { return a && typeof a.label === "string" && isFinite(a.id); }).map(function (a) { return { id: +a.id, label: scrub(a.label.slice(0, 60)), fact: scrub(String(a.fact || "").slice(0, 400)), entity: typeof a.entity === "string" ? scrub(a.entity.slice(0, 40)) : null, src: typeof a.src === "string" ? scrub(a.src.slice(0, 120)) : "" }; }) : [], uncovered: Array.isArray(s.uncovered) ? s.uncovered.filter(function (u) { return typeof u === "string"; }).slice(0, 6) : [],
+    d.entries.forEach(function (e) { if (!e || typeof e.id !== "string") return; var t = m.entries.filter(function (x) { return x.id === e.id; })[0]; if (t && Array.isArray(e.links)) t.links = e.links.slice(0, 60).filter(function (l) { return typeof l === "string" && ids[l] === 1 && l !== e.id; }); });
+    m.sessions = (Array.isArray(d.sessions) ? d.sessions : []).filter(function (s) { return s && typeof s.id === "string" && /^s\d{1,9}$/.test(s.id) && typeof s.q === "string" && Array.isArray(s.msgs); }).slice(-MAX_SESSIONS)
+      .map(function (s) { return { id: s.id, ts: okTs(s.ts), q: scrub(s.q.slice(0, 300)), kws: Array.isArray(s.kws) ? s.kws.filter(function (k) { return typeof k === "string"; }).slice(0, 9).map(function (k) { return scrub(k.slice(0, 30)); }) : [],
+        accepted: Array.isArray(s.accepted) ? s.accepted.slice(0, 10).filter(function (a) { return a && typeof a.label === "string" && isFinite(a.id); }).map(function (a) { return { id: +a.id, label: scrub(a.label.slice(0, 60)), fact: scrub(String(a.fact || "").slice(0, 400)), entity: typeof a.entity === "string" ? scrub(a.entity.slice(0, 40)) : null, src: typeof a.src === "string" ? scrub(a.src.slice(0, 120)) : "" }; }) : [], uncovered: Array.isArray(s.uncovered) ? s.uncovered.filter(function (u) { return typeof u === "string"; }).slice(0, 6).map(function (u) { return scrub(u.slice(0, 200)); }) : [],
         msgs: s.msgs.filter(function (x) { return x && Object.prototype.hasOwnProperty.call(SPEAKERS, x.from) && typeof x.text === "string"; }).slice(0, 40).map(function (x) { return { from: x.from, text: scrub(x.text.slice(0, 4000)) }; }) }; });
-    m.blocked = (Array.isArray(d.blocked) ? d.blocked : []).filter(function (b) { return typeof b === "string"; }).slice(0, 400);
+    m.blocked = (Array.isArray(d.blocked) ? d.blocked : []).filter(function (b) { return typeof b === "string"; }).slice(0, 2000).map(function (b) { return b.slice(0, 120); });
     m.inbox = [];
     m.runs = Math.max(0, +d.runs || 0); m.dayShift = Math.max(0, Math.min(3650, +d.dayShift || 0));
     m.filtered = Math.max(0, +d.filtered || 0);
@@ -848,7 +849,7 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
   var SRC = CORPUS;
   function buildSources() {
     return CORPUS.map(function (s) {
-      var m = mem.settings.brain && mem.entries.filter(function (e) { return e.corpusId === s.id && e.status === "fresh"; })[0];
+      var m = mem.entries.filter(function (e) { return e.corpusId === s.id && e.status === "fresh"; })[0];
       if (!m) return s;
       return { id: s.id, label: s.label, entity: s.entity, tags: s.tags, fromMemory: true, memId: m.id, corrected: !!m.corrected, origSrc: s.src,
         src: "Brain memory › " + s.label + (m.corrected ? " (your correction)" : ""), lead: m.corrected ? clip(m.note, 140) : s.lead, fact: m.note };
@@ -972,7 +973,7 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
   }
   /* write or refresh one entry; tally says what happened, fx says what the graph should show */
   function upsert(spec, t) {
-    if (isBlocked(spec.key, spec.title)) { t.blocked++; return null; }
+    if (isBlocked(spec.key)) { t.blocked++; return null; }
     var e = byKey(spec.key);
     if (e && t.touched[e.id]) { addSource(e, spec.sources[0]); return e; }
     if (!e) {
@@ -1053,7 +1054,7 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
       mem.entries.forEach(function (e) { if (e.status === "fresh" && e.seen < cutoff) { e.status = "stale"; t.stale++; staled.push(e.id); } });
       inbox.filter(function (i) { return i.kind === "correction"; }).forEach(function (i) { var e = byId(i.ref); if (e) { t.updated++; t.fx.push([e.id, "flash"]); setTimeout(function () { nodeFx(e.id, "flash"); }, 200); } });
       syncGraph(); render();
-      $("#s2t").textContent = t.reinforced + " reinforced, " + t.updated + " updated, " + t.stale + " marked stale (not seen for " + STALE_DAYS + "+ days).";
+      $("#s2t").textContent = t.reinforced + " reinforced, " + t.updated + " updated, " + t.stale + " marked stale (this demo uses " + STALE_DAYS + " days; the article gives no time rule).";
       await sleep(900);
       var rep = [t.fresh + " new", t.reinforced + " reinforced", t.updated + " updated", t.stale + " stale"];
       if (nFile) rep.push(nFile + " from files or notes"); if (nCorr) rep.push(nCorr + " correction(s) applied");
@@ -1083,13 +1084,13 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
     var sess = null, ok = false;
     try {
       SRC = buildSources();
-      var an = analyse(q), ev = evaluate(an), prior = mem.settings.brain && !incog ? findWorkstream(an.kws) : null;
+      var an = analyse(q), ev = evaluate(an), prior = !incog ? findWorkstream(an.kws) : null;
       setPhase(0);
       say("max", q);
       if (red.n) { mem.filtered += red.n; say("brain", "Warning: that looked like a password or key, so I filtered it out and will not remember it. Please do not paste real secrets here.", null, null, "warn"); }
       light("brain"); await sleep(800);
-      say("brain", "Question received. Four phases: plan, search, filter, answer. I answer only from retrieved sources."
-        + (incog ? " Incognito: I will not learn from this session." : !mem.settings.brain ? " Brain is off, so I will not use or write memory." : ""));
+      say("brain", "Question received. Four phases: Plan, Queries, Sources, Answer. I answer only from retrieved sources."
+        + (incog ? " Incognito: I will not learn from this session." : !mem.settings.brain ? " Brain is off, so I will not write new memory." : ""));
       handoff("brain", "grok"); await sleep(1000);
       if (prior) { say("brain", "I remember this. You asked about it on " + fmtDate(prior.seen) + ". " + clip(prior.note, 200)); await sleep(900); }
       say("grok", "I command this repo. Claude is the hub and runs the work. Muse audits everyone. I sign off last with pass or fail.");
@@ -1110,7 +1111,7 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
       handoff("claude", "gemini"); await sleep(600);
       var fromMem = ev.accepted.filter(function (s) { return s.fromMemory; }).length;
       say("gemini", ev.accepted.length
-        ? "Studied the " + ev.pool.length + " retrieved line(s) with Claude and kept " + ev.accepted.length + " that cover the question" + (fromMem ? " (" + fromMem + " came from Brain memory, so no new lookup was needed)" : "") + ". These are primary sources (Brain's own rules and the article) but carry no dates, so freshness is unconfirmed."
+        ? "Studied the " + ev.pool.length + " retrieved line(s) with Claude and kept " + ev.accepted.length + " that cover the question" + (fromMem ? " (" + fromMem + " came from Brain memory, so no new lookup was needed)" : "") + ". These are demo lines written from Brain's own rules and the article, and they carry no dates, so freshness is unconfirmed."
         : "Studied the " + ev.pool.length + " retrieved line(s). None covers the question well enough to keep."); await sleep(900);
 
       setPhase(2);
@@ -1254,7 +1255,7 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
     $("#memCount").textContent = "Memory · " + mem.entries.length + " entries" + (stale ? " · " + stale + " stale" : "");
     $("#memWarn").hidden = storageOk;
     $("#runBadge").textContent = "runs: " + mem.runs;
-    $("#clockNote").textContent = "Memory date: " + fmtDate(nowTs()) + (mem.dayShift ? " (demo clock +" + mem.dayShift + " days)" : "") + ". Entries not reinforced for " + STALE_DAYS + " days are marked stale on the next run.";
+    $("#clockNote").textContent = "Memory date: " + fmtDate(nowTs()) + (mem.dayShift ? " (demo clock +" + mem.dayShift + " days)" : "") + ". Entries not reinforced for " + STALE_DAYS + " days are marked stale on the next run. The 30 days and this demo clock are this page's own choice; the article gives no time rule.";
     $("#sensCount").textContent = mem.filtered ? mem.filtered + " password or key pattern(s) were filtered out so far." : "";
     $("#setBrain").checked = mem.settings.brain; $("#setSources").checked = mem.settings.sources;
     $("#cnDocs").checked = mem.settings.docs; $("#cnMsgs").checked = mem.settings.msgs; $("#cnTrk").checked = mem.settings.tracker;
@@ -1275,7 +1276,7 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
   }
   function deleteEntry(id) {
     var e = byId(id); if (!e) return;
-    mem.blocked.push(e.key); if (mem.blocked.length > 400) mem.blocked.splice(0, mem.blocked.length - 400);
+    mem.blocked.push(e.key); if (mem.blocked.length > 2000) mem.blocked.splice(0, mem.blocked.length - 2000);
     mem.entries = mem.entries.filter(function (x) { return x.id !== id; });
     mem.entries.forEach(function (x) { x.links = x.links.filter(function (l) { return l !== id; }); });
     if (G.sel === id) G.sel = null;

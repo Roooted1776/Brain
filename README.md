@@ -8,14 +8,14 @@ Max's **Orchestration Brain**. Open `index.html` in any browser (double-click it
   - **Team chart**: Grok (lead) → Claude (hub) → Cursor, Gemini, ChatGPT (collaborators), with Muse auditing everyone. Arrows light up as a question moves between them.
   - **Memory graph**: everything Brain has learned as dots. Blue = concepts, gold = entities, green = workstreams. Dots pop in when learned, pulse when reinforced, flash when updated, and turn dashed when stale.
 - **Ask a question** and watch four phases play out as a conversation between the programs: plan, 3–5 searches, source check, cited answer.
-- **Brain learns afterwards**, in the background, in four steps shown on the Memory tab: review recent activity, write what it learns, reinforce / update / mark stale, report.
-- **Memory tab**: browse Concepts, Entities, Workstreams and Skills. Open an entry's source (a saved session replays), edit it, delete it, or confirm it is still true. Corrections change the next answer. A deleted entry is not learned again.
+- **Brain learns afterwards**, in the background, in four steps shown on the Memory tab: review recent activity, write what it learns, reinforce / update / mark stale (these three follow the article), then a report (this page's own step).
+- **Memory tab**: browse Concepts, Entities, Workstreams and Skills. Open an entry's source (a saved session replays), edit it, delete it, or confirm it is still true. Corrections change the next answer.
 - **Settings**: Brain on/off, connected sources (sample connectors), instructions, privacy notes.
 - **Incognito** checkbox: the session is not saved and Brain ignores it.
 - **Skip ahead 30 days (demo)** shows how stale marking works.
 - **Backup and restore** for memory; **Copy transcript** for a conversation.
 
-The learning steps follow Perplexity's help article [“What is Brain?”](https://www.perplexity.ai/help-center/en/articles/19700001-what-is-brain). Wording was checked against the live article on 2026-10-21 (last modified October 2, 2026 per the article). In the article, Brain is a Research Preview for Max and Enterprise Max subscribers using Perplexity Computer. The article describes no animations; the moving visuals are this page's own design.
+The learning steps follow Perplexity's help article [“What is Brain?”](https://www.perplexity.ai/help-center/en/articles/19700001-what-is-brain). Wording was checked against the live article on 2026-10-21 (last modified October 2, 2026 per the article). In the article, Brain is a Research Preview for Max and Enterprise Max subscribers using Perplexity Computer. **This page's own ideas, not in the article:** the animations, graph colors and layout; the Plan / Queries / Sources / Answer session and cited answers; the "Report" step; the Skills filter; the Incognito checkbox and "Run Brain now" button; sample connectors; the 30-day stale rule and "skip ahead" clock (the article gives no time rule); the rule that a deleted entry is not learned again; and the password filter (simple pattern matching, not the article's AI-based filtering).
 
 ## How to test (optional, for developers)
 
@@ -23,7 +23,7 @@ The page itself needs nothing installed. To re-run the browser checks:
 
 1. `npm install --no-save playwright` (once), then `npx playwright install chromium` if you have no browser for it.
 2. `node tests/brain-check.mjs`
-3. Read the output. Every line should start with PASS, and the last line should be `ERRORS []`.
+3. Read the output. Lines starting with PASS are good. If any line starts with FAIL the script stops with an error code, and the last line should be `ERRORS []`.
 
 The checks cover dragging the Brain in both views, learning, reinforcing, correcting, deleting, going stale, incognito, secret filtering, hostile backup files, and reload.
 
