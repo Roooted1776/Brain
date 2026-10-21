@@ -24,9 +24,9 @@ The page itself needs nothing installed. To re-run the browser checks:
 
 1. `npm install --no-save playwright` (once), then `npx playwright install chromium` if you have no browser for it. (Opening `index.html?autoplay=0` starts the page paused, which the tests use.)
 2. `node tests/brain-check.mjs`
-3. Read the output. Lines starting with PASS are good. If any line starts with FAIL the script stops with an error code, and the last line should be `ERRORS []`.
+3. Read the output. Lines starting with PASS are good. At the end you should see `ERRORS []` and `ALL CHECKS PASSED`. If any line starts with FAIL, the script says how many failed and exits with an error code.
 
-The checks cover dragging the Brain in both views, learning, reinforcing, correcting, deleting, going stale, incognito, secret filtering, hostile backup files, and reload.
+The checks cover autopilot starting by itself (and not starting under reduced motion), dragging a bot, a dot and the Brain, a bot dropped outside the stage, arrow-key moves, packets of light, tasks never overlapping, learning, reinforcing, correcting, deleting, going stale, incognito, secret filtering, hostile backup files, and reload.
 
 ## Honest limits
 

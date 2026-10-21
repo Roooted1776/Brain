@@ -101,6 +101,7 @@ input[type=checkbox] { accent-color: #fff; }
 .gn .ring { fill: none; stroke: #fff; stroke-width: 1.5; transform-box: fill-box; transform-origin: center; animation: ringout 1s ease-out forwards; }
 .gn .lbl { font: 600 10.5px var(--font-body); letter-spacing: .06em; text-transform: uppercase; fill: var(--fg); paint-order: stroke; stroke: #000; stroke-width: 3px; pointer-events: none; }
 .gn:focus-visible .dot { stroke-width: 3; }
+.gn:focus-visible .hit { stroke: #fff; stroke-width: 1.5; stroke-dasharray: 2 3; }
 @keyframes pop { from { transform: scale(0); opacity: 0; } 60% { opacity: 1; } }
 @keyframes flash { 0% { fill: #fff; } }
 @keyframes ringout { from { transform: scale(1); opacity: .9; } to { transform: scale(3.2); opacity: 0; } }
@@ -264,7 +265,7 @@ a { color: var(--fg); }
       <div class="tabpane" id="pane-chat" role="tabpanel" aria-labelledby="tab-chat">
         <div class="row spread"><h2>Live activity</h2><button class="small" type="button" id="copyLog">Copy transcript</button></div>
         <div class="savedbar" id="savedBar" hidden><span id="savedLbl"></span><button class="small" type="button" id="backLive">Back to live</button></div>
-        <div class="log" id="log" aria-live="polite"><div class="empty">Waiting for the first task. Tasks start on their own. Each program speaks in turn, a packet of light travels along the line when work is handed over, and when a task ends the Brain learns from it in the background.</div></div>
+        <div class="log" id="log" aria-live="off"><div class="empty">Waiting for the first task. Tasks start on their own. Each program speaks in turn, a packet of light travels along the line when work is handed over, and when a task ends the Brain learns from it in the background.</div></div>
       </div>
 
       <div class="tabpane" id="pane-mem" role="tabpanel" aria-labelledby="tab-mem" hidden>
@@ -278,7 +279,7 @@ a { color: var(--fg); }
             <li><b>Memory only.</b> Brain does not take actions or message you.</li>
           </ol>
           <p class="note"><b>From the article:</b> steps 1 to 5 above, from Perplexity's help article <a href="https://www.perplexity.ai/help-center/en/articles/19700001-what-is-brain" target="_blank" rel="noopener">“What is Brain?”</a>. Checked against the live page on 2026-10-21 (it says it was last modified October 2, 2026). In the article, Brain is a Research Preview for Max and Enterprise Max subscribers using Perplexity Computer. This page does not connect to Perplexity.</p>
-          <p class="note"><b>This page's own ideas (not in the article):</b> the animations, graph colors and layout; the Plan / Queries / Sources / Answer session with its cited answers; the “Report” step of a run; the Skills filter; the Incognito checkbox and “Run Brain now” button; sample connectors; the 30-day stale rule and the “skip ahead” demo clock (the article gives no time rule); the rule that a deleted entry is not learned again; and the password filter, which is simple pattern matching, not the AI-based filtering the article describes.</p>
+          <p class="note"><b>This page's own ideas (not in the article):</b> the animations, the black-and-white look, the drifting network and packets of light, the graph shapes and layout; there is no question box and tasks run on their own from an automatic queue; the Plan / Queries / Sources / Answer task with cited answers; the “Report” step of a run; the Skills filter; the incognito switch and “Run Brain now” button; sample connectors; the 30-day stale rule and the “skip ahead” demo clock (the article gives no time rule); the rule that a deleted entry is not learned again; and the password filter, which is simple pattern matching, not the AI-based filtering the article describes.</p>
         </details>
 
         <div class="runcard">
@@ -339,6 +340,7 @@ a { color: var(--fg); }
           <li>Incognito sessions are skipped completely.</li>
           <li>Common password and key patterns are filtered out before saving. This is a best-effort filter, not a guarantee, so do not paste real secrets.</li>
           <li>Brain only maintains memory. It does not take actions or message you.</li>
+          <li>This page is a simulation. No real AI or web search runs, and nothing connects to Perplexity.</li>
         </ul>
         <p class="note" id="sensCount"></p>
         <div class="row"><button class="small danger" type="button" id="resetMem">Erase all memory and start over</button><span class="note" id="resetMsg" role="status"></span></div>
@@ -569,41 +571,45 @@ a { color: var(--fg); }
   var gempty = h("div", { class: "gempty", text: "" }); stage.append(gempty);
 
   NODES.forEach(function (n, i) {
-    var el = h("div", { class: "node r-" + n.kind, tabindex: "0", title: n.name + ": " + n.sub + ". Drag me." }, h("b", { text: n.name }), h("span", { text: n.sub }));
+    var el = h("div", { class: "node r-" + n.kind, tabindex: "0", role: "group", "aria-label": n.name + ", " + n.sub + ". Drag it, or use the arrow keys.", title: n.name + ": " + n.sub + ". Drag me." }, h("b", { text: n.name }), h("span", { text: n.sub }));
     stage.append(el);
     var b = T[n.id] = { id: n.id, el: el, x: 0, y: 0, vx: 0, vy: 0, ax: 0, ay: 0, fx: n.x, fy: n.y, w: 0, h: 0, init: false, drag: false,
       p: [i * 1.7 + 0.3, i * 2.3 + 1.1, 0.35 + (i % 3) * 0.12, 0.28 + (i % 4) * 0.09] };
-    dragify(el, function () { return b; }, null, function (bb) { bb.fx = bb.x / stage.clientWidth; bb.fy = bb.y / stage.clientHeight; });
+    dragify(el, function () { return b; }, null, function (bb) { var c = teamClamp(bb, bb.x, bb.y); bb.fx = c.x / stage.clientWidth; bb.fy = c.y / stage.clientHeight; });
     el.addEventListener("keydown", function (e) {
       var d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key]; if (!d) return;
-      e.preventDefault(); b.fx = Math.min(0.97, Math.max(0.03, b.fx + d[0] * 14 / stage.clientWidth)); b.fy = Math.min(0.95, Math.max(0.05, b.fy + d[1] * 14 / stage.clientHeight)); ensureLoop();
+      e.preventDefault(); var c = teamClamp(b, b.fx * stage.clientWidth + d[0] * 14, b.fy * stage.clientHeight + d[1] * 14); b.fx = c.x / stage.clientWidth; b.fy = c.y / stage.clientHeight; ensureLoop();
     });
   });
 
+  function teamClamp(b, x, y) { var W = stage.clientWidth, H = stage.clientHeight; return { x: Math.min(W - b.w / 2 - 6, Math.max(b.w / 2 + 6, x)), y: Math.min(H - b.h / 2 - 30, Math.max(b.h / 2 + 6, y)) }; }
   /* drag any body (a team node or a memory dot); a click without movement calls onClick */
   function dragify(el, body, onClick, onDrop) {
     var st = null;
+    el.addEventListener("touchstart", function (e) { e.preventDefault(); }, { passive: false });
     el.addEventListener("pointerdown", function (e) {
       if (e.button > 0) return;
-      var r = stage.getBoundingClientRect(), b = body();
+      var r = stage.getBoundingClientRect(), b = body(); if (!b) return;
       st = { sx: e.clientX, sy: e.clientY, ox: b.x - (e.clientX - r.left), oy: b.y - (e.clientY - r.top), moved: false };
       try { el.setPointerCapture(e.pointerId); } catch (x) {}
       e.preventDefault();
     });
     el.addEventListener("pointermove", function (e) {
       if (!st) return;
+      var b = body(); if (!b) { st = null; return; }
       if (!st.moved && Math.hypot(e.clientX - st.sx, e.clientY - st.sy) < 4) return;
       st.moved = true;
-      var b = body(), r = stage.getBoundingClientRect();
+      var r = stage.getBoundingClientRect();
       b.drag = true; b.x = e.clientX - r.left + st.ox; b.y = e.clientY - r.top + st.oy; b.vx = 0; b.vy = 0; tip.hidden = true; ensureLoop();
     });
-    function end() {
+    function finish(cancelled) {
       if (!st) return;
       var b = body();
-      if (st.moved) { b.drag = false; if (onDrop) onDrop(b); } else if (onClick) onClick(b);
+      if (b) { if (st.moved) { b.drag = false; if (onDrop) onDrop(b); } else if (onClick && !cancelled) onClick(b); }
       st = null; ensureLoop();
     }
-    el.addEventListener("pointerup", end); el.addEventListener("pointercancel", end);
+    el.addEventListener("pointerup", function () { finish(false); });
+    el.addEventListener("pointercancel", function () { finish(true); });
   }
 
   function sizes(w) {
@@ -765,8 +771,12 @@ a { color: var(--fg); }
           g.addEventListener("mouseleave", function () { tip.hidden = true; });
           g.addEventListener("focus", function () { showTip(id); });
           g.addEventListener("blur", function () { tip.hidden = true; });
-          g.addEventListener("keydown", function (ev) { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); selectEntry(id, true); } });
-          dragify(g, function () { return G.nodes[id]; }, function () { selectEntry(id, true); }, function (nn) { nn.ox = nn.x - nn.sx; nn.oy = nn.y - nn.sy; });
+          g.addEventListener("keydown", function (ev) {
+            if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); selectEntry(id, true); return; }
+            var d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[ev.key], nn = G.nodes[id]; if (!d || !nn) return;
+            ev.preventDefault(); nn.ox = Math.min(stage.clientWidth - 10, Math.max(10, nn.sx + nn.ox + d[0] * 14)) - nn.sx; nn.oy = Math.min(stage.clientHeight - 10, Math.max(10, nn.sy + nn.oy + d[1] * 14)) - nn.sy; ensureLoop();
+          });
+          dragify(g, function () { return G.nodes[id]; }, function () { selectEntry(id, true); }, function (nn) { nn.ox = Math.min(stage.clientWidth - 10, Math.max(10, nn.x)) - nn.sx; nn.oy = Math.min(stage.clientHeight - 10, Math.max(10, nn.y)) - nn.sy; });
         })(e.id);
       }
       n.r = radiusFor(e); setShape(n, e);
@@ -785,7 +795,7 @@ a { color: var(--fg); }
     }); });
     $("#brainSub").innerHTML = ""; $("#brainSub").append(mode === "team" ? "drag me" : mem.entries.length + " entries", h("br"), "or any node");
     gempty.textContent = mem.entries.length ? "" : "Memory is empty. Tasks will fill it.";
-    updateHud(); placeGraph(); ensureLoop();
+    updateHud(); placeGraph(); hotEdges(G.sel); ensureLoop();
   }
   function placeGraph() {
     if (!box.brain) return;
@@ -874,7 +884,7 @@ a { color: var(--fg); }
     var g = geom(a, b);
     if (!g) { light(a); light(b); return; }
     var ln = svg("path", { class: "hand", d: pathD(g) }), dot = svg("circle", { class: "pkt", r: 3.8, cx: g.x1, cy: g.y1 });
-    hand.append(ln, dot);
+    hand.append(ln); if (!REDUCED) hand.append(dot);
     hands.push({ a: a, b: b, ln: ln, dot: dot, t0: performance.now(), life: Math.max(800, 1400 * speed), ms: Math.max(480, 950 * speed) });
     light(a); light(b); ensureLoop();
   }
@@ -912,7 +922,7 @@ a { color: var(--fg); }
     $("#savedLbl").textContent = "Saved session from " + fmtDate(sess.ts) + ": " + clip(sess.q, 60); $("#savedBar").hidden = false;
     logEl.scrollTop = 0;
   }
-  $("#backLive").addEventListener("click", function () { $("#savedBar").hidden = true; viewingSaved = false; logEl.textContent = ""; if (!msgs.length) logEl.append(h("div", { class: "empty", text: "Nothing live yet. Ask a question." })); else replayLive(); });
+  $("#backLive").addEventListener("click", function () { $("#savedBar").hidden = true; viewingSaved = false; logEl.textContent = ""; if (!msgs.length) logEl.append(h("div", { class: "empty", text: "Nothing live yet. Run a task." })); else replayLive(); });
   function replayLive() { msgs.forEach(function (m) { logEl.append(h("div", { class: "msg", style: "--c:" + color(m.from) }, h("div", { class: "bar" }, ), h("div", {}, h("div", { class: "who" }, SPEAKERS[m.from].name, h("i", { text: SPEAKERS[m.from].sub })), h("p", { class: "pre", text: m.text })))); }); }
 
   /* ================= Retrieval (the four phases of a session) ================= */
@@ -1052,9 +1062,9 @@ a { color: var(--fg); }
     brainEl.classList.toggle("learning", brainRunning);
     brainEl.classList.toggle("busy", running && !brainRunning);
     $("#brainTitle").textContent = mem.settings.brain ? "BRAIN" : "BRAIN OFF";
-    $("#runNow").disabled = !mem.settings.brain || brainRunning || running;
-    $("#skip30").disabled = brainRunning || running;
-    $("#nextBtn").disabled = brainRunning || running;
+    $("#runNow").disabled = !mem.settings.brain || brainRunning || running || busy;
+    $("#skip30").disabled = brainRunning || running || busy;
+    $("#nextBtn").disabled = brainRunning || running || busy;
   }
   function findWorkstream(kws) {
     var best = null;
@@ -1168,7 +1178,7 @@ a { color: var(--fg); }
     } catch (err) {
       mem.inbox = inbox.concat(mem.inbox); $("#runReport").textContent = "The run stopped early. It will try again next time.";
     } finally {
-      brainRunning = false; persist(); updateBrainState(); render();
+      brainRunning = false; persist(); updateBrainState(); render(); if (!busy) setStatus(playing ? "Idle · next task soon" : "Paused");
     }
   }
 
@@ -1188,7 +1198,7 @@ a { color: var(--fg); }
       say("queue", "Task: " + q);
       if (red.n) { mem.filtered += red.n; say("brain", "Warning: that looked like a password or key, so I filtered it out and will not remember it. Please do not paste real secrets here.", null, null, "warn"); }
       light("brain"); await sleep(800);
-      say("brain", "Question received. Four phases: Plan, Queries, Sources, Answer. I answer only from retrieved sources."
+      say("brain", "Task received. Four phases: Plan, Queries, Sources, Answer. I answer only from retrieved sources."
         + (incog ? " Incognito: I will not learn from this session." : !mem.settings.brain ? " Brain is off, so I will not write new memory." : ""));
       handoff("brain", "grok"); await sleep(1000);
       if (prior) { say("brain", "I remember this. You asked about it on " + fmtDate(prior.seen) + ". " + clip(prior.note, 200)); await sleep(900); }
@@ -1257,15 +1267,15 @@ a { color: var(--fg); }
     "Who decides what ships and who merges?",
     "What is the latest iPhone model price?"
   ];
-  var playing = !/[?&]autoplay=0/.test(location.search) && !REDUCED, queueIdx = 0, autoTimer = 0, taskNo = 0, chipEls = [];
+  var playing = !/[?&]autoplay=0/.test(location.search) && !REDUCED, queueIdx = 0, autoTimer = 0, taskNo = 0, chipEls = [], busy = false;
   SAMPLES.forEach(function (q, i) {
     var c = h("button", { class: "chip", type: "button", "aria-pressed": "false", text: q, onclick: function () { startTask(q, true, i); } });
     chipEls.push(c); $("#samples").append(c);
   });
   function setStatus(t) { $("#taskStatus").textContent = t; }
   function startTask(q, manual, idx) {
-    if (running || brainRunning) return;
-    clearTimeout(autoTimer);
+    if (busy || running || brainRunning) return;
+    busy = true; clearTimeout(autoTimer);
     speed = parseFloat($("#speed").value); if (!isFinite(speed)) speed = 1;
     if (manual) tab("chat");
     if (idx != null) queueIdx = idx + 1;
@@ -1276,19 +1286,19 @@ a { color: var(--fg); }
   }
   function nextTask() { var i = queueIdx % SAMPLES.length; startTask(SAMPLES[i], false, i); }
   function afterTask() {
-    currentTask = ""; updateHud();
+    busy = false; currentTask = ""; updateHud(); updateBrainState();
     chipEls.forEach(function (c) { c.setAttribute("aria-pressed", "false"); });
     setStatus(playing ? "Task " + taskNo + " done · next soon" : "Task " + taskNo + " done · paused");
     scheduleNext();
   }
   function scheduleNext() {
     clearTimeout(autoTimer); if (!playing) return;
-    autoTimer = setTimeout(function () { if (document.hidden || running || brainRunning) { scheduleNext(); return; } nextTask(); }, Math.max(700, 3800 * speed));
+    autoTimer = setTimeout(function () { if (document.hidden || busy || running || brainRunning || viewingSaved) { scheduleNext(); return; } nextTask(); }, Math.max(700, 3800 * speed));
   }
   function showPlayState() { $("#playBtn").textContent = playing ? "Pause" : "Play"; $("#playBtn").setAttribute("aria-pressed", String(playing)); }
   $("#playBtn").addEventListener("click", function () {
     playing = !playing; showPlayState(); clearTimeout(autoTimer);
-    if (playing) { setStatus("Starting"); if (!running && !brainRunning) autoTimer = setTimeout(nextTask, 500); else scheduleNext(); }
+    if (playing) { if (!busy && !running && !brainRunning) { setStatus("Starting"); autoTimer = setTimeout(nextTask, 500); } else scheduleNext(); }
     else setStatus(running || brainRunning ? "Pausing after this task" : "Paused");
   });
   $("#nextBtn").addEventListener("click", function () { nextTask(); });
@@ -1379,7 +1389,7 @@ a { color: var(--fg); }
     var list = mem.entries.filter(function (e) { return (filter === "all" || (filter === "skill" ? e.skill : e.type === filter)) && (!q || (e.title + " " + e.note).toLowerCase().indexOf(q) >= 0); })
       .sort(function (a, b) { return b.seen - a.seen || b.strength - a.strength; });
     list.forEach(function (e) { ul.append(entryCard(e)); });
-    if (!list.length) ul.append(h("li", { class: "empty", text: mem.entries.length ? "Nothing matches. Clear the search or pick another filter." : "Memory is empty. Ask a question, or add a note below." }));
+    if (!list.length) ul.append(h("li", { class: "empty", text: mem.entries.length ? "Nothing matches. Clear the search or pick another filter." : "Memory is empty. Run a task, or add a note below." }));
     var stale = mem.entries.filter(function (e) { return e.status === "stale"; }).length;
     $("#memCount").textContent = "Memory · " + mem.entries.length + " entries" + (stale ? " · " + stale + " stale" : "");
     $("#memWarn").hidden = storageOk;

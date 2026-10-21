@@ -186,10 +186,25 @@ const d1 = await cx(claude); await n.waitForTimeout(1200); const d2 = await cx(c
 ok('Drift off holds still', Math.abs(d1.x-d2.x) < 1.5 && Math.abs(d1.y-d2.y) < 1.5);
 await n.check('#driftToggle'); await n.waitForTimeout(300);
 await n.selectOption('#speed','0.35');
+await n.evaluate(()=>{ window.__leak = 0; setInterval(()=>{ var t = document.querySelector('#taskStatus').textContent; if (!document.querySelector('#nextBtn').disabled && /running|learning/i.test(t)) window.__leak++; }, 15); });
 await chip(n, 'What does Brain learn from?');
 await n.waitForSelector('#hand .pkt', { timeout: 15000 }); ok('hand-off packets travel along the lines', true);
 await n.waitForFunction(()=>/done/.test(document.querySelector('#taskStatus').textContent), null, {timeout:90000});
+ok('Next task stays disabled until the task and the learning finish', (await n.evaluate(()=>window.__leak))===0, String(await n.evaluate(()=>window.__leak)));
 await n.selectOption('#speed','0');
+// keyboard move and a drop outside the stage
+await n.click('#modeTeam'); await n.waitForTimeout(500); await n.click('#center'); await n.waitForTimeout(1500);
+const k0 = await cx(claude); await claude.focus(); for (let i = 0; i < 4; i++) await n.keyboard.press('ArrowRight'); await n.waitForTimeout(1300);
+const k1 = await cx(claude); ok('arrow keys move a focused bot', k1.x - k0.x > 25, String(Math.round(k1.x - k0.x)));
+await n.click('#center'); await n.waitForTimeout(1500); await n.uncheck('#driftToggle');
+const sb = await n.locator('#stage').boundingBox(); const o0 = await cx(claude);
+await n.mouse.move(o0.x, o0.y); await n.mouse.down(); await n.mouse.move(sb.x + sb.width + 250, sb.y + sb.height + 250, { steps: 10 }); await n.mouse.up();
+await n.waitForTimeout(2500);
+const cb = await claude.boundingBox();
+ok('a bot dropped outside the stage lands inside it', cb.x >= sb.x - 2 && cb.x + cb.width <= sb.x + sb.width + 2 && cb.y >= sb.y - 2 && cb.y + cb.height <= sb.y + sb.height + 2);
+const s1 = await cx(claude); await n.waitForTimeout(1200); const s2 = await cx(claude);
+ok('and then it settles instead of moving forever', Math.abs(s1.x - s2.x) < 1 && Math.abs(s1.y - s2.y) < 1);
+await n.check('#driftToggle'); await n.click('#center'); await n.waitForTimeout(800);
 // memory dot drag
 await n.click('#modeGraph'); await n.waitForTimeout(1200);
 const dot = n.locator('#gNodes .gn').first();
@@ -208,6 +223,12 @@ await au.waitForFunction(()=>/Task 1/i.test(document.querySelector('#taskStatus'
 ok('autopilot starts a task with no clicks', true, await au.locator('#taskStatus').innerText());
 await au.click('#playBtn'); ok('Pause button works', (await au.locator('#playBtn').innerText()).toLowerCase()==='play');
 await autoCtx.close();
+const rmCtx = await b.newContext({ viewport: { width: 1280, height: 900 }, reducedMotion: 'reduce' });
+const rm = await rmCtx.newPage(); rm.on('pageerror', e=>errs.push('PAGEERR-rm '+e.message));
+await rm.goto(PAGE.replace('?autoplay=0','')); await rm.waitForTimeout(3500);
+const rmStatus = await rm.locator('#taskStatus').innerText();
+ok('reduced motion: no task starts by itself', /paused/i.test(rmStatus) && !/Task 1/i.test(rmStatus), rmStatus);
+await rmCtx.close();
 
 // phone
 const c2 = await b.newContext({ viewport: { width: 390, height: 844 }, colorScheme: 'light' });
