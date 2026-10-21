@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Orchestration Brain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: question bar and phase bar on top. Below, Max's org chart (Grok > Claude > Cursor/Gemini/ChatGPT, Muse auditing) with a draggable Brain on it, beside a Conversation / Skills panel. Stacks on phones. */
+:root {
+  --bg: #f1f6f6; --surface: #ffffff; --surface-2: #e6eeee; --line: #c9d8da;
+  --fg: #0f2022; --muted: #4d6468; --accent: #087f6a; --accent-fg: #ffffff;
+  --good: #1a7f37; --bad: #b3261e; --glow: rgba(8,127,106,.28); --arrow: #7d8a8b;
+  --lead: #a8431f; --lead-bg: #fdece7; --lead-tx: #6e2610;
+  --hub: #5b52c4; --hub-bg: #eeedfe; --hub-tx: #342d8a;
+  --collab: #0f7a5a; --collab-bg: #e1f5ee; --collab-tx: #064d39;
+  --audit: #6b6a63; --audit-bg: #f0efea; --audit-tx: #3d3d3a;
+  --c-max: #d33a4a; --c-brain: #087f6a;
+  --font-display: "Chakra Petch", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0a1214; --surface: #111c1f; --surface-2: #172529; --line: #25383d;
+    --fg: #e3eeef; --muted: #8ba2a7; --accent: #3fd0b0; --accent-fg: #04201a;
+    --good: #5ad07a; --bad: #ff8a80; --glow: rgba(63,208,176,.35); --arrow: #6f8588;
+    --lead: #f0976a; --lead-bg: #3a1f15; --lead-tx: #ffd9c7;
+    --hub: #9d96f0; --hub-bg: #25223f; --hub-tx: #dcd9ff;
+    --collab: #4fd3a6; --collab-bg: #10302a; --collab-tx: #bff3df;
+    --audit: #a8a79f; --audit-bg: #262826; --audit-tx: #dddcd5;
+    --c-max: #ff7a88; --c-brain: #3fd0b0;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0a1214; --surface: #111c1f; --surface-2: #172529; --line: #25383d;
+  --fg: #e3eeef; --muted: #8ba2a7; --accent: #3fd0b0; --accent-fg: #04201a;
+  --good: #5ad07a; --bad: #ff8a80; --glow: rgba(63,208,176,.35); --arrow: #6f8588;
+  --lead: #f0976a; --lead-bg: #3a1f15; --lead-tx: #ffd9c7;
+  --hub: #9d96f0; --hub-bg: #25223f; --hub-tx: #dcd9ff;
+  --collab: #4fd3a6; --collab-bg: #10302a; --collab-tx: #bff3df;
+  --audit: #a8a79f; --audit-bg: #262826; --audit-tx: #dddcd5;
+  --c-max: #ff7a88; --c-brain: #3fd0b0;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 var(--font-body); }
+.wrap { max-width: 1240px; margin: 0 auto; padding-block: 20px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 16px; }
+h1 { font: 700 26px/1.1 var(--font-display); letter-spacing: .02em; margin: 0; text-wrap: balance; }
+h2 { font: 600 13px/1.2 var(--font-display); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0; }
+.top { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between; }
+.top p { margin: 0; color: var(--muted); max-width: 62ch; min-width: 0; }
+.badge { font: 500 12px var(--font-mono); border: 1px solid var(--line); border-radius: 4px; padding: 2px 8px; color: var(--muted); white-space: nowrap; }
+.ask { display: grid; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+.ask-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.ask-row input[type=text] { flex: 1 1 260px; min-width: 0; }
+input[type=text], select, textarea { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 9px 11px; }
+textarea { width: 100%; font: 12.5px/1.45 var(--font-mono); min-height: 120px; resize: vertical; }
+button { font: 600 14px var(--font-body); color: var(--fg); background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 9px 14px; cursor: pointer; }
+button:hover:not(:disabled) { border-color: var(--accent); }
+button.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+button.small { padding: 4px 9px; font-size: 12.5px; }
+button.danger { color: var(--bad); }
+button:disabled { opacity: .5; cursor: default; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.chips span.lbl { font: 500 12px var(--font-mono); color: var(--muted); }
+.chip { font: 400 13px var(--font-body); padding: 4px 10px; border-radius: 999px; background: transparent; text-align: left; }
+.phases { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.phase { border: 1px solid var(--line); border-radius: 6px; padding: 6px 9px; font: 500 12px var(--font-mono); color: var(--muted); background: var(--surface); min-width: 0; }
+.phase b { display: block; font: 600 12.5px var(--font-display); letter-spacing: .04em; color: var(--fg); }
+.phase.active { border-color: var(--accent); color: var(--fg); box-shadow: 0 0 0 1px var(--accent) inset; }
+.phase.done { color: var(--good); border-color: var(--good); }
+.main { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.stagewrap { display: grid; gap: 8px; min-width: 0; }
+.stage { position: relative; height: 580px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+  background-image: radial-gradient(var(--line) 1px, transparent 1px); background-size: 22px 22px; }
+.stage svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.edge { fill: none; stroke: var(--arrow); stroke-width: 2; }
+.edge.audit { stroke-dasharray: 5 5; stroke-width: 1.5; }
+.edge.tether { stroke: var(--c-brain); stroke-width: 1.5; stroke-dasharray: 2 6; opacity: .7; }
+.ah { fill: none; stroke: var(--arrow); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.hand { fill: none; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 10 8; animation: flow .7s linear infinite; }
+@keyframes flow { to { stroke-dashoffset: -36; } }
+.node { position: absolute; transform: translate(-50%, -50%); display: grid; align-content: center; justify-items: center; text-align: center; gap: 1px; padding: 4px 8px;
+  border: 1.5px solid var(--c); border-radius: 10px; background: var(--nbg); color: var(--ntx); transition: background .25s, color .25s, box-shadow .25s; }
+.node b { font: 600 17px/1.15 var(--font-display); }
+.node span { font: 400 13px/1.25 var(--font-body); }
+.r-lead { --c: var(--lead); --nbg: var(--lead-bg); --ntx: var(--lead-tx); }
+.r-hub { --c: var(--hub); --nbg: var(--hub-bg); --ntx: var(--hub-tx); }
+.r-collab { --c: var(--collab); --nbg: var(--collab-bg); --ntx: var(--collab-tx); }
+.r-audit { --c: var(--audit); --nbg: var(--audit-bg); --ntx: var(--audit-tx); }
+.node.on { background: var(--c); color: var(--bg); box-shadow: 0 0 0 5px color-mix(in srgb, var(--c) 28%, transparent); }
+.brain { touch-action: none; position: absolute; transform: translate(-50%, -50%); width: 96px; height: 96px; border-radius: 50%; cursor: grab; display: grid; place-items: center; align-content: center; text-align: center;
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--c-brain) 55%, var(--surface)), var(--surface) 72%); border: 2px solid var(--c-brain);
+  box-shadow: 0 0 28px var(--glow); font: 700 13px var(--font-display); letter-spacing: .1em; color: var(--fg); user-select: none; z-index: 3; }
+.brain:active { cursor: grabbing; }
+.brain small { display: block; font: 500 10px/1.2 var(--font-mono); letter-spacing: 0; color: var(--muted); margin-top: 2px; }
+.brain.busy { animation: breathe 1.4s ease-in-out infinite; }
+.brain.on { box-shadow: 0 0 40px var(--glow), 0 0 0 8px color-mix(in srgb, var(--c-brain) 25%, transparent); }
+@keyframes breathe { 50% { box-shadow: 0 0 46px var(--glow), 0 0 0 10px color-mix(in srgb, var(--c-brain) 18%, transparent); } }
+.stage-tools { position: absolute; left: 10px; bottom: 10px; display: flex; gap: 8px; align-items: center; z-index: 4; font: 12px var(--font-mono); color: var(--muted); flex-wrap: wrap; }
+.legend { font: 12.5px var(--font-mono); color: var(--muted); text-align: center; margin: 0; }
+.legend i { font-style: normal; font-weight: 500; }
+.lg-lead { color: var(--lead); } .lg-hub { color: var(--hub); } .lg-collab { color: var(--collab); } .lg-audit { color: var(--audit); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; display: grid; grid-template-rows: auto 1fr; min-width: 0; }
+.tabs { display: flex; border-bottom: 1px solid var(--line); }
+.tabs button { flex: 1; border: 0; border-radius: 10px 10px 0 0; background: transparent; padding: 12px; font: 600 13px var(--font-display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); border-bottom: 2px solid transparent; }
+.tabs button[aria-selected=true] { color: var(--fg); border-bottom-color: var(--accent); }
+.tabpane { padding: 14px; min-width: 0; }
+.log { display: grid; gap: 10px; max-height: 540px; overflow-y: auto; align-content: start; }
+.empty { color: var(--muted); border: 1px dashed var(--line); border-radius: 8px; padding: 14px; }
+.msg { display: grid; grid-template-columns: 10px minmax(0, 1fr); gap: 10px; animation: rise .3s ease-out; }
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } }
+.msg .bar { border-radius: 3px; background: var(--c); }
+.msg .who { font: 600 12px var(--font-display); letter-spacing: .08em; text-transform: uppercase; color: var(--c); }
+.msg .who i { font: 400 11.5px var(--font-mono); letter-spacing: 0; text-transform: none; color: var(--muted); font-style: normal; margin-left: 6px; }
+.msg p { margin: 2px 0 0; overflow-wrap: anywhere; }
+.msg ul.q { margin: 4px 0 0; padding-left: 18px; font: 12.5px var(--font-mono); }
+.answer { border: 1px solid var(--accent); border-radius: 8px; padding: 12px 14px; background: var(--bg); overflow-wrap: anywhere; margin-top: 4px; }
+.answer .lead { font-weight: 600; margin: 0 0 8px; }
+.answer h3 { font: 600 12px var(--font-display); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 12px 0 4px; }
+.answer ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.answer .gap { color: var(--bad); }
+.cite { font: 500 12px var(--font-mono); color: var(--accent); }
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 600 11.5px var(--font-display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+td:first-child { font-family: var(--font-mono); white-space: nowrap; }
+.note { font: 12px var(--font-mono); color: var(--muted); margin: 8px 0 0; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.skills { display: grid; gap: 8px; margin: 10px 0; padding: 0; list-style: none; max-height: 340px; overflow-y: auto; }
+.skill { border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; display: grid; gap: 4px; border-left: 4px solid var(--c, var(--line)); }
+.skill .nm { font: 500 13.5px var(--font-mono); overflow-wrap: anywhere; }
+.skill .use { color: var(--muted); font-size: 13.5px; overflow-wrap: anywhere; }
+.skill .pg { font: 600 11.5px var(--font-display); letter-spacing: .08em; text-transform: uppercase; color: var(--c, var(--muted)); }
+form.skillform { display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
+form.skillform label { display: grid; gap: 3px; font: 600 12px var(--font-display); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+form.skillform input, form.skillform select { font-weight: 400; letter-spacing: 0; text-transform: none; font-family: var(--font-body); font-size: 14px; }
+details { border-top: 1px solid var(--line); padding-top: 10px; margin-top: 12px; }
+summary { cursor: pointer; font: 600 12px var(--font-display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+details > * + * { margin-top: 8px; }
+.sr { position: absolute; left: -9999px; }
+@media (max-width: 900px) {
+  .main { grid-template-columns: minmax(0, 1fr); }
+  .stage { height: 500px; }
+  .phases { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .node b { font-size: 14px; } .node span { font-size: 11px; }
+  .brain { width: 76px; height: 76px; font-size: 11px; }
+  .brain small { font-size: 9px; }
+}
+@media (max-width: 380px) { .node { padding: 3px 3px; } .node b { font-size: 12.5px; } .node span { font-size: 10px; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Orchestration Brain</h1>
+    <p>Drag the Brain. Ask a question and watch Grok, Claude, Cursor, Gemini, ChatGPT and Muse hand work along your chart. Sources are sample text from your RedMed notes, not live web search.</p>
+    <span class="badge">simulation · no real AI calls</span>
+  </header>
+
+  <form class="ask" id="askForm" autocomplete="off">
+    <div class="ask-row">
+      <label class="sr" for="q">Your question</label>
+      <input type="text" id="q" placeholder="Ask something, e.g. How close must a tap be to start a band session?" maxlength="300">
+      <button class="primary" id="askBtn" type="submit">Ask the Brain</button>
+      <label class="sr" for="speed">Speed</label>
+      <select id="speed"><option value="1">Normal speed</option><option value="0.35">Fast</option><option value="0">Instant</option></select>
+    </div>
+    <div class="chips" id="samples"><span class="lbl">Try:</span></div>
+  </form>
+
+  <div class="phases" id="phases" aria-label="Progress through the four phases">
+    <div class="phase"><b>1 Plan</b>Grok → Claude</div>
+    <div class="phase"><b>2 Queries</b>ChatGPT + Gemini</div>
+    <div class="phase"><b>3 Sources</b>Cursor + Muse</div>
+    <div class="phase"><b>4 Answer</b>Claude → Grok</div>
+  </div>
+
+  <div class="main">
+    <div class="stagewrap">
+      <section class="stage" id="stage" aria-label="Org chart with a draggable Brain">
+        <svg id="links" aria-hidden="true">
+          <defs><marker id="ahm" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path class="ah" d="M1.5 1.5 L8.5 5 L1.5 8.5"/></marker></defs>
+          <g id="edges"></g><g id="hand"></g>
+        </svg>
+        <div class="brain" id="brain" tabindex="0" aria-roledescription="draggable" aria-label="Brain. Drag it, or press the arrow keys, to move it.">BRAIN<small>Max asks here<br>drag me</small></div>
+        <div class="stage-tools">
+          <button class="small" type="button" id="center">Reset brain</button>
+          <span id="coords"></span>
+        </div>
+      </section>
+      <p class="legend"><i class="lg-lead">coral = lead</i> · <i class="lg-hub">purple = hub</i> · <i class="lg-collab">teal = collaborator</i> · <i class="lg-audit">gray = auditor</i></p>
+    </div>
+
+    <section class="panel">
+      <div class="tabs" role="tablist">
+        <button role="tab" id="tab-chat" aria-selected="true" aria-controls="pane-chat">Conversation</button>
+        <button role="tab" id="tab-skills" aria-selected="false" aria-controls="pane-skills">Skills memory</button>
+      </div>
+      <div class="tabpane" id="pane-chat" role="tabpanel" aria-labelledby="tab-chat">
+        <div class="row" style="justify-content:space-between;margin-bottom:10px">
+          <h2>Hand-off log</h2>
+          <button class="small" type="button" id="copyLog">Copy transcript</button>
+        </div>
+        <div class="log" id="log" aria-live="polite"><div class="empty">Nothing yet. Pick a sample question above, or type your own. Each program speaks in turn, and the arrows on the chart light up as work moves between them.</div></div>
+      </div>
+      <div class="tabpane" id="pane-skills" role="tabpanel" aria-labelledby="tab-skills" hidden>
+        <div class="row" style="justify-content:space-between">
+          <h2>Skills I want to remember</h2><span class="badge" id="skillCount"></span>
+        </div>
+        <div class="row" style="margin-top:10px"><label class="sr" for="skillFilter">Filter skills</label><input type="text" id="skillFilter" placeholder="Filter by name or use" style="flex:1;min-width:0"></div>
+        <ul class="skills" id="skillList" tabindex="-1"></ul>
+        <p class="note" id="skillWarn" role="status" style="color:var(--bad)"></p>
+        <form class="skillform" id="skillForm" autocomplete="off">
+          <h2 id="formTitle">Add a skill</h2>
+          <label for="sName">Name<input type="text" id="sName" maxlength="60" required placeholder="e.g. max-daily-planner"></label>
+          <label for="sUse">Use it when…<input type="text" id="sUse" maxlength="160" required placeholder="e.g. I need a plan for today"></label>
+          <label for="sProg">Which program<select id="sProg"></select></label>
+          <div class="row"><button class="primary" type="submit" id="sSave">Save skill</button><button type="button" id="sCancel" hidden>Cancel edit</button></div>
+        </form>
+        <details>
+          <summary>Backup and restore</summary>
+          <p class="note">Skills are saved in this browser only. Copy the backup text and keep it in a file (for example in the Brain repo). Paste it back here to restore.</p>
+          <label class="sr" for="backup">Backup text</label>
+          <textarea id="backup" spellcheck="false"></textarea>
+          <div class="row"><button class="small" type="button" id="bExport">Show backup</button><button class="small" type="button" id="bCopy">Copy</button><button class="small" type="button" id="bDownload">Download file</button><button class="small" type="button" id="bLoad">Load pasted backup</button><button class="small danger" type="button" id="bReset">Reset to starter list</button></div>
+          <p class="note" id="bMsg" role="status"></p>
+        </details>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  function h(tag, props) {
+    var e = document.createElement(tag), i, k;
+    props = props || {};
+    for (k in props) {
+      var v = props[k];
+      if (k === "class") e.className = v;
+      else if (k === "text") e.textContent = v;
+      else if (k.slice(0, 2) === "on") e.addEventListener(k.slice(2), v);
+      else if (v === true) e.setAttribute(k, "");
+      else if (v !== false && v != null) e.setAttribute(k, v);
+    }
+    for (i = 2; i < arguments.length; i++) append(e, arguments[i]);
+    return e;
+  }
+  function append(e, c) {
+    if (c == null || c === false) return;
+    if (Array.isArray(c)) { c.forEach(function (x) { append(e, x); }); return; }
+    e.append(c.nodeType ? c : document.createTextNode(String(c)));
+  }
+  var NS = "http://www.w3.org/2000/svg";
+  function svg(tag, attrs) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); return e; }
+
+  /* ---------- Max's chart: who sits where, and what each one does ---------- */
+  var NODES = [
+    { id: "grok",    name: "Grok",    sub: "Commands the repo",     kind: "lead",   x: 0.5, y: 0.13 },
+    { id: "claude",  name: "Claude",  sub: "UI, frontend, logic",   kind: "hub",    x: 0.5, y: 0.38 },
+    { id: "cursor",  name: "Cursor",  sub: "Integrates & reviews",  kind: "collab", x: 0.2, y: 0.63 },
+    { id: "gemini",  name: "Gemini",  sub: "Studies UI together",   kind: "collab", x: 0.5, y: 0.63 },
+    { id: "chatgpt", name: "ChatGPT", sub: "Research together",     kind: "collab", x: 0.8, y: 0.63 },
+    { id: "muse",    name: "Muse",    sub: "Audits everyone's work", kind: "audit",  x: 0.5, y: 0.87 }
+  ];
+  var TREE = [["grok", "claude"], ["claude", "cursor"], ["claude", "gemini"], ["claude", "chatgpt"]];
+  var KIND_VAR = { lead: "--lead", hub: "--hub", collab: "--collab", audit: "--audit" };
+  var SPEAKERS = { max: { name: "Max", sub: "owner" }, brain: { name: "Brain", sub: "orchestrates" } };
+  NODES.forEach(function (n) { SPEAKERS[n.id] = { name: n.name, sub: n.sub.toLowerCase() }; });
+  function color(id) {
+    var n = NODES.filter(function (x) { return x.id === id; })[0];
+    return "var(" + (n ? KIND_VAR[n.kind] : id === "max" ? "--c-max" : "--c-brain") + ")";
+  }
+  function isNode(id) { return NODES.some(function (n) { return n.id === id; }); }
+
+  /* ---------- Sample sources: real lines from the RedMed AGENTS.md notes ---------- */
+  var DOC = "AGENTS.md";
+  var CORPUS = [
+    { id: 1, label: "Band chip", src: DOC + " › NFC hardware contract",
+      lead: "The band uses an NXP NTAG216 chip that is blank and NDEF-unlocked.",
+      fact: "Product band is NXP NTAG216 only (13.56 MHz, ISO 14443A Type 2, NDEF blank unlocked). Never NTAG213/215, MIFARE, LF, or UHF.",
+      tags: "chip band nfc ntag216 ntag type frequency mhz blank unlocked ndef hardware bracelet which what use uses" },
+    { id: 2, label: "Tap distance", src: DOC + " › NFC hardware contract",
+      lead: "A deliberate tap is about 1–2 inches; walking past must never start a session.",
+      fact: "Deliberate antenna tap is about 1–2 inches. A walk-by (about 6–8 inches) must never fire a session, and RedMed starts CoreNFC only on an explicit Write/Scan action.",
+      tags: "tap close distance inches range walk-by session start antenna proximity near far nfc band geometry" },
+    { id: 3, label: "Storage cap", src: DOC + " › NFC hardware contract",
+      lead: "The write limit is 850 bytes, the NTAG216 cap.",
+      fact: "The write gate enforces the 850-byte NTAG216 cap, and refuses scanner sessions, a busy session, and an empty profile before touching CoreNFC.",
+      tags: "storage store capacity cap bytes 850 write limit memory size data fit how much many chip band" },
+    { id: 4, label: "Assist page", src: DOC + " › Surfaces",
+      lead: "Assist at redmed.live/tapper is no-auth and no-ads.",
+      fact: "Assist is no-auth and no-ads. The #d= fragment is never sent in the HTTP request, and the VPS serves static files only, with no database or log config that could capture it.",
+      tags: "assist tapper website web page responder passerby auth login ads privacy fragment server vps static redmed.live" },
+    { id: 5, label: "SOS", src: DOC + " › Own-band / Assist SOS",
+      lead: "SOS never arms on a band tap alone.",
+      fact: "SOS arms only when the helper toggles SOS · Locate Me, or on collision detection using US Crash Detection timing (10s alert + 30s countdown, then a call unless Stop). It uses full sound and full light.",
+      tags: "sos arm arms armed crash collision detection locate sound light emergency countdown tap band alarm" },
+    { id: 6, label: "Review loop", src: DOC + " › Always collaborate",
+      lead: "Claude plans, Cursor implements, Gemini, ChatGPT and Muse review, and Grok Bot verifies. Max pushes.",
+      fact: "Loop order: Claude plans → Cursor implements → Gemini, ChatGPT and Muse review → Grok Bot (in charge) verifies and signs off. Max pushes.",
+      tags: "review reviews reviewer reviewers change changes sign signs off verify verifies charge loop plan implement who partners agents order workflow push pushes" },
+    { id: 7, label: "Owner app", src: DOC + " › Surfaces",
+      lead: "Owner is the native iOS app (com.redmed.app) and is not HIPAA-certified.",
+      fact: "Owner is native iOS / SwiftUI (com.redmed.app): profile, Edit, NFC Write/Scan, Face ID chrome, Keychain, optional Supabase account sync, HealthKit import. It is not HIPAA-certified.",
+      tags: "owner app ios swiftui wearer hipaa certified keychain face id healthkit supabase sync native phone com.redmed.app" }
+  ];
+
+  /* ---------- Stage: the chart plus a draggable Brain ---------- */
+  var stage = $("#stage"), brainEl = $("#brain"), edgesG = $("#edges"), hand = $("#hand");
+  var box = {}, nodeEls = {}, frac = { x: 0.13, y: 0.13 }, BRAIN_HOME = { x: 0.13, y: 0.13 };
+
+  NODES.forEach(function (n) {
+    var el = h("div", { class: "node r-" + n.kind }, h("b", { text: n.name }), h("span", { text: n.sub }));
+    stage.append(el); nodeEls[n.id] = el;
+  });
+
+  function sizes(w) {
+    var small = w < 520;
+    return {
+      lead: { w: Math.max(110, Math.min(220, w * 0.34)), h: small ? 56 : 64 },
+      collab: { w: Math.max(72, Math.min(176, w * 0.27)), h: small ? 56 : 64 },
+      audit: { w: Math.max(150, Math.min(300, w * 0.44)), h: small ? 56 : 64 }
+    };
+  }
+  function layout() {
+    var w = stage.clientWidth, hgt = stage.clientHeight, sz = sizes(w);
+    NODES.forEach(function (n) {
+      var s = n.kind === "hub" ? sz.lead : sz[n.kind];
+      box[n.id] = { x: n.x * w, y: n.y * hgt, w: s.w, h: s.h };
+      var el = nodeEls[n.id];
+      el.style.left = box[n.id].x + "px"; el.style.top = box[n.id].y + "px";
+      el.style.width = s.w + "px"; el.style.height = s.h + "px";
+    });
+    var bs = brainEl.offsetWidth || 96;
+    box.brain = { x: frac.x * w, y: frac.y * hgt, r: bs / 2 };
+    brainEl.style.left = box.brain.x + "px"; brainEl.style.top = box.brain.y + "px";
+
+    edgesG.textContent = "";
+    TREE.forEach(function (e) {
+      edgesG.append(svg("path", { class: "edge", d: pathFor(e[0], e[1]), "marker-end": "url(#ahm)" }));
+    });
+    edgesG.append(svg("path", { class: "edge audit", d: pathFor("muse", "claude"), "marker-end": "url(#ahm)" }));
+    edgesG.append(svg("path", { class: "edge tether", d: pathFor("brain", "grok") }));
+    $("#coords").textContent = "brain at " + Math.round(frac.x * 100) + "%, " + Math.round(frac.y * 100) + "%";
+  }
+  function isTree(a, b) { return TREE.some(function (e) { return (e[0] === a && e[1] === b) || (e[0] === b && e[1] === a); }); }
+  function clip(from, to, gap) {
+    var f = box[from], t = box[to], dx = t.x - f.x, dy = t.y - f.y, len = Math.hypot(dx, dy) || 1;
+    function cut(b, sx, sy) {
+      if (b.r) return b.r + gap;
+      var k = Math.min(Math.abs(dx) > 0.01 ? (b.w / 2) / Math.abs(dx) : Infinity, Math.abs(dy) > 0.01 ? (b.h / 2) / Math.abs(dy) : Infinity);
+      return k * len + gap;
+    }
+    var a = cut(f), b = cut(t), ux = dx / len, uy = dy / len;
+    return [f.x + ux * a, f.y + uy * a, t.x - ux * b, t.y - uy * b];
+  }
+  /* path from a to b: tree edges leave the bottom/top centre like the chart; Muse's audit line runs up the gap beside Gemini and ChatGPT. */
+  function pathFor(a, b) {
+    var f = box[a], t = box[b], p;
+    if (isTree(a, b)) {
+      var down = f.y < t.y;
+      return "M" + f.x + " " + (f.y + (down ? 1 : -1) * f.h / 2 + (down ? 2 : -2)) + " L" + t.x + " " + (t.y + (down ? -1 : 1) * t.h / 2 + (down ? -2 : 2));
+    }
+    if ((a === "muse" && b === "claude") || (a === "claude" && b === "muse")) {
+      var m = box.muse, c = box.claude, gx = (box.gemini.x + box.gemini.w / 2 + box.chatgpt.x - box.chatgpt.w / 2) / 2;
+      var ex = Math.min(gx, c.x + c.w / 2 - 10), top = m.y - m.h / 2, bot = c.y + c.h / 2;
+      var d = ex === gx ? "M" + gx + " " + top + " L" + gx + " " + (bot + 2)
+                        : "M" + gx + " " + top + " L" + gx + " " + (bot + 22) + " L" + ex + " " + (bot + 2);
+      return a === "claude" ? reverse(d) : d;
+    }
+    p = clip(a, b, 3);
+    return "M" + p[0] + " " + p[1] + " L" + p[2] + " " + p[3];
+  }
+  function reverse(d) {
+    var pts = d.match(/-?\d+(\.\d+)?/g).map(Number), out = [];
+    for (var i = pts.length - 2; i >= 0; i -= 2) out.push(pts[i] + " " + pts[i + 1]);
+    return "M" + out.join(" L");
+  }
+
+  var dragging = false;
+  function clampFrac() {
+    var w = stage.clientWidth, hgt = stage.clientHeight, r = (brainEl.offsetWidth || 96) / 2 + 4;
+    frac.x = Math.min(1 - r / w, Math.max(r / w, frac.x));
+    frac.y = Math.min(1 - r / hgt, Math.max(r / hgt, frac.y));
+  }
+  brainEl.addEventListener("pointerdown", function (e) { dragging = true; brainEl.setPointerCapture(e.pointerId); e.preventDefault(); });
+  brainEl.addEventListener("pointermove", function (e) {
+    if (!dragging) return;
+    var r = stage.getBoundingClientRect();
+    frac.x = (e.clientX - r.left) / r.width; frac.y = (e.clientY - r.top) / r.height;
+    clampFrac(); layout();
+  });
+  function endDrag() { dragging = false; }
+  brainEl.addEventListener("pointerup", endDrag); brainEl.addEventListener("pointercancel", endDrag);
+  brainEl.addEventListener("keydown", function (e) {
+    var d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+    if (!d) return;
+    e.preventDefault();
+    frac.x += d[0] * 14 / stage.clientWidth; frac.y += d[1] * 14 / stage.clientHeight;
+    clampFrac(); layout();
+  });
+  $("#center").addEventListener("click", function () { frac.x = BRAIN_HOME.x; frac.y = BRAIN_HOME.y; clampFrac(); layout(); });
+  window.addEventListener("resize", function () { clampFrac(); layout(); });
+
+  /* ---------- Animation helpers ---------- */
+  var speed = 1;
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) { $("#speed").value = "0.35"; }
+  function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms * speed); }); }
+  function light(id) {
+    var el = id === "brain" ? brainEl : nodeEls[id]; if (!el) return;
+    el.classList.add("on");
+    setTimeout(function () { el.classList.remove("on"); }, Math.max(600, 1200 * speed));
+  }
+  function handoff(a, b) {
+    if (!box[a] || !box[b]) return;
+    var ln = svg("path", { class: "hand", d: pathFor(a, b), stroke: color(isNode(b) ? b : a) });
+    hand.append(ln);
+    setTimeout(function () { ln.remove(); }, Math.max(600, 1300 * speed));
+    light(a); light(b);
+  }
+
+  /* ---------- Conversation ---------- */
+  var logEl = $("#log"), transcript = [];
+  function say(from, text, extra, plain) {
+    var p = SPEAKERS[from];
+    if (logEl.querySelector(".empty")) logEl.textContent = "";
+    var msg = h("div", { class: "msg", style: "--c:" + color(from) },
+      h("div", { class: "bar" }),
+      h("div", {}, h("div", { class: "who" }, p.name, h("i", { text: p.sub })),
+        text ? h("p", { text: text }) : null, extra || null));
+    logEl.append(msg); logEl.scrollTop = logEl.scrollHeight;
+    transcript.push("[" + p.name + "] " + (plain || text || ""));
+  }
+
+  /* ---------- Retrieval brain (the 4 phases) ---------- */
+  var STOP = "a an the of to in on at is are was were be been do does did how what who whom whose which when where why can could should would will you your yours me my we our it its this that these those and or but for with from about into over under tell explain give show please there their they them than then also not no yes any some more most much many very just only like if as by so such".split(" ");
+  var TEMPORAL = ["latest", "current", "currently", "now", "today", "recent", "recently", "newest", "new", "2026", "2025", "nowadays"];
+  function words(s) { return (s.toLowerCase().match(/[a-z0-9.\-]+/g) || []).map(function (w) { return w.replace(/^[.\-]+|[.\-]+$/g, ""); }).filter(Boolean); }
+  function keywords(s) {
+    var seen = {}, out = [];
+    words(s).forEach(function (w) {
+      if (w.length < 3 || STOP.indexOf(w) >= 0 || TEMPORAL.indexOf(w) >= 0 || seen[w]) return;
+      seen[w] = 1; out.push(w);
+    });
+    return out;
+  }
+  /* A keyword matches a word in the source when the word starts with the keyword's stem and adds at most 3 letters ("tap" ~ "tapper", but "work" does not match "workflow"). */
+  function stem(k) { var m = k.replace(/(ing|ed|es|s)$/, "").replace(/([b-df-hj-np-tv-z])\1$/, "$1"); return m.length >= 3 ? m : k; }
+  var tokenCache = {};
+  function tokens(s) { return tokenCache[s.id] || (tokenCache[s.id] = words(s.label + " " + s.fact + " " + s.lead + " " + s.tags)); }
+  function hits(s, kws) {
+    var toks = tokens(s);
+    return kws.filter(function (k) {
+      var st = stem(k);
+      return toks.some(function (t) { return t === k || (t.indexOf(st) === 0 && t.length - st.length <= 3); });
+    });
+  }
+  /* A clause counts as answered only when a source matches at least 60% of its keywords. */
+  function qualifies(n, kwCount) { return n > 0 && n >= Math.min(2, kwCount) && n / kwCount >= 0.6; }
+
+  function analyse(q) {
+    var kws = keywords(q).slice(0, 9);
+    var temporal = words(q).filter(function (w) { return TEMPORAL.indexOf(w) >= 0; });
+    var clauses = q.split(/\band\b|[,;?]/i).map(function (c) { return c.trim(); }).filter(function (c) { return keywords(c).length > 0; });
+    if (!clauses.length) clauses = [q.trim()];
+    var qs = [], add = function (a) { if (a.length) { var t = a.join(" "); if (qs.indexOf(t) < 0) qs.push(t); } };
+    add(kws.slice(0, 3)); add(kws.slice(3, 6)); add(kws.slice(6, 9));
+    if (kws.length > 1) add([kws[0], kws[kws.length - 1]]);
+    if (temporal.length) add(kws.slice(0, 2).concat("2026"));
+    if (kws.length > 2) add(kws.slice(1, 4));
+    return { kws: kws, temporal: temporal, clauses: clauses, queries: qs.slice(0, 5) };
+  }
+  function search(queryText) {
+    var kws = keywords(queryText);
+    return CORPUS.filter(function (s) { return hits(s, kws).length > 0; });
+  }
+  /* Only lines the searches actually returned (the pool) can be used in the answer. */
+  function evaluate(an) {
+    var pool = [];
+    an.queries.forEach(function (t) { search(t).forEach(function (s) { if (pool.indexOf(s) < 0) pool.push(s); }); });
+    var accepted = [], uncovered = [], weak = {};
+    an.clauses.forEach(function (c) {
+      var kc = keywords(c), best = null;
+      pool.forEach(function (s) {
+        var hh = hits(s, kc);
+        if (hh.length && (!best || hh.length > best.n)) best = { s: s, n: hh.length };
+        if (hh.length && !qualifies(hh.length, kc.length)) weak[s.id] = hh.length;
+      });
+      if (best && qualifies(best.n, kc.length)) {
+        if (accepted.indexOf(best.s) < 0) accepted.push(best.s);
+        delete weak[best.s.id];
+        var matched = hits(best.s, kc), left = kc.filter(function (k) { return matched.indexOf(k) < 0; });
+        if (left.length) uncovered.push("the part about " + left.join(", "));
+      } else uncovered.push(c);
+    });
+    var rejected = pool.filter(function (s) { return weak[s.id] && accepted.indexOf(s) < 0; });
+    return { pool: pool, accepted: accepted, uncovered: uncovered, rejected: rejected };
+  }
+  /* Real checks on the drafted answer, so Grok's PASS or FAIL can actually fail. */
+  function verify(ev, built) {
+    var facts = built.node.querySelectorAll(".facts li"), uncited = 0, nums = {}, bad = 0;
+    Array.prototype.forEach.call(facts, function (li) {
+      var c = li.querySelector(".cite");
+      if (!c) { uncited++; return; }
+      var n = parseInt(c.textContent.replace(/\D/g, ""), 10);
+      if (!(n >= 1 && n <= ev.accepted.length)) bad++;
+      nums[n] = (nums[n] || 0) + 1;
+    });
+    var reused = Object.keys(nums).filter(function (k) { return nums[k] > 1; }).length;
+    var gaps = built.node.querySelectorAll(".gap");
+    var gapsOk = gaps.length === ev.uncovered.length && Array.prototype.every.call(gaps, function (g) { return g.textContent.indexOf("The provided source documentation does not contain enough verified information to confidently answer ") === 0; });
+    var sourceIds = ev.accepted.map(function (s) { return s.id; }), uniq = sourceIds.filter(function (v, i) { return sourceIds.indexOf(v) === i; }).length === sourceIds.length;
+    return { facts: facts.length, uncited: uncited, bad: bad, reused: reused, gapsOk: gapsOk, uniq: uniq,
+      pass: uncited === 0 && bad === 0 && reused === 0 && gapsOk && uniq && facts.length === ev.accepted.length };
+  }
+  var GAP = function (what) { return "The provided source documentation does not contain enough verified information to confidently answer " + what + "."; };
+
+  function buildAnswer(ev, an) {
+    var cite = function (n) { return h("span", { class: "cite", text: "[" + n + "]", title: ev.accepted[n - 1].src }); };
+    var node = h("div", { class: "answer" }), plain = [];
+    if (ev.accepted.length) {
+      node.append(h("p", { class: "lead" }, ev.accepted[0].lead + " ", cite(1)));
+      plain.push("**" + ev.accepted[0].lead + "** [1]");
+      node.append(h("h3", { text: "Key facts" }));
+      node.append(h("ul", { class: "facts" }, ev.accepted.map(function (s, i) {
+        plain.push("- **" + s.label + ":** " + s.fact + " [" + (i + 1) + "]");
+        return h("li", {}, h("b", { text: s.label + ": " }), s.fact + " ", cite(i + 1));
+      })));
+    } else {
+      node.append(h("p", { class: "lead", text: "No verified answer from the available sources." }));
+      plain.push("**No verified answer from the available sources.**");
+    }
+    if (ev.uncovered.length) {
+      node.append(h("h3", { text: "Not covered" }));
+      node.append(h("ul", {}, ev.uncovered.map(function (c) {
+        plain.push("- " + GAP("“" + c + "”"));
+        return h("li", { class: "gap", text: GAP("“" + c + "”") });
+      })));
+    }
+    if (ev.accepted.length) {
+      node.append(h("h3", { text: "Sources" }));
+      node.append(h("div", { class: "tbl" }, h("table", {},
+        h("thead", {}, h("tr", {}, h("th", { text: "#" }), h("th", { text: "Source" }), h("th", { text: "Type" }), h("th", { text: "Date" }))),
+        h("tbody", {}, ev.accepted.map(function (s, i) {
+          return h("tr", {}, h("td", { text: "[" + (i + 1) + "]" }), h("td", { text: s.src }), h("td", { text: "sample line · repo notes" }), h("td", { text: "undated" }));
+        })))));
+      plain.push("Sources: " + ev.accepted.map(function (s, i) { return "[" + (i + 1) + "] " + s.src; }).join("; "));
+    }
+    var disclaimer = "Sample sources only. These lines were copied from the RedMed AGENTS.md notes. Nothing was searched or read live, and the lines carry no dates." + (an.temporal.length ? " You asked for the latest: recency cannot be confirmed." : "");
+    node.append(h("p", { class: "note", text: disclaimer }));
+    plain.push(disclaimer);
+    return { node: node, plain: plain.join("\n") };
+  }
+
+  var phaseEls = Array.prototype.slice.call(document.querySelectorAll(".phase"));
+  function setPhase(i) {
+    phaseEls.forEach(function (el, n) { el.classList.toggle("active", n === i); el.classList.toggle("done", n < i); });
+  }
+
+  /* ---------- Run the loop along Max's chart ---------- */
+  var running = false;
+  async function run(q) {
+    if (running) return;
+    running = true; $("#askBtn").disabled = true; brainEl.classList.add("busy");
+    logEl.textContent = "";
+    transcript = ["SIMULATION: no real AI or web search ran. The programs are scripted, and the sources are sample lines copied from the RedMed AGENTS.md notes."];
+    try {
+      var an = analyse(q), ev = evaluate(an);
+      /* Phase 1: Grok commands, Claude (hub) plans */
+      setPhase(0);
+      say("max", q); light("brain"); await sleep(800);
+      say("brain", "Question received. Four phases: plan, search, filter, answer. I answer only from retrieved sources.");
+      handoff("brain", "grok"); await sleep(1000);
+      say("grok", "I command this repo. Claude is the hub and runs the work. Muse audits everyone. I sign off last with pass or fail.");
+      handoff("grok", "claude"); await sleep(1100);
+      var plan = ["Keywords: " + (an.kws.join(", ") || "none found") + "."];
+      plan.push(an.temporal.length ? "Time words: " + an.temporal.join(", ") + ". The sample lines have no dates, so I will warn that recency cannot be confirmed." : "No time words, so no recency check is needed.");
+      plan.push(an.clauses.length > 1 ? "Hidden sub-questions: " + an.clauses.map(function (c, i) { return (i + 1) + ") " + c; }).join("  ") : "One question, no hidden sub-questions.");
+      say("claude", plan.join(" ")); await sleep(1100);
+
+      /* Phase 2: collaborators fan out from Claude */
+      setPhase(1);
+      handoff("claude", "chatgpt"); await sleep(700);
+      if (!an.queries.length) {
+        say("chatgpt", "I could not build a keyword search from that question, so there is nothing to research."); await sleep(700);
+      } else {
+        say("chatgpt", "Researching with " + an.queries.length + " keyword search(es):", h("ul", { class: "q" }, an.queries.map(function (t) { return h("li", { text: t }); })));
+        await sleep(1000);
+        say("chatgpt", an.queries.map(function (t, i) { return "Q" + (i + 1) + " → " + search(t).length + " sample line(s)"; }).join("   ") + ". " + ev.pool.length + " distinct line(s) go forward."); await sleep(900);
+      }
+      handoff("claude", "gemini"); await sleep(600);
+      say("gemini", ev.accepted.length
+        ? "Studied the " + ev.pool.length + " retrieved line(s) with Claude and kept " + ev.accepted.length + " that cover the question. These are primary repo notes but carry no dates, so freshness is unconfirmed."
+        : "Studied the " + ev.pool.length + " retrieved line(s). None covers the question well enough to keep."); await sleep(900);
+
+      /* Phase 3: Cursor integrates and reviews, Muse audits (dashed line) */
+      setPhase(2);
+      handoff("claude", "cursor"); await sleep(600);
+      say("cursor", "Merged the results and checked each clause of the question against them. " + (ev.rejected.length
+        ? "Rejected " + ev.rejected.length + " partial match(es) (" + ev.rejected.map(function (s) { return s.label; }).join(", ") + ") because they matched under 60% of a clause's keywords."
+        : "No partial matches needed rejecting.")
+        + (/\b(ios|xcode|archive|simulator|scheme|swift)/i.test(q) ? " iOS builds need a Mac worker, so this answer comes from notes, not a build." : "")); await sleep(1000);
+      handoff("muse", "claude"); await sleep(600);
+      say("muse", "Audit of everyone's work. Citation map: " + (ev.accepted.length ? ev.accepted.map(function (s, i) { return "[" + (i + 1) + "] = " + s.label; }).join(", ") : "none, nothing was kept") + ". "
+        + ev.uncovered.length + " point(s) of the question have no source. Conflict detection is not built into this simulation; the sample lines do not overlap on any number or date."); await sleep(1000);
+
+      /* Phase 4: Claude drafts, Grok verifies */
+      setPhase(3);
+      var built = buildAnswer(ev, an);
+      say("claude", "Draft ready. Fact lines carry citations, and unanswered points use the fixed boundary sentence."); await sleep(900);
+      handoff("claude", "grok"); await sleep(600);
+      var v = verify(ev, built);
+      say("grok", "Checks run on the draft: " + v.facts + " fact line(s), " + v.uncited + " without a citation; citation numbers valid: " + (v.bad ? "NO" : "yes") + "; a citation reused: " + (v.reused ? "YES" : "no")
+        + "; " + ev.uncovered.length + " gap(s) use the exact boundary sentence: " + (v.gapsOk ? "yes" : "NO") + ". Sign-off: " + (v.pass ? "PASS" : "FAIL")
+        + (ev.accepted.length ? "" : " (the answer states no facts, only that the sources do not cover it)") + "."); await sleep(900);
+      handoff("grok", "brain"); await sleep(500);
+      say("brain", "Final answer for Max:", built.node, built.plain);
+      setPhase(4);
+    } finally {
+      running = false; $("#askBtn").disabled = false; brainEl.classList.remove("busy");
+    }
+  }
+
+  /* ---------- Question form + samples ---------- */
+  var SAMPLES = [
+    "How close must a tap be to start a band session?",
+    "What chip does the band use and how much can it store?",
+    "When does SOS arm, and does tapping the band arm it?",
+    "Who reviews a change, and who signs off?",
+    "What is the latest iPhone model price?"
+  ];
+  SAMPLES.forEach(function (s) {
+    $("#samples").append(h("button", { class: "chip", type: "button", text: s, onclick: function () { $("#q").value = s; ask(); } }));
+  });
+  function ask() {
+    var q = $("#q").value.trim();
+    if (!q || running) return;
+    speed = parseFloat($("#speed").value) || 0;
+    tab("chat"); run(q);
+  }
+  $("#askForm").addEventListener("submit", function (e) { e.preventDefault(); ask(); });
+  $("#copyLog").addEventListener("click", function () { copyText(transcript.join("\n\n") || "(empty)", $("#copyLog")); });
+  function copyText(text, btn) {
+    var done = function (m) { var o = btn.textContent; btn.textContent = m; setTimeout(function () { btn.textContent = o; }, 1400); };
+    try { navigator.clipboard.writeText(text).then(function () { done("Copied"); }, function () { done("Copy blocked"); }); }
+    catch (e) { done("Copy blocked"); }
+  }
+
+  /* ---------- Tabs ---------- */
+  function tab(which) {
+    ["chat", "skills"].forEach(function (t) {
+      $("#tab-" + t).setAttribute("aria-selected", String(t === which));
+      $("#pane-" + t).hidden = t !== which;
+    });
+    if (which === "chat") layout();
+  }
+  $("#tab-chat").addEventListener("click", function () { tab("chat"); });
+  $("#tab-skills").addEventListener("click", function () { tab("skills"); });
+
+  /* ---------- Skills memory ---------- */
+  var KEY = "brain.skills.v1";
+  var STARTER = [
+    { name: "claude", use: "I need a precise read, a wording pass, or a plan on RedMed.", prog: "claude" },
+    { name: "cursor-agent", use: "A change must be implemented in the RedMed repo under the Cursor brief.", prog: "cursor" },
+    { name: "chatgpt", use: "I ask for an independent second opinion on a change.", prog: "chatgpt" },
+    { name: "xcode", use: "I need iOS build help: schemes, Dual-Mac, or Archive prep.", prog: "cursor" },
+    { name: "redmed-ship-gates", use: "Before I say a merge is ready: run the four local gates and report pass or fail.", prog: "grok" },
+    { name: "max-ai-coach", use: "I want AI explained in plain words.", prog: "claude" },
+    { name: "max-dev-tutor", use: "I am learning code and want a short plan, then step by step.", prog: "claude" },
+    { name: "max-research-vetting", use: "I need to check whether a source can be trusted.", prog: "muse" },
+    { name: "max-daily-planner", use: "I need a plan for today.", prog: "claude" },
+    { name: "max-learning-tutor", use: "I want a short study plan and a quiz, one question at a time.", prog: "gemini" }
+  ];
+  var skills = [], editing = -1, confirmDel = -1;
+  var storageOk = true, MAX_SKILLS = 200;
+  function validSkill(s) {
+    return !!s && typeof s.name === "string" && typeof s.use === "string" && typeof s.prog === "string" && isNode(s.prog)
+      && s.name.trim().length > 0 && s.name.length <= 60 && s.use.trim().length > 0 && s.use.length <= 160;
+  }
+  function cleanSkill(s) { return { name: s.name.trim(), use: s.use.trim(), prog: s.prog }; }
+  function loadSkills() {
+    try { var raw = localStorage.getItem(KEY); if (raw) { var a = JSON.parse(raw); if (Array.isArray(a)) return a.filter(validSkill).slice(0, MAX_SKILLS).map(cleanSkill); } } catch (e) { storageOk = false; }
+    return STARTER.map(function (s) { return Object.assign({}, s); });
+  }
+  function saveSkills() { try { localStorage.setItem(KEY, JSON.stringify(skills)); storageOk = true; } catch (e) { storageOk = false; } }
+
+  var sProg = $("#sProg");
+  NODES.forEach(function (n) { sProg.append(h("option", { value: n.id, text: n.name + " · " + n.sub })); });
+
+  function renderSkills() {
+    var f = $("#skillFilter").value.trim().toLowerCase();
+    var ul = $("#skillList"); ul.textContent = "";
+    var shown = 0;
+    skills.forEach(function (s, i) {
+      if (f && (s.name + " " + s.use).toLowerCase().indexOf(f) < 0) return;
+      shown++;
+      var p = SPEAKERS[s.prog];
+      ul.append(h("li", { class: "skill", style: "--c:" + color(s.prog) },
+        h("div", { class: "pg", text: p.name }),
+        h("div", { class: "nm", text: s.name }),
+        h("div", { class: "use", text: "Use it when " + s.use.replace(/^use (it )?when\s*/i, "") }),
+        h("div", { class: "row" },
+          h("button", { class: "small", type: "button", text: "Show on chart", onclick: function () { handoff("brain", s.prog); } }),
+          h("button", { class: "small", type: "button", text: "Edit", onclick: function () { startEdit(i); } }),
+          confirmDel === i
+            ? [h("button", { class: "small danger", type: "button", text: "Yes, delete", onclick: function () { skills.splice(i, 1); confirmDel = -1; editing = -1; saveSkills(); renderSkills(); resetForm(); $("#skillList").focus(); } }),
+               h("button", { class: "small", type: "button", text: "Keep", onclick: function () { confirmDel = -1; renderSkills(); $("#skillList").focus(); } })]
+            : h("button", { class: "small danger", type: "button", text: "Delete", onclick: function () { confirmDel = i; renderSkills(); } }))));
+    });
+    if (!shown) ul.append(h("li", { class: "empty", text: skills.length ? "No skill matches that filter." : "No skills yet. Add your first one below." }));
+    $("#skillCount").textContent = skills.length + (storageOk ? " saved" : " (not saved)");
+    $("#skillWarn").textContent = storageOk ? "" : "This browser will not keep your skills after you close the page. Open Backup and restore and copy them somewhere safe.";
+  }
+  function resetForm() {
+    editing = -1; $("#sName").value = ""; $("#sUse").value = ""; $("#sProg").value = "claude";
+    $("#formTitle").textContent = "Add a skill"; $("#sSave").textContent = "Save skill"; $("#sCancel").hidden = true;
+  }
+  function startEdit(i) {
+    editing = i; var s = skills[i];
+    $("#sName").value = s.name; $("#sUse").value = s.use; $("#sProg").value = s.prog;
+    $("#formTitle").textContent = "Edit skill"; $("#sSave").textContent = "Update skill"; $("#sCancel").hidden = false;
+    $("#sName").focus();
+  }
+  $("#sCancel").addEventListener("click", resetForm);
+  $("#skillFilter").addEventListener("input", renderSkills);
+  $("#skillForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var s = { name: $("#sName").value.trim(), use: $("#sUse").value.trim(), prog: $("#sProg").value };
+    if (!s.name || !s.use) return;
+    if (editing >= 0) skills[editing] = s; else skills.push(s);
+    saveSkills(); resetForm(); renderSkills();
+  });
+
+  var bMsg = $("#bMsg");
+  function exportText() { return JSON.stringify({ app: "orchestration-brain", version: 1, skills: skills }, null, 2); }
+  $("#bExport").addEventListener("click", function () { $("#backup").value = exportText(); bMsg.textContent = "Backup text is in the box above. Copy it into a file."; });
+  $("#bCopy").addEventListener("click", function () { $("#backup").value = exportText(); copyText($("#backup").value, $("#bCopy")); });
+  $("#bDownload").addEventListener("click", function () {
+    $("#backup").value = exportText();
+    try {
+      var a = h("a", { href: URL.createObjectURL(new Blob([$("#backup").value], { type: "application/json" })), download: "brain-skills.json" });
+      document.body.append(a); a.click(); a.remove();
+      bMsg.textContent = "If no file appeared, your viewer blocks downloads. Use Copy instead.";
+    } catch (e) { bMsg.textContent = "Download is blocked here. Use Copy instead."; }
+  });
+  $("#bLoad").addEventListener("click", function () {
+    try {
+      var d = JSON.parse($("#backup").value), list = Array.isArray(d) ? d : d.skills;
+      if (!Array.isArray(list)) throw new Error("no list");
+      var ok = list.filter(validSkill).slice(0, MAX_SKILLS).map(cleanSkill);
+      if (!ok.length) throw new Error("none valid");
+      skills = ok; saveSkills(); resetForm(); renderSkills();
+      bMsg.textContent = "Loaded " + ok.length + " skill(s)" + (ok.length < list.length ? " (" + (list.length - ok.length) + " skipped: empty or too long, or not a program from the chart)." : ".") + (storageOk ? "" : " Not saved in this browser.");
+    } catch (e) { bMsg.textContent = "Could not read that text. Paste the full backup, starting with {."; }
+  });
+  $("#bReset").addEventListener("click", function () {
+    var b = $("#bReset");
+    if (b.dataset.armed !== "1") { b.dataset.armed = "1"; b.textContent = "Click again to reset"; setTimeout(function () { b.dataset.armed = ""; b.textContent = "Reset to starter list"; }, 3000); return; }
+    b.dataset.armed = ""; b.textContent = "Reset to starter list";
+    skills = STARTER.map(function (s) { return Object.assign({}, s); }); saveSkills(); resetForm(); renderSkills(); bMsg.textContent = "Back to the starter list." + (storageOk ? "" : " Not saved in this browser.");
+  });
+
+  /* ---------- Boot ---------- */
+  skills = loadSkills();
+  resetForm(); renderSkills(); clampFrac(); layout();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+})();
+</script>
+</body>
+</html>
