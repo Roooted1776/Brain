@@ -9,15 +9,16 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: question bar and phase bar on top. Below, Max's org chart (Grok > Claude > Cursor/Gemini/ChatGPT, Muse auditing) with a draggable Brain on it, beside a Conversation / Skills panel. Stacks on phones. */
+/* Layout: question bar and phase bar on top. Below, a stage with two views (Max's team chart, or the Brain's memory graph) beside a Conversation / Memory / Settings panel. The Brain orb is draggable in both views. Stacks on phones. */
 :root {
   --bg: #f1f6f6; --surface: #ffffff; --surface-2: #e6eeee; --line: #c9d8da;
   --fg: #0f2022; --muted: #4d6468; --accent: #087f6a; --accent-fg: #ffffff;
-  --good: #1a7f37; --bad: #b3261e; --glow: rgba(8,127,106,.28); --arrow: #7d8a8b;
+  --good: #1a7f37; --bad: #b3261e; --warn: #8a5a00; --glow: rgba(8,127,106,.28); --arrow: #7d8a8b;
   --lead: #a8431f; --lead-bg: #fdece7; --lead-tx: #6e2610;
   --hub: #5b52c4; --hub-bg: #eeedfe; --hub-tx: #342d8a;
   --collab: #0f7a5a; --collab-bg: #e1f5ee; --collab-tx: #064d39;
   --audit: #6b6a63; --audit-bg: #f0efea; --audit-tx: #3d3d3a;
+  --t-concept: #2f6fdb; --t-entity: #8a5a00; --t-workstream: #1f7a3d;
   --c-max: #d33a4a; --c-brain: #087f6a;
   --font-display: "Chakra Petch", "Segoe UI", system-ui, sans-serif;
   --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -27,11 +28,12 @@
   :root:not([data-theme="light"]) {
     --bg: #0a1214; --surface: #111c1f; --surface-2: #172529; --line: #25383d;
     --fg: #e3eeef; --muted: #8ba2a7; --accent: #3fd0b0; --accent-fg: #04201a;
-    --good: #5ad07a; --bad: #ff8a80; --glow: rgba(63,208,176,.35); --arrow: #6f8588;
+    --good: #5ad07a; --bad: #ff8a80; --warn: #f2c14e; --glow: rgba(63,208,176,.35); --arrow: #6f8588;
     --lead: #f0976a; --lead-bg: #3a1f15; --lead-tx: #ffd9c7;
     --hub: #9d96f0; --hub-bg: #25223f; --hub-tx: #dcd9ff;
     --collab: #4fd3a6; --collab-bg: #10302a; --collab-tx: #bff3df;
     --audit: #a8a79f; --audit-bg: #262826; --audit-tx: #dddcd5;
+    --t-concept: #7fb0ff; --t-entity: #e8c36a; --t-workstream: #6fd08c;
     --c-max: #ff7a88; --c-brain: #3fd0b0;
     color-scheme: dark;
   }
@@ -39,27 +41,29 @@
 :root[data-theme="dark"] {
   --bg: #0a1214; --surface: #111c1f; --surface-2: #172529; --line: #25383d;
   --fg: #e3eeef; --muted: #8ba2a7; --accent: #3fd0b0; --accent-fg: #04201a;
-  --good: #5ad07a; --bad: #ff8a80; --glow: rgba(63,208,176,.35); --arrow: #6f8588;
+  --good: #5ad07a; --bad: #ff8a80; --warn: #f2c14e; --glow: rgba(63,208,176,.35); --arrow: #6f8588;
   --lead: #f0976a; --lead-bg: #3a1f15; --lead-tx: #ffd9c7;
   --hub: #9d96f0; --hub-bg: #25223f; --hub-tx: #dcd9ff;
   --collab: #4fd3a6; --collab-bg: #10302a; --collab-tx: #bff3df;
   --audit: #a8a79f; --audit-bg: #262826; --audit-tx: #dddcd5;
+  --t-concept: #7fb0ff; --t-entity: #e8c36a; --t-workstream: #6fd08c;
   --c-max: #ff7a88; --c-brain: #3fd0b0;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 var(--font-body); }
 .wrap { max-width: 1240px; margin: 0 auto; padding-block: 20px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 16px; }
 h1 { font: 700 26px/1.1 var(--font-display); letter-spacing: .02em; margin: 0; text-wrap: balance; }
 h2 { font: 600 13px/1.2 var(--font-display); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0; }
 .top { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between; }
-.top p { margin: 0; color: var(--muted); max-width: 62ch; min-width: 0; }
+.top p { margin: 0; color: var(--muted); max-width: 66ch; min-width: 0; }
 .badge { font: 500 12px var(--font-mono); border: 1px solid var(--line); border-radius: 4px; padding: 2px 8px; color: var(--muted); white-space: nowrap; }
 .ask { display: grid; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
-.ask-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.ask-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .ask-row input[type=text] { flex: 1 1 260px; min-width: 0; }
 input[type=text], select, textarea { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 9px 11px; }
-textarea { width: 100%; font: 12.5px/1.45 var(--font-mono); min-height: 120px; resize: vertical; }
+textarea { width: 100%; font: 12.5px/1.45 var(--font-mono); min-height: 90px; resize: vertical; }
 button { font: 600 14px var(--font-body); color: var(--fg); background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 9px 14px; cursor: pointer; }
 button:hover:not(:disabled) { border-color: var(--accent); }
 button.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
@@ -67,9 +71,11 @@ button.small { padding: 4px 9px; font-size: 12.5px; }
 button.danger { color: var(--bad); }
 button:disabled { opacity: .5; cursor: default; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.check { display: inline-flex; gap: 6px; align-items: center; font-size: 13.5px; color: var(--muted); cursor: pointer; }
 .chips { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
 .chips span.lbl { font: 500 12px var(--font-mono); color: var(--muted); }
 .chip { font: 400 13px var(--font-body); padding: 4px 10px; border-radius: 999px; background: transparent; text-align: left; }
+.chip[aria-pressed=true] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 16%, transparent); }
 .phases { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 .phase { border: 1px solid var(--line); border-radius: 6px; padding: 6px 9px; font: 500 12px var(--font-mono); color: var(--muted); background: var(--surface); min-width: 0; }
 .phase b { display: block; font: 600 12.5px var(--font-display); letter-spacing: .04em; color: var(--fg); }
@@ -77,6 +83,10 @@ button:disabled { opacity: .5; cursor: default; }
 .phase.done { color: var(--good); border-color: var(--good); }
 .main { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 16px; align-items: start; }
 .stagewrap { display: grid; gap: 8px; min-width: 0; }
+.modes { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.modes button { border-radius: 999px; padding: 6px 14px; }
+.modes button[aria-pressed=true] { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.modes .hintbadge { font: 500 12px var(--font-mono); color: var(--accent); }
 .stage { position: relative; height: 580px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
   background-image: radial-gradient(var(--line) 1px, transparent 1px); background-size: 22px 22px; }
 .stage svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
@@ -86,6 +96,8 @@ button:disabled { opacity: .5; cursor: default; }
 .ah { fill: none; stroke: var(--arrow); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .hand { fill: none; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 10 8; animation: flow .7s linear infinite; }
 @keyframes flow { to { stroke-dashoffset: -36; } }
+.stage[data-mode="graph"] .node, .stage[data-mode="graph"] #edges { display: none; }
+.stage[data-mode="team"] #gEdges, .stage[data-mode="team"] #gNodes, .stage[data-mode="team"] .gempty { display: none; }
 .node { position: absolute; transform: translate(-50%, -50%); display: grid; align-content: center; justify-items: center; text-align: center; gap: 1px; padding: 4px 8px;
   border: 1.5px solid var(--c); border-radius: 10px; background: var(--nbg); color: var(--ntx); transition: background .25s, color .25s, box-shadow .25s; }
 .node b { font: 600 17px/1.15 var(--font-display); }
@@ -95,31 +107,57 @@ button:disabled { opacity: .5; cursor: default; }
 .r-collab { --c: var(--collab); --nbg: var(--collab-bg); --ntx: var(--collab-tx); }
 .r-audit { --c: var(--audit); --nbg: var(--audit-bg); --ntx: var(--audit-tx); }
 .node.on { background: var(--c); color: var(--bg); box-shadow: 0 0 0 5px color-mix(in srgb, var(--c) 28%, transparent); }
+/* memory graph */
+.gn { pointer-events: all; cursor: pointer; }
+.gn .dot { fill: color-mix(in srgb, var(--k) 30%, var(--surface)); stroke: var(--k); stroke-width: 2; transition: opacity .6s, fill .6s; transform-box: fill-box; transform-origin: center; }
+.gn.sel .dot { stroke-width: 4; }
+.gn.stale .dot { fill: transparent; stroke-dasharray: 3 3; opacity: .5; }
+.gn.pop .dot { animation: pop .7s cubic-bezier(.2, 1.6, .4, 1); }
+.gn.flash .dot { animation: flash .9s ease-out; }
+.gn .ring { fill: none; stroke: var(--k); stroke-width: 2; transform-box: fill-box; transform-origin: center; animation: ringout 1s ease-out forwards; }
+.gn .lbl { font: 600 11px var(--font-body); fill: var(--fg); paint-order: stroke; stroke: var(--surface); stroke-width: 3px; pointer-events: none; }
+.gn:focus-visible .dot { stroke-width: 4; }
+@keyframes pop { from { transform: scale(0); opacity: 0; } 60% { opacity: 1; } }
+@keyframes flash { 0% { fill: var(--k); } }
+@keyframes ringout { from { transform: scale(1); opacity: .9; } to { transform: scale(3.2); opacity: 0; } }
+.gl { stroke: var(--line); stroke-width: 1.2; opacity: .55; }
+.gl.link { stroke: color-mix(in srgb, var(--accent) 55%, var(--line)); stroke-width: 1.6; opacity: 1; }
+.gl.hot { stroke: var(--accent); stroke-width: 2.5; }
+.tip { position: absolute; z-index: 5; pointer-events: none; background: var(--fg); color: var(--bg); font: 500 12px var(--font-body); padding: 4px 8px; border-radius: 5px; max-width: 220px; transform: translate(-50%, -140%); }
+.gempty { position: absolute; left: 50%; bottom: 52px; transform: translateX(-50%); font: 12px var(--font-mono); color: var(--muted); text-align: center; max-width: 80%; }
 .brain { touch-action: none; position: absolute; transform: translate(-50%, -50%); width: 96px; height: 96px; border-radius: 50%; cursor: grab; display: grid; place-items: center; align-content: center; text-align: center;
   background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--c-brain) 55%, var(--surface)), var(--surface) 72%); border: 2px solid var(--c-brain);
-  box-shadow: 0 0 28px var(--glow); font: 700 13px var(--font-display); letter-spacing: .1em; color: var(--fg); user-select: none; z-index: 3; }
+  box-shadow: 0 0 28px var(--glow); font: 700 13px var(--font-display); letter-spacing: .1em; color: var(--fg); user-select: none; z-index: 3; transition: filter .3s, opacity .3s; }
 .brain:active { cursor: grabbing; }
 .brain small { display: block; font: 500 10px/1.2 var(--font-mono); letter-spacing: 0; color: var(--muted); margin-top: 2px; }
 .brain.busy { animation: breathe 1.4s ease-in-out infinite; }
+.brain.learning { animation: learn 1.1s ease-in-out infinite; }
+.brain.off { filter: grayscale(1); opacity: .55; box-shadow: none; }
 .brain.on { box-shadow: 0 0 40px var(--glow), 0 0 0 8px color-mix(in srgb, var(--c-brain) 25%, transparent); }
 @keyframes breathe { 50% { box-shadow: 0 0 46px var(--glow), 0 0 0 10px color-mix(in srgb, var(--c-brain) 18%, transparent); } }
+@keyframes learn { 0%, 100% { box-shadow: 0 0 20px var(--glow); } 50% { box-shadow: 0 0 60px var(--glow), 0 0 0 16px color-mix(in srgb, var(--c-brain) 22%, transparent); } }
 .stage-tools { position: absolute; left: 10px; bottom: 10px; display: flex; gap: 8px; align-items: center; z-index: 4; font: 12px var(--font-mono); color: var(--muted); flex-wrap: wrap; }
 .legend { font: 12.5px var(--font-mono); color: var(--muted); text-align: center; margin: 0; }
 .legend i { font-style: normal; font-weight: 500; }
 .lg-lead { color: var(--lead); } .lg-hub { color: var(--hub); } .lg-collab { color: var(--collab); } .lg-audit { color: var(--audit); }
+.lg-concept { color: var(--t-concept); } .lg-entity { color: var(--t-entity); } .lg-workstream { color: var(--t-workstream); }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; display: grid; grid-template-rows: auto 1fr; min-width: 0; }
 .tabs { display: flex; border-bottom: 1px solid var(--line); }
-.tabs button { flex: 1; border: 0; border-radius: 10px 10px 0 0; background: transparent; padding: 12px; font: 600 13px var(--font-display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); border-bottom: 2px solid transparent; }
+.tabs button { flex: 1; border: 0; border-radius: 10px 10px 0 0; background: transparent; padding: 12px 6px; font: 600 12.5px var(--font-display); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border-bottom: 2px solid transparent; }
 .tabs button[aria-selected=true] { color: var(--fg); border-bottom-color: var(--accent); }
-.tabpane { padding: 14px; min-width: 0; }
+.tabs .pill { font: 600 11px var(--font-mono); background: var(--accent); color: var(--accent-fg); border-radius: 999px; padding: 0 6px; margin-left: 4px; letter-spacing: 0; }
+.tabpane { padding: 14px; min-width: 0; display: grid; gap: 12px; align-content: start; }
 .log { display: grid; gap: 10px; max-height: 540px; overflow-y: auto; align-content: start; }
 .empty { color: var(--muted); border: 1px dashed var(--line); border-radius: 8px; padding: 14px; }
+.savedbar { background: var(--surface-2); border-radius: 6px; padding: 8px 10px; font: 12.5px var(--font-mono); display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
 .msg { display: grid; grid-template-columns: 10px minmax(0, 1fr); gap: 10px; animation: rise .3s ease-out; }
 @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
 .msg .bar { border-radius: 3px; background: var(--c); }
 .msg .who { font: 600 12px var(--font-display); letter-spacing: .08em; text-transform: uppercase; color: var(--c); }
 .msg .who i { font: 400 11.5px var(--font-mono); letter-spacing: 0; text-transform: none; color: var(--muted); font-style: normal; margin-left: 6px; }
 .msg p { margin: 2px 0 0; overflow-wrap: anywhere; }
+.msg p.pre { white-space: pre-wrap; }
+.msg p.warn { color: var(--warn); }
 .msg ul.q { margin: 4px 0 0; padding-left: 18px; font: 12.5px var(--font-mono); }
 .answer { border: 1px solid var(--accent); border-radius: 8px; padding: 12px 14px; background: var(--bg); overflow-wrap: anywhere; margin-top: 4px; }
 .answer .lead { font-weight: 600; margin: 0 0 8px; }
@@ -132,19 +170,42 @@ table { border-collapse: collapse; width: 100%; font-size: 13px; }
 th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
 th { font: 600 11.5px var(--font-display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 td:first-child { font-family: var(--font-mono); white-space: nowrap; }
-.note { font: 12px var(--font-mono); color: var(--muted); margin: 8px 0 0; }
+.note { font: 12px var(--font-mono); color: var(--muted); margin: 0; overflow-wrap: anywhere; }
 .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-.skills { display: grid; gap: 8px; margin: 10px 0; padding: 0; list-style: none; max-height: 340px; overflow-y: auto; }
-.skill { border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; display: grid; gap: 4px; border-left: 4px solid var(--c, var(--line)); }
-.skill .nm { font: 500 13.5px var(--font-mono); overflow-wrap: anywhere; }
-.skill .use { color: var(--muted); font-size: 13.5px; overflow-wrap: anywhere; }
-.skill .pg { font: 600 11.5px var(--font-display); letter-spacing: .08em; text-transform: uppercase; color: var(--c, var(--muted)); }
-form.skillform { display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
-form.skillform label { display: grid; gap: 3px; font: 600 12px var(--font-display); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
-form.skillform input, form.skillform select { font-weight: 400; letter-spacing: 0; text-transform: none; font-family: var(--font-body); font-size: 14px; }
-details { border-top: 1px solid var(--line); padding-top: 10px; margin-top: 12px; }
+.spread { justify-content: space-between; }
+/* memory tab */
+.runcard { border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: grid; gap: 10px; }
+ol.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+ol.steps li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 8px; align-items: start; color: var(--muted); font-size: 13.5px; }
+ol.steps li .n { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--line); display: grid; place-items: center; font: 600 11.5px var(--font-mono); }
+ol.steps li.active { color: var(--fg); } ol.steps li.active .n { border-color: var(--accent); color: var(--accent); animation: learn 1.1s ease-in-out infinite; }
+ol.steps li.done { color: var(--fg); } ol.steps li.done .n { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.report { font: 500 13px var(--font-mono); color: var(--accent); margin: 0; overflow-wrap: anywhere; }
+.entries { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; max-height: 420px; overflow-y: auto; }
+.entry { border: 1px solid var(--line); border-left: 4px solid var(--k); border-radius: 8px; padding: 9px 11px; display: grid; gap: 5px; min-width: 0; }
+.entry.sel { box-shadow: 0 0 0 2px var(--accent); }
+.entry .hd { display: flex; gap: 6px; flex-wrap: wrap; align-items: baseline; }
+.entry .ttl { font: 600 14px var(--font-display); overflow-wrap: anywhere; }
+.tag { font: 500 11px var(--font-mono); border: 1px solid var(--line); border-radius: 4px; padding: 0 6px; color: var(--muted); }
+.tag.t { color: var(--k); border-color: var(--k); }
+.tag.stale { color: var(--warn); border-color: var(--warn); }
+.entry .body { color: var(--fg); font-size: 13.5px; overflow-wrap: anywhere; }
+.entry .meta { font: 12px var(--font-mono); color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.entry .meta button, .linkbtn { all: unset; cursor: pointer; color: var(--accent); text-decoration: underline; font: inherit; }
+.entry .meta button:focus-visible, .linkbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.dots { letter-spacing: 2px; color: var(--k); }
+form.addform { display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
+form.addform label { display: grid; gap: 3px; font: 600 12px var(--font-display); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+form.addform input, form.addform select, form.addform textarea { font-weight: 400; letter-spacing: 0; text-transform: none; font-family: var(--font-body); font-size: 14px; }
+.switch { display: flex; gap: 10px; align-items: center; justify-content: space-between; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+.switch b { font: 600 14px var(--font-display); } .switch span { display: block; font-size: 12.5px; color: var(--muted); }
+.switch input { width: 20px; height: 20px; accent-color: var(--accent); flex: none; }
+.conns { display: grid; gap: 6px; margin: 0; padding: 0 0 0 4px; list-style: none; }
+details { border-top: 1px solid var(--line); padding-top: 10px; }
+details.guide { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
 summary { cursor: pointer; font: 600 12px var(--font-display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 details > * + * { margin-top: 8px; }
+details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 13.5px; }
 .sr { position: absolute; left: -9999px; }
 @media (max-width: 900px) {
   .main { grid-template-columns: minmax(0, 1fr); }
@@ -154,7 +215,7 @@ details > * + * { margin-top: 8px; }
   .brain { width: 76px; height: 76px; font-size: 11px; }
   .brain small { font-size: 9px; }
 }
-@media (max-width: 380px) { .node { padding: 3px 3px; } .node b { font-size: 12.5px; } .node span { font-size: 10px; } }
+@media (max-width: 380px) { .node { padding: 3px 3px; } .node b { font-size: 12.5px; } .node span { font-size: 10px; } .tabs button { font-size: 11px; letter-spacing: .02em; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
 </style>
 </head>
@@ -162,22 +223,23 @@ details > * + * { margin-top: 8px; }
 <div class="wrap">
   <header class="top">
     <h1>Orchestration Brain</h1>
-    <p>Drag the Brain. Ask a question and watch Grok, Claude, Cursor, Gemini, ChatGPT and Muse hand work along your chart. Sources are sample text from your RedMed notes, not live web search.</p>
+    <p>A teaching model of the Brain described in Perplexity's help article: it watches your sessions, writes what it learns as linked memory, and keeps it current. Drag the Brain, ask a question, then watch it learn.</p>
     <span class="badge">simulation · no real AI calls</span>
   </header>
 
   <form class="ask" id="askForm" autocomplete="off">
     <div class="ask-row">
       <label class="sr" for="q">Your question</label>
-      <input type="text" id="q" placeholder="Ask something, e.g. How close must a tap be to start a band session?" maxlength="300">
+      <input type="text" id="q" placeholder="Ask something, e.g. What does Brain learn from?" maxlength="300">
       <button class="primary" id="askBtn" type="submit">Ask the Brain</button>
       <label class="sr" for="speed">Speed</label>
       <select id="speed"><option value="1">Normal speed</option><option value="0.35">Fast</option><option value="0">Instant</option></select>
+      <label class="check" for="incog"><input type="checkbox" id="incog"> Incognito (Brain ignores this session)</label>
     </div>
     <div class="chips" id="samples"><span class="lbl">Try:</span></div>
   </form>
 
-  <div class="phases" id="phases" aria-label="Progress through the four phases">
+  <div class="phases" id="phases" role="group" aria-label="Progress through the four phases of a session">
     <div class="phase"><b>1 Plan</b>Grok → Claude</div>
     <div class="phase"><b>2 Queries</b>ChatGPT + Gemini</div>
     <div class="phase"><b>3 Sources</b>Cursor + Muse</div>
@@ -186,54 +248,113 @@ details > * + * { margin-top: 8px; }
 
   <div class="main">
     <div class="stagewrap">
-      <section class="stage" id="stage" aria-label="Org chart with a draggable Brain">
-        <svg id="links" aria-hidden="true">
+      <div class="modes" role="group" aria-label="Stage view">
+        <button type="button" id="modeTeam" aria-pressed="true">Team chart</button>
+        <button type="button" id="modeGraph" aria-pressed="false">Memory graph</button>
+        <span class="hintbadge" id="modeHint" role="status"></span>
+      </div>
+      <section class="stage" id="stage" data-mode="team" aria-label="Team chart or memory graph, with a draggable Brain">
+        <svg id="links" aria-hidden="false">
           <defs><marker id="ahm" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path class="ah" d="M1.5 1.5 L8.5 5 L1.5 8.5"/></marker></defs>
-          <g id="edges"></g><g id="hand"></g>
+          <g id="edges"></g><g id="gEdges"></g><g id="gNodes"></g><g id="hand"></g>
         </svg>
-        <div class="brain" id="brain" tabindex="0" aria-roledescription="draggable" aria-label="Brain. Drag it, or press the arrow keys, to move it.">BRAIN<small>Max asks here<br>drag me</small></div>
+        <div class="brain" id="brain" tabindex="0" role="group" aria-roledescription="draggable" aria-label="Brain. Drag it, or press the arrow keys, to move it."><span id="brainTitle">BRAIN</span><small id="brainSub">Max asks here<br>drag me</small></div>
+        <div class="tip" id="tip" hidden></div>
         <div class="stage-tools">
           <button class="small" type="button" id="center">Reset brain</button>
           <span id="coords"></span>
         </div>
       </section>
-      <p class="legend"><i class="lg-lead">coral = lead</i> · <i class="lg-hub">purple = hub</i> · <i class="lg-collab">teal = collaborator</i> · <i class="lg-audit">gray = auditor</i></p>
+      <p class="legend" id="legendTeam"><i class="lg-lead">coral = lead</i> · <i class="lg-hub">purple = hub</i> · <i class="lg-collab">teal = collaborator</i> · <i class="lg-audit">gray = auditor</i></p>
+      <p class="legend" id="legendGraph" hidden><i class="lg-concept">blue = concept</i> · <i class="lg-entity">gold = entity</i> · <i class="lg-workstream">green = workstream</i> · dashed = stale · bigger = reinforced more · click a dot to open it</p>
     </div>
 
     <section class="panel">
-      <div class="tabs" role="tablist">
+      <div class="tabs" role="tablist" aria-label="Conversation, memory, settings">
         <button role="tab" id="tab-chat" aria-selected="true" aria-controls="pane-chat">Conversation</button>
-        <button role="tab" id="tab-skills" aria-selected="false" aria-controls="pane-skills">Skills memory</button>
+        <button role="tab" id="tab-mem" aria-selected="false" aria-controls="pane-mem">Memory<span class="pill" id="memBadge" hidden></span></button>
+        <button role="tab" id="tab-set" aria-selected="false" aria-controls="pane-set">Settings</button>
       </div>
+
       <div class="tabpane" id="pane-chat" role="tabpanel" aria-labelledby="tab-chat">
-        <div class="row" style="justify-content:space-between;margin-bottom:10px">
-          <h2>Hand-off log</h2>
-          <button class="small" type="button" id="copyLog">Copy transcript</button>
-        </div>
-        <div class="log" id="log" aria-live="polite"><div class="empty">Nothing yet. Pick a sample question above, or type your own. Each program speaks in turn, and the arrows on the chart light up as work moves between them.</div></div>
+        <div class="row spread"><h2>Hand-off log</h2><button class="small" type="button" id="copyLog">Copy transcript</button></div>
+        <div class="savedbar" id="savedBar" hidden><span id="savedLbl"></span><button class="small" type="button" id="backLive">Back to live</button></div>
+        <div class="log" id="log" aria-live="polite"><div class="empty">Nothing yet. Pick a sample question above, or type your own. Each program speaks in turn. When the session ends, the Brain learns from it in the background.</div></div>
       </div>
-      <div class="tabpane" id="pane-skills" role="tabpanel" aria-labelledby="tab-skills" hidden>
-        <div class="row" style="justify-content:space-between">
-          <h2>Skills I want to remember</h2><span class="badge" id="skillCount"></span>
+
+      <div class="tabpane" id="pane-mem" role="tabpanel" aria-labelledby="tab-mem" hidden>
+        <details class="guide" id="guide" open>
+          <summary>How Brain works (step by step)</summary>
+          <ol>
+            <li><b>Watch.</b> Brain reviews recent activity in the background: your <b>sessions</b>, <b>connected tools</b>, <b>files</b> you create, and your <b>corrections</b>. Incognito sessions are ignored.</li>
+            <li><b>Write.</b> It writes what it learns as linked entries, each pointing to its source: <b>Concepts</b>, <b>Entities</b> and <b>Workstreams</b>.</li>
+            <li><b>Maintain.</b> Every run <b>reinforces</b> what is still true, <b>updates</b> what changed, and <b>marks stale</b> what is not.</li>
+            <li><b>You stay in charge.</b> Open, edit or delete any entry. Corrections feed the next run, and a deleted entry is not learned again.</li>
+            <li><b>Memory only.</b> Brain takes no actions and sends no messages.</li>
+          </ol>
+          <p class="note">From Perplexity's help article <a href="https://www.perplexity.ai/help-center/en/articles/19700001-what-is-brain" target="_blank" rel="noopener">“What is Brain?”</a>. This page only teaches the idea. It does not connect to Perplexity. The article describes no animations; the moving visuals here are this page's own design.</p>
+        </details>
+
+        <div class="runcard">
+          <div class="row spread"><h2>Brain run</h2><span class="badge" id="runBadge"></span></div>
+          <ol class="steps" id="steps">
+            <li data-s="0"><span class="n">1</span><span><b>Review recent activity</b><br><span class="note" id="s0t">Waiting for something to learn from.</span></span></li>
+            <li data-s="1"><span class="n">2</span><span><b>Write what it learns</b><br><span class="note" id="s1t"></span></span></li>
+            <li data-s="2"><span class="n">3</span><span><b>Reinforce, update, mark stale</b><br><span class="note" id="s2t"></span></span></li>
+            <li data-s="3"><span class="n">4</span><span><b>Report</b><br><span class="note" id="s3t"></span></span></li>
+          </ol>
+          <p class="report" id="runReport" role="status"></p>
+          <div class="row"><button class="small primary" type="button" id="runNow">Run Brain now</button><button class="small" type="button" id="skip30">Skip ahead 30 days (demo)</button></div>
+          <p class="note" id="clockNote"></p>
         </div>
-        <div class="row" style="margin-top:10px"><label class="sr" for="skillFilter">Filter skills</label><input type="text" id="skillFilter" placeholder="Filter by name or use" style="flex:1;min-width:0"></div>
-        <ul class="skills" id="skillList" tabindex="-1"></ul>
-        <p class="note" id="skillWarn" role="status" style="color:var(--bad)"></p>
-        <form class="skillform" id="skillForm" autocomplete="off">
-          <h2 id="formTitle">Add a skill</h2>
-          <label for="sName">Name<input type="text" id="sName" maxlength="60" required placeholder="e.g. max-daily-planner"></label>
-          <label for="sUse">Use it when…<input type="text" id="sUse" maxlength="160" required placeholder="e.g. I need a plan for today"></label>
-          <label for="sProg">Which program<select id="sProg"></select></label>
-          <div class="row"><button class="primary" type="submit" id="sSave">Save skill</button><button type="button" id="sCancel" hidden>Cancel edit</button></div>
+
+        <div class="row spread"><h2 id="memCount">Memory</h2><span class="badge" id="memWarn" hidden style="color:var(--bad)">not saved in this browser</span></div>
+        <div class="chips" id="filters" role="group" aria-label="Filter memory"></div>
+        <div class="row"><label class="sr" for="memSearch">Search memory</label><input type="text" id="memSearch" placeholder="Search memory" style="flex:1;min-width:0"></div>
+        <ul class="entries" id="entryList" tabindex="-1"></ul>
+
+        <form class="addform" id="addForm" autocomplete="off">
+          <h2 id="formTitle">Add to memory (a file or note you wrote)</h2>
+          <label for="aType">Kind<select id="aType"><option value="skill">Skill (a concept to remember)</option><option value="concept">Concept</option><option value="entity">Entity (a person, tool, document)</option><option value="workstream">Workstream (a project)</option></select></label>
+          <label for="aTitle">Name<input type="text" id="aTitle" maxlength="60" required placeholder="e.g. max-daily-planner"></label>
+          <label for="aNote">What to remember<input type="text" id="aNote" maxlength="300" required placeholder="e.g. Use it when I need a plan for today"></label>
+          <label for="aProg" id="aProgWrap">Which program uses it<select id="aProg"></select></label>
+          <div class="row"><button class="primary" type="submit">Add</button></div>
+          <p class="note" id="addWarn" role="status"></p>
         </form>
+
         <details>
           <summary>Backup and restore</summary>
-          <p class="note">Skills are saved in this browser only. Copy the backup text and keep it in a file (for example in the Brain repo). Paste it back here to restore.</p>
+          <p class="note">Memory lives in this browser only. Copy the backup text into a file (for example in the Brain repo). Paste it back to restore.</p>
           <label class="sr" for="backup">Backup text</label>
           <textarea id="backup" spellcheck="false"></textarea>
-          <div class="row"><button class="small" type="button" id="bExport">Show backup</button><button class="small" type="button" id="bCopy">Copy</button><button class="small" type="button" id="bDownload">Download file</button><button class="small" type="button" id="bLoad">Load pasted backup</button><button class="small danger" type="button" id="bReset">Reset to starter list</button></div>
+          <div class="row"><button class="small" type="button" id="bExport">Show backup</button><button class="small" type="button" id="bCopy">Copy</button><button class="small" type="button" id="bDownload">Download file</button><button class="small" type="button" id="bLoad">Load pasted backup</button></div>
           <p class="note" id="bMsg" role="status"></p>
         </details>
+      </div>
+
+      <div class="tabpane" id="pane-set" role="tabpanel" aria-labelledby="tab-set" hidden>
+        <h2>Brain settings</h2>
+        <label class="switch" for="setBrain"><span><b>Brain</b><span>When off, Brain stops writing new memory from your activity. Existing memory stays.</span></span><input type="checkbox" id="setBrain" checked></label>
+        <label class="switch" for="setSources"><span><b>Connected sources</b><span>Let Brain learn from linked tools. These are sample connectors, not live accounts.</span></span><input type="checkbox" id="setSources" checked></label>
+        <ul class="conns" id="conns">
+          <li><label class="check" for="cnDocs"><input type="checkbox" id="cnDocs" checked> Docs · Brain AGENTS.md (sample)</label></li>
+          <li><label class="check" for="cnMsgs"><input type="checkbox" id="cnMsgs"> Messages · no sample items</label></li>
+          <li><label class="check" for="cnTrk"><input type="checkbox" id="cnTrk" checked> Issue tracker · Brain pull request (sample)</label></li>
+        </ul>
+        <label class="sr" for="instr">Instructions</label>
+        <div><h2 style="margin-bottom:6px">Instructions</h2><textarea id="instr" maxlength="400" placeholder="Tell Brain what to pay attention to"></textarea>
+          <div class="row" style="margin-top:6px"><button class="small" type="button" id="saveInstr">Save instructions</button><span class="note" id="instrMsg" role="status"></span></div>
+          <p class="note" style="margin-top:6px">In this simulation the instructions are saved and shown in each run. They do not change what is learned.</p></div>
+        <h2>Privacy</h2>
+        <ul class="note" style="padding-left:18px;display:grid;gap:4px">
+          <li>Brain learns only from your own activity, in this browser.</li>
+          <li>Incognito sessions are skipped completely.</li>
+          <li>Common password and key patterns are filtered out before saving. This is a best-effort filter, not a guarantee, so do not paste real secrets.</li>
+          <li>Brain only maintains memory. It takes no actions and sends no messages.</li>
+        </ul>
+        <p class="note" id="sensCount"></p>
+        <div class="row"><button class="small danger" type="button" id="resetMem">Erase all memory and start over</button><span class="note" id="resetMsg" role="status"></span></div>
       </div>
     </section>
   </div>
@@ -265,13 +386,13 @@ details > * + * { margin-top: 8px; }
   var NS = "http://www.w3.org/2000/svg";
   function svg(tag, attrs) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); return e; }
 
-  /* ---------- Max's chart: who sits where, and what each one does ---------- */
+  /* ================= Max's chart ================= */
   var NODES = [
-    { id: "grok",    name: "Grok",    sub: "Commands the repo",     kind: "lead",   x: 0.5, y: 0.13 },
-    { id: "claude",  name: "Claude",  sub: "UI, frontend, logic",   kind: "hub",    x: 0.5, y: 0.38 },
-    { id: "cursor",  name: "Cursor",  sub: "Integrates & reviews",  kind: "collab", x: 0.2, y: 0.63 },
-    { id: "gemini",  name: "Gemini",  sub: "Studies UI together",   kind: "collab", x: 0.5, y: 0.63 },
-    { id: "chatgpt", name: "ChatGPT", sub: "Research together",     kind: "collab", x: 0.8, y: 0.63 },
+    { id: "grok",    name: "Grok",    sub: "Commands the repo",      kind: "lead",   x: 0.5, y: 0.13 },
+    { id: "claude",  name: "Claude",  sub: "UI, frontend, logic",    kind: "hub",    x: 0.5, y: 0.38 },
+    { id: "cursor",  name: "Cursor",  sub: "Integrates & reviews",   kind: "collab", x: 0.2, y: 0.63 },
+    { id: "gemini",  name: "Gemini",  sub: "Studies UI together",    kind: "collab", x: 0.5, y: 0.63 },
+    { id: "chatgpt", name: "ChatGPT", sub: "Research together",      kind: "collab", x: 0.8, y: 0.63 },
     { id: "muse",    name: "Muse",    sub: "Audits everyone's work", kind: "audit",  x: 0.5, y: 0.87 }
   ];
   var TREE = [["grok", "claude"], ["claude", "cursor"], ["claude", "gemini"], ["claude", "chatgpt"]];
@@ -284,47 +405,177 @@ details > * + * { margin-top: 8px; }
   }
   function isNode(id) { return NODES.some(function (n) { return n.id === id; }); }
 
-  /* ---------- Sample sources: real lines from the RedMed AGENTS.md notes ---------- */
-  var DOC = "AGENTS.md";
+  /* ================= Sample sources: Brain's own rules and the Perplexity help article ================= */
+  var DOC = "Brain AGENTS.md", ART = "Perplexity help article “What is Brain?”";
   var CORPUS = [
-    { id: 1, label: "Band chip", src: DOC + " › NFC hardware contract",
-      lead: "The band uses an NXP NTAG216 chip that is blank and NDEF-unlocked.",
-      fact: "Product band is NXP NTAG216 only (13.56 MHz, ISO 14443A Type 2, NDEF blank unlocked). Never NTAG213/215, MIFARE, LF, or UHF.",
-      tags: "chip band nfc ntag216 ntag type frequency mhz blank unlocked ndef hardware bracelet which what use uses" },
-    { id: 2, label: "Tap distance", src: DOC + " › NFC hardware contract",
-      lead: "A deliberate tap is about 1–2 inches; walking past must never start a session.",
-      fact: "Deliberate antenna tap is about 1–2 inches. A walk-by (about 6–8 inches) must never fire a session, and RedMed starts CoreNFC only on an explicit Write/Scan action.",
-      tags: "tap close distance inches range walk-by session start antenna proximity near far nfc band geometry" },
-    { id: 3, label: "Storage cap", src: DOC + " › NFC hardware contract",
-      lead: "The write limit is 850 bytes, the NTAG216 cap.",
-      fact: "The write gate enforces the 850-byte NTAG216 cap, and refuses scanner sessions, a busy session, and an empty profile before touching CoreNFC.",
-      tags: "storage store capacity cap bytes 850 write limit memory size data fit how much many chip band" },
-    { id: 4, label: "Assist page", src: DOC + " › Surfaces",
-      lead: "Assist at redmed.live/tapper is no-auth and no-ads.",
-      fact: "Assist is no-auth and no-ads. The #d= fragment is never sent in the HTTP request, and the VPS serves static files only, with no database or log config that could capture it.",
-      tags: "assist tapper website web page responder passerby auth login ads privacy fragment server vps static redmed.live" },
-    { id: 5, label: "SOS", src: DOC + " › Own-band / Assist SOS",
-      lead: "SOS never arms on a band tap alone.",
-      fact: "SOS arms only when the helper toggles SOS · Locate Me, or on collision detection using US Crash Detection timing (10s alert + 30s countdown, then a call unless Stop). It uses full sound and full light.",
-      tags: "sos arm arms armed crash collision detection locate sound light emergency countdown tap band alarm" },
-    { id: 6, label: "Review loop", src: DOC + " › Always collaborate",
-      lead: "Claude plans, Cursor implements, Gemini, ChatGPT and Muse review, and Grok Bot verifies. Max pushes.",
-      fact: "Loop order: Claude plans → Cursor implements → Gemini, ChatGPT and Muse review → Grok Bot (in charge) verifies and signs off. Max pushes.",
-      tags: "review reviews reviewer reviewers change changes sign signs off verify verifies charge loop plan implement who partners agents order workflow push pushes" },
-    { id: 7, label: "Owner app", src: DOC + " › Surfaces",
-      lead: "Owner is the native iOS app (com.redmed.app) and is not HIPAA-certified.",
-      fact: "Owner is native iOS / SwiftUI (com.redmed.app): profile, Edit, NFC Write/Scan, Face ID chrome, Keychain, optional Supabase account sync, HealthKit import. It is not HIPAA-certified.",
-      tags: "owner app ios swiftui wearer hipaa certified keychain face id healthkit supabase sync native phone com.redmed.app" }
+    { id: 1, label: "Lead", src: DOC + " › Who does what", entity: "Grok",
+      lead: "Grok is the lead and commands the repo.",
+      fact: "Grok is the lead. Grok commands the repo, sets the order of work, verifies every change, and calls pass or fail.",
+      tags: "grok lead charge commands command repo order verifies verify pass fail who boss" },
+    { id: 2, label: "Hub", src: DOC + " › Who does what", entity: "Claude",
+      lead: "Claude is the hub for UI, frontend and logic.",
+      fact: "Claude is the hub: UI, frontend and logic. Claude writes and changes index.html, and everything flows through Claude.",
+      tags: "claude hub ui frontend logic writes builds index.html page flows who" },
+    { id: 3, label: "Collaborators", src: DOC + " › Who does what", entity: null,
+      lead: "Cursor integrates and reviews, Gemini studies UI together, and ChatGPT does research together.",
+      fact: "Cursor integrates and reviews. Gemini studies UI together with Claude. ChatGPT does research together with Claude.",
+      tags: "cursor gemini chatgpt collaborators collaborator integrates integrate reviews review studies study research together team" },
+    { id: 4, label: "Auditor", src: DOC + " › Who does what", entity: "Muse",
+      lead: "Muse audits everyone's work.",
+      fact: "Muse audits everyone's work. Muse reads the finished change and reports problems, and does not edit.",
+      tags: "muse auditor audit audits audited work reports problems edit checks who" },
+    { id: 5, label: "Who decides", src: DOC + " › Working rules", entity: "Max",
+      lead: "Max decides what ships, and nobody merges except Max.",
+      fact: "Max is the source of truth and decides what ships. Pull requests are drafts, and nobody merges except Max.",
+      tags: "max decides decide ships ship merge merges merged pull request drafts owner approve who" },
+    { id: 6, label: "What Brain learns from", src: ART + " › How Brain learns", entity: null,
+      lead: "Brain learns from your sessions, connected tools, files and your corrections.",
+      fact: "Brain learns from your sessions, your connected tools, files and artifacts you create, and your corrections. Incognito sessions are ignored.",
+      tags: "brain learn learns learning sessions session tools connected files artifacts corrections incognito ignored sources" },
+    { id: 7, label: "What a run does", src: ART + " › How Brain learns", entity: null,
+      lead: "Each Brain run reinforces what is true, updates what changed, and marks what is stale.",
+      fact: "Each run reinforces what is still true, updates what has changed, and marks what is stale. Brain runs in the background, not during active tasks.",
+      tags: "brain run runs reinforces reinforce updates update stale entries old background still true changed" },
+    { id: 8, label: "Memory only", src: ART + " › Timing and actions", entity: null,
+      lead: "Brain only maintains memory. It takes no actions and sends no messages.",
+      fact: "Brain only maintains memory. It takes no actions and sends no messages.",
+      tags: "brain actions action messages message send sends take takes memory only maintains act" },
+    { id: 9, label: "Brain vs Memory", src: ART + " › Brain vs. Memory", entity: null,
+      lead: "Memory helps Computer know you, and Brain provides working context.",
+      fact: "Memory stores preferences and things you have shared. Brain organizes projects, people, documents, decisions and open loops into a connected graph, grounded in their sources.",
+      tags: "brain memory difference graph projects people documents decisions loops preferences context connected" },
+    { id: 10, label: "Viewing and editing", src: ART + " › Viewing and editing", entity: null,
+      lead: "You can open, edit or delete any entry Brain wrote.",
+      fact: "Entries are organized into Concepts, Entities and Workstreams. You can edit or delete any entry, and corrections feed Brain's next run.",
+      tags: "edit delete entry entries concepts entities workstreams view open corrections correct wiki graph" }
   ];
 
-  /* ---------- Stage: the chart plus a draggable Brain ---------- */
-  var stage = $("#stage"), brainEl = $("#brain"), edgesG = $("#edges"), hand = $("#hand");
-  var box = {}, nodeEls = {}, frac = { x: 0.13, y: 0.13 }, BRAIN_HOME = { x: 0.13, y: 0.13 };
+  /* ================= Privacy: filter secrets before anything is saved ================= */
+  var SECRET_RES = [
+    /-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?(?:-----END [A-Z ]*PRIVATE KEY-----|$)/g,
+    /\b(?:sk|pk|rk)[-_](?:live[-_]|test[-_])?[A-Za-z0-9_-]{12,}/g,
+    /\bgh[pousr]_[A-Za-z0-9]{20,}/g,
+    /\bAKIA[0-9A-Z]{16}\b/g,
+    /\bxox[abprs]-[A-Za-z0-9-]{10,}/g,
+    /\bAIza[0-9A-Za-z_-]{30,}/g,
+    /\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{5,}/g,
+    /\bBearer\s+[A-Za-z0-9._~+\/=-]{12,}/gi,
+    /:\/\/[^\/\s:@]+:[^\/\s@]+@/g,
+    /[A-Za-z0-9_]*(?:password|passwd|pwd|passcode|secret|token|api[_ -]?key|private[_ -]?key)[A-Za-z0-9_]*\s*(?:is|=|:)\s*(?:"[^"]*"|'[^']*'|\S+)/gi,
+    /\bmy\s+(?:password|passcode|pin)\s+(?:is\s+)?\S+/gi
+  ];
+  function redact(text) {
+    var n = 0;
+    SECRET_RES.forEach(function (re) { text = text.replace(re, function () { n++; return "[filtered]"; }); });
+    return { text: text, n: n };
+  }
+
+  /* ================= Brain memory: state ================= */
+  var KEY = "brain.mem.v2", OLD_KEY = "brain.skills.v1", DAY = 864e5, STALE_DAYS = 30, MAX_ENTRIES = 400, MAX_SESSIONS = 25;
+  var TYPES = ["concept", "entity", "workstream"], TYPE_LABEL = { concept: "Concept", entity: "Entity", workstream: "Workstream" };
+  var storageOk = true, mem = null;
+
+  var STARTER = [
+    { name: "max-ai-coach", note: "Use it when I want AI explained in plain words.", prog: "claude" },
+    { name: "max-dev-tutor", note: "Use it when I am learning code and want a short plan, then step by step.", prog: "claude" },
+    { name: "max-research-vetting", note: "Use it when I need to check whether a source can be trusted.", prog: "muse" },
+    { name: "max-daily-planner", note: "Use it when I need a plan for today.", prog: "claude" },
+    { name: "max-learning-tutor", note: "Use it when I want a short study plan and a quiz, one question at a time.", prog: "gemini" }
+  ];
+
+  function nowTs() { return Date.now() + (mem ? mem.dayShift : 0) * DAY; }
+  function fmtDate(ts) { try { return new Date(ts).toISOString().slice(0, 10); } catch (e) { return "unknown date"; } }
+  function okTs(v) { v = +v; return isFinite(v) ? Math.max(0, Math.min(8.64e15, v)) : 0; }
+  function newId() { return "e" + (mem.nextId++); }
+  function norm(s) { return String(s).toLowerCase().replace(/\s+/g, " ").trim(); }
+  function clip(s, n) { s = String(s); return s.length > n ? s.slice(0, n - 1) + "…" : s; }
+
+  function blankMem() { return { version: 2, entries: [], sessions: [], blocked: [], inbox: [], runs: 0, dayShift: 0, nextId: 1, nextSession: 1, filtered: 0,
+    settings: { brain: true, sources: true, docs: true, msgs: false, tracker: true, instructions: "" } }; }
+  function mkEntry(o) {
+    return { id: newId(), key: o.key, type: o.type, title: o.title, note: o.note, sources: o.sources || [], strength: 1, status: "fresh",
+      created: nowTs(), seen: nowTs(), links: [], corrected: false, skill: !!o.skill, prog: o.prog || null, corpusId: o.corpusId || null, kws: o.kws || null, manual: !!o.manual };
+  }
+  function link(a, b) { if (!a || !b || a === b) return; if (a.links.indexOf(b.id) < 0) a.links.push(b.id); if (b.links.indexOf(a.id) < 0) b.links.push(a.id); }
+  function byKey(k) { return mem.entries.filter(function (e) { return e.key === k; })[0]; }
+  function byId(id) { return mem.entries.filter(function (e) { return e.id === id; })[0]; }
+
+  function seedMem() {
+    mem = blankMem();
+    NODES.forEach(function (n) {
+      mem.entries.push(mkEntry({ key: "prog:" + n.id, type: "entity", title: n.name, note: n.sub + ". On Max's team chart.", sources: [{ kind: "file", label: "Max's team chart" }] }));
+    });
+    STARTER.forEach(function (s) {
+      var e = mkEntry({ key: "skill:" + norm(s.name), type: "concept", title: s.name, note: s.note, skill: true, prog: s.prog, manual: true, sources: [{ kind: "file", label: "Starter skills list" }] });
+      mem.entries.push(e); link(e, byKey("prog:" + s.prog));
+    });
+  }
+  function validEntry(e) {
+    return !!e && typeof e.id === "string" && /^e\d+$/.test(e.id) && typeof e.key === "string" && TYPES.indexOf(e.type) >= 0 && typeof e.title === "string" && e.title.trim() && e.title.length <= 80
+      && typeof e.note === "string" && e.note.length <= 600 && Array.isArray(e.sources) && Array.isArray(e.links) && isFinite(e.strength) && isFinite(e.seen) && isFinite(e.created)
+      && (e.status === "fresh" || e.status === "stale") && (!e.prog || isNode(e.prog));
+  }
+  function scrub(t) { return redact(String(t)).text; }
+  function sanitizeMem(d) {
+    var m = blankMem(), ids = {};
+    if (!d || typeof d !== "object" || !Array.isArray(d.entries)) return null;
+    d.entries.filter(validEntry).slice(0, MAX_ENTRIES).forEach(function (e) {
+      if (ids[e.id]) return; ids[e.id] = 1;
+      m.entries.push({ id: e.id, key: String(e.key).slice(0, 120), type: e.type, title: scrub(e.title.trim()), note: scrub(e.note), status: e.status, strength: Math.max(1, Math.min(9, Math.round(e.strength))),
+        created: okTs(e.created), seen: okTs(e.seen), corrected: !!e.corrected, skill: !!e.skill, prog: e.prog || null,
+        corpusId: (e.key === "c:corpus:" + e.corpusId && CORPUS.some(function (c) { return c.id === +e.corpusId; })) ? +e.corpusId : null, manual: !!e.manual,
+        kws: Array.isArray(e.kws) ? e.kws.filter(function (k) { return typeof k === "string"; }).slice(0, 9) : null,
+        sources: e.sources.filter(function (s) { return s && typeof s.label === "string" && ["session", "tool", "file", "correction"].indexOf(s.kind) >= 0; }).slice(0, 6)
+          .map(function (s) { return { kind: s.kind, label: scrub(s.label.slice(0, 120)), ref: typeof s.ref === "string" ? s.ref : null }; }), links: [] });
+    });
+    d.entries.forEach(function (e) { if (!e || typeof e.id !== "string") return; var t = m.entries.filter(function (x) { return x.id === e.id; })[0]; if (t && Array.isArray(e.links)) t.links = e.links.filter(function (l) { return ids[l] && l !== e.id; }); });
+    m.sessions = (Array.isArray(d.sessions) ? d.sessions : []).filter(function (s) { return s && typeof s.id === "string" && /^s\d+$/.test(s.id) && typeof s.q === "string" && Array.isArray(s.msgs); }).slice(-MAX_SESSIONS)
+      .map(function (s) { return { id: s.id, ts: okTs(s.ts), q: scrub(s.q.slice(0, 300)), kws: Array.isArray(s.kws) ? s.kws.filter(function (k) { return typeof k === "string"; }).slice(0, 9) : [],
+        accepted: Array.isArray(s.accepted) ? s.accepted.slice(0, 10).filter(function (a) { return a && typeof a.label === "string" && isFinite(a.id); }).map(function (a) { return { id: +a.id, label: scrub(a.label.slice(0, 60)), fact: scrub(String(a.fact || "").slice(0, 400)), entity: typeof a.entity === "string" ? scrub(a.entity.slice(0, 40)) : null, src: typeof a.src === "string" ? scrub(a.src.slice(0, 120)) : "" }; }) : [], uncovered: Array.isArray(s.uncovered) ? s.uncovered.filter(function (u) { return typeof u === "string"; }).slice(0, 6) : [],
+        msgs: s.msgs.filter(function (x) { return x && Object.prototype.hasOwnProperty.call(SPEAKERS, x.from) && typeof x.text === "string"; }).slice(0, 40).map(function (x) { return { from: x.from, text: scrub(x.text.slice(0, 4000)) }; }) }; });
+    m.blocked = (Array.isArray(d.blocked) ? d.blocked : []).filter(function (b) { return typeof b === "string"; }).slice(0, 400);
+    m.inbox = [];
+    m.runs = Math.max(0, +d.runs || 0); m.dayShift = Math.max(0, Math.min(3650, +d.dayShift || 0));
+    m.filtered = Math.max(0, +d.filtered || 0);
+    var n = 0; m.entries.forEach(function (e) { var k = parseInt(e.id.slice(1), 10); if (k > n) n = k; }); m.nextId = Math.max(n + 1, +d.nextId || 1);
+    var sn = 0; m.sessions.forEach(function (s) { var k = parseInt(s.id.slice(1), 10); if (k > sn) sn = k; }); m.nextSession = Math.max(sn + 1, +d.nextSession || 1);
+    var st = d.settings || {};
+    m.settings = { brain: st.brain !== false, sources: st.sources !== false, docs: st.docs !== false, msgs: !!st.msgs, tracker: st.tracker !== false, instructions: typeof st.instructions === "string" ? scrub(st.instructions.slice(0, 400)) : "" };
+    return m;
+  }
+  function loadMem() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) { var m = sanitizeMem(JSON.parse(raw)); if (m) { mem = m; return; } }
+      var old = localStorage.getItem(OLD_KEY);
+      seedMem();
+      if (old) {
+        var list = JSON.parse(old);
+        if (Array.isArray(list)) {
+          mem.entries = mem.entries.filter(function (e) { return !e.skill; });
+          list.slice(0, 200).forEach(function (s) {
+            if (s && typeof s.name === "string" && typeof s.use === "string" && isNode(s.prog) && s.name.trim() && s.name.length <= 60 && s.use.length <= 160) {
+              var e = mkEntry({ key: "skill:" + norm(s.name), type: "concept", title: s.name.trim(), note: s.use.trim(), skill: true, prog: s.prog, manual: true, sources: [{ kind: "file", label: "Your earlier skills list" }] });
+              mem.entries.push(e); link(e, byKey("prog:" + s.prog));
+            }
+          });
+        }
+      }
+    } catch (e) { storageOk = false; if (!mem) seedMem(); }
+  }
+  function persist() { try { localStorage.setItem(KEY, JSON.stringify(mem)); storageOk = true; } catch (e) { storageOk = false; } }
+
+  /* ================= Stage: team chart + memory graph, one draggable Brain ================= */
+  var stage = $("#stage"), brainEl = $("#brain"), edgesG = $("#edges"), hand = $("#hand"), gEdges = $("#gEdges"), gNodes = $("#gNodes"), tip = $("#tip");
+  var box = {}, nodeEls = {}, mode = "team";
+  var fracs = { team: { x: 0.13, y: 0.13 }, graph: { x: 0.5, y: 0.5 } }, HOME = { team: { x: 0.13, y: 0.13 }, graph: { x: 0.5, y: 0.5 } };
+  function frac() { return fracs[mode]; }
 
   NODES.forEach(function (n) {
     var el = h("div", { class: "node r-" + n.kind }, h("b", { text: n.name }), h("span", { text: n.sub }));
     stage.append(el); nodeEls[n.id] = el;
   });
+  var gempty = h("div", { class: "gempty", text: "" }); stage.append(gempty);
 
   function sizes(w) {
     var small = w < 520;
@@ -335,7 +586,7 @@ details > * + * { margin-top: 8px; }
     };
   }
   function layout() {
-    var w = stage.clientWidth, hgt = stage.clientHeight, sz = sizes(w);
+    var w = stage.clientWidth, hgt = stage.clientHeight, sz = sizes(w), f = frac();
     NODES.forEach(function (n) {
       var s = n.kind === "hub" ? sz.lead : sz[n.kind];
       box[n.id] = { x: n.x * w, y: n.y * hgt, w: s.w, h: s.h };
@@ -344,21 +595,20 @@ details > * + * { margin-top: 8px; }
       el.style.width = s.w + "px"; el.style.height = s.h + "px";
     });
     var bs = brainEl.offsetWidth || 96;
-    box.brain = { x: frac.x * w, y: frac.y * hgt, r: bs / 2 };
+    box.brain = { x: f.x * w, y: f.y * hgt, r: bs / 2 };
     brainEl.style.left = box.brain.x + "px"; brainEl.style.top = box.brain.y + "px";
-
     edgesG.textContent = "";
-    TREE.forEach(function (e) {
-      edgesG.append(svg("path", { class: "edge", d: pathFor(e[0], e[1]), "marker-end": "url(#ahm)" }));
-    });
-    edgesG.append(svg("path", { class: "edge audit", d: pathFor("muse", "claude"), "marker-end": "url(#ahm)" }));
-    edgesG.append(svg("path", { class: "edge tether", d: pathFor("brain", "grok") }));
-    $("#coords").textContent = "brain at " + Math.round(frac.x * 100) + "%, " + Math.round(frac.y * 100) + "%";
+    if (mode === "team") {
+      TREE.forEach(function (e) { edgesG.append(svg("path", { class: "edge", d: pathFor(e[0], e[1]), "marker-end": "url(#ahm)" })); });
+      edgesG.append(svg("path", { class: "edge audit", d: pathFor("muse", "claude"), "marker-end": "url(#ahm)" }));
+      edgesG.append(svg("path", { class: "edge tether", d: pathFor("brain", "grok") }));
+    } else { placeGraph(); kick(); }
+    $("#coords").textContent = "brain at " + Math.round(f.x * 100) + "%, " + Math.round(f.y * 100) + "%";
   }
   function isTree(a, b) { return TREE.some(function (e) { return (e[0] === a && e[1] === b) || (e[0] === b && e[1] === a); }); }
-  function clip(from, to, gap) {
+  function clipLine(from, to, gap) {
     var f = box[from], t = box[to], dx = t.x - f.x, dy = t.y - f.y, len = Math.hypot(dx, dy) || 1;
-    function cut(b, sx, sy) {
+    function cut(b) {
       if (b.r) return b.r + gap;
       var k = Math.min(Math.abs(dx) > 0.01 ? (b.w / 2) / Math.abs(dx) : Infinity, Math.abs(dy) > 0.01 ? (b.h / 2) / Math.abs(dy) : Infinity);
       return k * len + gap;
@@ -366,7 +616,6 @@ details > * + * { margin-top: 8px; }
     var a = cut(f), b = cut(t), ux = dx / len, uy = dy / len;
     return [f.x + ux * a, f.y + uy * a, t.x - ux * b, t.y - uy * b];
   }
-  /* path from a to b: tree edges leave the bottom/top centre like the chart; Muse's audit line runs up the gap beside Gemini and ChatGPT. */
   function pathFor(a, b) {
     var f = box[a], t = box[b], p;
     if (isTree(a, b)) {
@@ -376,11 +625,10 @@ details > * + * { margin-top: 8px; }
     if ((a === "muse" && b === "claude") || (a === "claude" && b === "muse")) {
       var m = box.muse, c = box.claude, gx = (box.gemini.x + box.gemini.w / 2 + box.chatgpt.x - box.chatgpt.w / 2) / 2;
       var ex = Math.min(gx, c.x + c.w / 2 - 10), top = m.y - m.h / 2, bot = c.y + c.h / 2;
-      var d = ex === gx ? "M" + gx + " " + top + " L" + gx + " " + (bot + 2)
-                        : "M" + gx + " " + top + " L" + gx + " " + (bot + 22) + " L" + ex + " " + (bot + 2);
+      var d = ex === gx ? "M" + gx + " " + top + " L" + gx + " " + (bot + 2) : "M" + gx + " " + top + " L" + gx + " " + (bot + 22) + " L" + ex + " " + (bot + 2);
       return a === "claude" ? reverse(d) : d;
     }
-    p = clip(a, b, 3);
+    p = clipLine(a, b, 3);
     return "M" + p[0] + " " + p[1] + " L" + p[2] + " " + p[3];
   }
   function reverse(d) {
@@ -391,15 +639,15 @@ details > * + * { margin-top: 8px; }
 
   var dragging = false;
   function clampFrac() {
-    var w = stage.clientWidth, hgt = stage.clientHeight, r = (brainEl.offsetWidth || 96) / 2 + 4;
-    frac.x = Math.min(1 - r / w, Math.max(r / w, frac.x));
-    frac.y = Math.min(1 - r / hgt, Math.max(r / hgt, frac.y));
+    var w = stage.clientWidth, hgt = stage.clientHeight, r = (brainEl.offsetWidth || 96) / 2 + 4, f = frac();
+    f.x = Math.min(1 - r / w, Math.max(r / w, f.x));
+    f.y = Math.min(1 - r / hgt, Math.max(r / hgt, f.y));
   }
   brainEl.addEventListener("pointerdown", function (e) { dragging = true; brainEl.setPointerCapture(e.pointerId); e.preventDefault(); });
   brainEl.addEventListener("pointermove", function (e) {
     if (!dragging) return;
-    var r = stage.getBoundingClientRect();
-    frac.x = (e.clientX - r.left) / r.width; frac.y = (e.clientY - r.top) / r.height;
+    var r = stage.getBoundingClientRect(), f = frac();
+    f.x = (e.clientX - r.left) / r.width; f.y = (e.clientY - r.top) / r.height;
     clampFrac(); layout();
   });
   function endDrag() { dragging = false; }
@@ -408,43 +656,167 @@ details > * + * { margin-top: 8px; }
     var d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
     if (!d) return;
     e.preventDefault();
-    frac.x += d[0] * 14 / stage.clientWidth; frac.y += d[1] * 14 / stage.clientHeight;
+    var f = frac(); f.x += d[0] * 14 / stage.clientWidth; f.y += d[1] * 14 / stage.clientHeight;
     clampFrac(); layout();
   });
-  $("#center").addEventListener("click", function () { frac.x = BRAIN_HOME.x; frac.y = BRAIN_HOME.y; clampFrac(); layout(); });
+  $("#center").addEventListener("click", function () { var f = frac(); f.x = HOME[mode].x; f.y = HOME[mode].y; clampFrac(); layout(); });
   window.addEventListener("resize", function () { clampFrac(); layout(); });
 
-  /* ---------- Animation helpers ---------- */
+  function setMode(m) {
+    mode = m; stage.dataset.mode = m;
+    $("#modeTeam").setAttribute("aria-pressed", String(m === "team")); $("#modeGraph").setAttribute("aria-pressed", String(m === "graph"));
+    $("#legendTeam").hidden = m !== "team"; $("#legendGraph").hidden = m !== "graph";
+    $("#brainSub").innerHTML = ""; $("#brainSub").append(m === "team" ? "Max asks here" : mem.entries.length + " entries", h("br"), "drag me");
+    if (m === "graph") { $("#modeHint").textContent = ""; }
+    clampFrac(); layout(); if (m === "graph") syncGraph();
+    updateBrainState();
+  }
+  $("#modeTeam").addEventListener("click", function () { setMode("team"); });
+  $("#modeGraph").addEventListener("click", function () { setMode("graph"); });
+
+  /* ---------- the graph ---------- */
+  var G = { nodes: {}, edges: [], raf: 0, sel: null };
+  var TYPE_VAR = { concept: "--t-concept", entity: "--t-entity", workstream: "--t-workstream" };
+  var SECTOR = { concept: { c: -90, span: 150 }, entity: { c: 28, span: 100 }, workstream: { c: 152, span: 80 } };
+  function radiusFor(e) { return 6 + Math.min(9, e.strength * 1.3); }
+  function nodeFx(id, cls) {
+    var n = G.nodes[id]; if (!n) return;
+    n.g.classList.remove("pop", "flash"); void n.g.getBoundingClientRect();
+    if (cls === "pop" || cls === "flash") n.g.classList.add(cls);
+    if (cls === "pulse") { var r = svg("circle", { class: "ring", r: n.r, cx: 0, cy: 0 }); n.g.append(r); setTimeout(function () { r.remove(); }, 1100); }
+    if (cls === "flash" || cls === "pop") setTimeout(function () { n.g.classList.remove("pop", "flash"); }, 1000);
+  }
+  function syncGraph() {
+    var live = {};
+    mem.entries.forEach(function (e) {
+      live[e.id] = 1;
+      var n = G.nodes[e.id];
+      if (!n) {
+        var g = svg("g", { class: "gn", tabindex: "0", role: "button", "aria-label": e.title + ", " + TYPE_LABEL[e.type] });
+        g.style.setProperty("--k", "var(" + TYPE_VAR[e.type] + ")");
+        var dot = svg("circle", { class: "dot", r: radiusFor(e), cx: 0, cy: 0 });
+        var lbl = svg("text", { class: "lbl", x: 0, y: -radiusFor(e) - 4, "text-anchor": "middle" });
+        g.append(dot, lbl); gNodes.append(g);
+        n = { id: e.id, g: g, dot: dot, lbl: lbl, x: box.brain ? box.brain.x : 0, y: box.brain ? box.brain.y : 0, tx: 0, ty: 0, r: radiusFor(e) };
+        G.nodes[e.id] = n;
+        (function (id) {
+          g.addEventListener("mouseenter", function () { showTip(id); });
+          g.addEventListener("mouseleave", function () { tip.hidden = true; });
+          g.addEventListener("focus", function () { showTip(id); });
+          g.addEventListener("blur", function () { tip.hidden = true; });
+          g.addEventListener("click", function () { selectEntry(id, true); });
+          g.addEventListener("keydown", function (ev) { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); selectEntry(id, true); } });
+        })(e.id);
+      }
+      n.r = radiusFor(e); n.dot.setAttribute("r", n.r);
+      n.g.classList.toggle("stale", e.status === "stale");
+      n.lbl.textContent = (e.strength >= 3 || G.sel === e.id) ? clip(e.title, 18) : "";
+      n.lbl.setAttribute("y", -n.r - 4);
+      n.g.classList.toggle("sel", G.sel === e.id);
+    });
+    Object.keys(G.nodes).forEach(function (id) { if (!live[id]) { G.nodes[id].g.remove(); delete G.nodes[id]; } });
+    gEdges.textContent = ""; G.edges = [];
+    mem.entries.forEach(function (e) {
+      var l = svg("line", { class: "gl" }); gEdges.append(l); G.edges.push({ a: "brain", b: e.id, el: l });
+    });
+    var seen = {};
+    mem.entries.forEach(function (e) { e.links.forEach(function (o) {
+      var k = e.id < o ? e.id + "|" + o : o + "|" + e.id; if (seen[k] || !G.nodes[o]) return; seen[k] = 1;
+      var l = svg("line", { class: "gl link" }); gEdges.append(l); G.edges.push({ a: e.id, b: o, el: l, link: true });
+    }); });
+    $("#brainSub").innerHTML = ""; $("#brainSub").append(mode === "team" ? "Max asks here" : mem.entries.length + " entries", h("br"), "drag me");
+    gempty.textContent = mem.entries.length ? "" : "Memory is empty. Ask a question or add a note.";
+    placeGraph(); kick();
+  }
+  function placeGraph() {
+    if (!box.brain) return;
+    var w = stage.clientWidth, hgt = stage.clientHeight, R = Math.max(110, Math.min(w, hgt) / 2 - 30), bx = box.brain.x, by = box.brain.y;
+    TYPES.forEach(function (t) {
+      var list = mem.entries.filter(function (e) { return e.type === t; }).sort(function (a, b) { return a.created - b.created || (a.id < b.id ? -1 : 1); });
+      var sec = SECTOR[t], n = list.length;
+      list.forEach(function (e, i) {
+        var nd = G.nodes[e.id]; if (!nd) return;
+        var a = (sec.c + (n > 1 ? (i / (n - 1) - 0.5) * sec.span : 0)) * Math.PI / 180;
+        var tier = 0.58 + 0.2 * (i % 3);
+        nd.tx = Math.min(w - 18, Math.max(18, bx + R * tier * Math.cos(a)));
+        nd.ty = Math.min(hgt - 40, Math.max(22, by + R * tier * Math.sin(a) * 0.92));
+      });
+    });
+  }
+  function kick() { if (!G.raf) G.raf = requestAnimationFrame(tick); }
+  function tick() {
+    G.raf = 0;
+    if (mode !== "graph") return;
+    var moving = false, k = 0.16;
+    Object.keys(G.nodes).forEach(function (id) {
+      var n = G.nodes[id], dx = n.tx - n.x, dy = n.ty - n.y;
+      if (Math.abs(dx) > 0.25 || Math.abs(dy) > 0.25) { n.x += dx * k; n.y += dy * k; moving = true; } else { n.x = n.tx; n.y = n.ty; }
+      n.g.setAttribute("transform", "translate(" + n.x.toFixed(1) + "," + n.y.toFixed(1) + ")");
+    });
+    G.edges.forEach(function (ed) {
+      var a = ed.a === "brain" ? box.brain : G.nodes[ed.a], b = ed.b === "brain" ? box.brain : G.nodes[ed.b];
+      if (!a || !b) return;
+      ed.el.setAttribute("x1", a.x); ed.el.setAttribute("y1", a.y); ed.el.setAttribute("x2", b.x); ed.el.setAttribute("y2", b.y);
+    });
+    if (moving) G.raf = requestAnimationFrame(tick);
+  }
+  function showTip(id) {
+    var e = byId(id), n = G.nodes[id]; if (!e || !n) return;
+    tip.textContent = e.title + " · " + TYPE_LABEL[e.type] + " · " + (e.status === "stale" ? "stale" : "fresh") + " · seen " + e.strength + "×";
+    tip.style.left = n.x + "px"; tip.style.top = n.y + "px"; tip.hidden = false;
+  }
+  function hotEdges(id) { G.edges.forEach(function (ed) { ed.el.classList.toggle("hot", !!id && (ed.a === id || ed.b === id) && ed.a !== "brain"); }); }
+
+  /* ================= Animation helpers ================= */
   var speed = 1;
   if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) { $("#speed").value = "0.35"; }
   function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms * speed); }); }
+  function progEntry(id) { return byKey("prog:" + id); }
   function light(id) {
-    var el = id === "brain" ? brainEl : nodeEls[id]; if (!el) return;
-    el.classList.add("on");
-    setTimeout(function () { el.classList.remove("on"); }, Math.max(600, 1200 * speed));
+    var el = id === "brain" ? brainEl : nodeEls[id]; if (el) { el.classList.add("on"); setTimeout(function () { el.classList.remove("on"); }, Math.max(600, 1200 * speed)); }
+    if (mode === "graph" && isNode(id)) { var pe = progEntry(id); if (pe) nodeFx(pe.id, "pulse"); }
+  }
+  function gpos(id) {
+    if (id === "brain") return box.brain;
+    var pe = isNode(id) && progEntry(id), n = pe && G.nodes[pe.id];
+    return n ? { x: n.x, y: n.y } : null;
   }
   function handoff(a, b) {
-    if (!box[a] || !box[b]) return;
-    var ln = svg("path", { class: "hand", d: pathFor(a, b), stroke: color(isNode(b) ? b : a) });
+    var d;
+    if (mode === "graph") { var pa = gpos(a), pb = gpos(b); if (!pa || !pb) { light(a); light(b); return; } d = "M" + pa.x + " " + pa.y + " L" + pb.x + " " + pb.y; }
+    else { if (!box[a] || !box[b]) return; d = pathFor(a, b); }
+    var ln = svg("path", { class: "hand", d: d, stroke: color(isNode(b) ? b : a) });
     hand.append(ln);
     setTimeout(function () { ln.remove(); }, Math.max(600, 1300 * speed));
     light(a); light(b);
   }
 
-  /* ---------- Conversation ---------- */
-  var logEl = $("#log"), transcript = [];
-  function say(from, text, extra, plain) {
+  /* ================= Conversation ================= */
+  var logEl = $("#log"), transcript = [], msgs = [], viewingSaved = false;
+  function say(from, text, extra, plain, cls) {
     var p = SPEAKERS[from];
     if (logEl.querySelector(".empty")) logEl.textContent = "";
     var msg = h("div", { class: "msg", style: "--c:" + color(from) },
       h("div", { class: "bar" }),
       h("div", {}, h("div", { class: "who" }, p.name, h("i", { text: p.sub })),
-        text ? h("p", { text: text }) : null, extra || null));
+        text ? h("p", { text: text, class: cls || "" }) : null, extra || null));
     logEl.append(msg); logEl.scrollTop = logEl.scrollHeight;
-    transcript.push("[" + p.name + "] " + (plain || text || ""));
+    var t = plain || text || "";
+    transcript.push("[" + p.name + "] " + t); msgs.push({ from: from, text: t });
   }
+  function showSaved(sess) {
+    viewingSaved = true; logEl.textContent = "";
+    sess.msgs.forEach(function (m) {
+      logEl.append(h("div", { class: "msg", style: "--c:" + color(m.from) }, h("div", { class: "bar" }),
+        h("div", {}, h("div", { class: "who" }, SPEAKERS[m.from].name, h("i", { text: SPEAKERS[m.from].sub })), h("p", { class: "pre", text: m.text }))));
+    });
+    $("#savedLbl").textContent = "Saved session from " + fmtDate(sess.ts) + ": " + clip(sess.q, 60); $("#savedBar").hidden = false;
+    logEl.scrollTop = 0;
+  }
+  $("#backLive").addEventListener("click", function () { $("#savedBar").hidden = true; viewingSaved = false; logEl.textContent = ""; if (!msgs.length) logEl.append(h("div", { class: "empty", text: "Nothing live yet. Ask a question." })); else replayLive(); });
+  function replayLive() { msgs.forEach(function (m) { logEl.append(h("div", { class: "msg", style: "--c:" + color(m.from) }, h("div", { class: "bar" }, ), h("div", {}, h("div", { class: "who" }, SPEAKERS[m.from].name, h("i", { text: SPEAKERS[m.from].sub })), h("p", { class: "pre", text: m.text })))); }); }
 
-  /* ---------- Retrieval brain (the 4 phases) ---------- */
+  /* ================= Retrieval (the four phases of a session) ================= */
   var STOP = "a an the of to in on at is are was were be been do does did how what who whom whose which when where why can could should would will you your yours me my we our it its this that these those and or but for with from about into over under tell explain give show please there their they them than then also not no yes any some more most much many very just only like if as by so such".split(" ");
   var TEMPORAL = ["latest", "current", "currently", "now", "today", "recent", "recently", "newest", "new", "2026", "2025", "nowadays"];
   function words(s) { return (s.toLowerCase().match(/[a-z0-9.\-]+/g) || []).map(function (w) { return w.replace(/^[.\-]+|[.\-]+$/g, ""); }).filter(Boolean); }
@@ -456,10 +828,13 @@ details > * + * { margin-top: 8px; }
     });
     return out;
   }
-  /* A keyword matches a word in the source when the word starts with the keyword's stem and adds at most 3 letters ("tap" ~ "tapper", but "work" does not match "workflow"). */
   function stem(k) { var m = k.replace(/(ing|ed|es|s)$/, "").replace(/([b-df-hj-np-tv-z])\1$/, "$1"); return m.length >= 3 ? m : k; }
   var tokenCache = {};
-  function tokens(s) { return tokenCache[s.id] || (tokenCache[s.id] = words(s.label + " " + s.fact + " " + s.lead + " " + s.tags)); }
+  function tokens(s) {
+    var ck = s.id + "|" + (s.corrected ? "x" : s.fromMemory ? "m" : "c") + "|" + s.fact;
+    if (!tokenCache[ck]) { if (Object.keys(tokenCache).length > 300) tokenCache = {}; tokenCache[ck] = words(s.corrected ? s.label + " " + s.fact : s.label + " " + s.fact + " " + s.lead + " " + s.tags); }
+    return tokenCache[ck];
+  }
   function hits(s, kws) {
     var toks = tokens(s);
     return kws.filter(function (k) {
@@ -467,9 +842,18 @@ details > * + * { margin-top: 8px; }
       return toks.some(function (t) { return t === k || (t.indexOf(st) === 0 && t.length - st.length <= 3); });
     });
   }
-  /* A clause counts as answered only when a source matches at least 60% of its keywords. */
   function qualifies(n, kwCount) { return n > 0 && n >= Math.min(2, kwCount) && n / kwCount >= 0.6; }
 
+  /* The sources a session can use. A fresh Brain memory entry replaces the sample line (so a correction really changes the next answer). */
+  var SRC = CORPUS;
+  function buildSources() {
+    return CORPUS.map(function (s) {
+      var m = mem.settings.brain && mem.entries.filter(function (e) { return e.corpusId === s.id && e.status === "fresh"; })[0];
+      if (!m) return s;
+      return { id: s.id, label: s.label, entity: s.entity, tags: s.tags, fromMemory: true, memId: m.id, corrected: !!m.corrected, origSrc: s.src,
+        src: "Brain memory › " + s.label + (m.corrected ? " (your correction)" : ""), lead: m.corrected ? clip(m.note, 140) : s.lead, fact: m.note };
+    });
+  }
   function analyse(q) {
     var kws = keywords(q).slice(0, 9);
     var temporal = words(q).filter(function (w) { return TEMPORAL.indexOf(w) >= 0; });
@@ -482,11 +866,7 @@ details > * + * { margin-top: 8px; }
     if (kws.length > 2) add(kws.slice(1, 4));
     return { kws: kws, temporal: temporal, clauses: clauses, queries: qs.slice(0, 5) };
   }
-  function search(queryText) {
-    var kws = keywords(queryText);
-    return CORPUS.filter(function (s) { return hits(s, kws).length > 0; });
-  }
-  /* Only lines the searches actually returned (the pool) can be used in the answer. */
+  function search(queryText) { var kws = keywords(queryText); return SRC.filter(function (s) { return hits(s, kws).length > 0; }); }
   function evaluate(an) {
     var pool = [];
     an.queries.forEach(function (t) { search(t).forEach(function (s) { if (pool.indexOf(s) < 0) pool.push(s); }); });
@@ -508,7 +888,8 @@ details > * + * { margin-top: 8px; }
     var rejected = pool.filter(function (s) { return weak[s.id] && accepted.indexOf(s) < 0; });
     return { pool: pool, accepted: accepted, uncovered: uncovered, rejected: rejected };
   }
-  /* Real checks on the drafted answer, so Grok's PASS or FAIL can actually fail. */
+  var GAP_TXT = "The provided source documentation does not contain enough verified information to confidently answer ";
+  var GAP = function (what) { return GAP_TXT + what + "."; };
   function verify(ev, built) {
     var facts = built.node.querySelectorAll(".facts li"), uncited = 0, nums = {}, bad = 0;
     Array.prototype.forEach.call(facts, function (li) {
@@ -520,13 +901,11 @@ details > * + * { margin-top: 8px; }
     });
     var reused = Object.keys(nums).filter(function (k) { return nums[k] > 1; }).length;
     var gaps = built.node.querySelectorAll(".gap");
-    var gapsOk = gaps.length === ev.uncovered.length && Array.prototype.every.call(gaps, function (g) { return g.textContent.indexOf("The provided source documentation does not contain enough verified information to confidently answer ") === 0; });
-    var sourceIds = ev.accepted.map(function (s) { return s.id; }), uniq = sourceIds.filter(function (v, i) { return sourceIds.indexOf(v) === i; }).length === sourceIds.length;
+    var gapsOk = gaps.length === ev.uncovered.length && Array.prototype.every.call(gaps, function (g) { return g.textContent.indexOf(GAP_TXT) === 0; });
+    var ids = ev.accepted.map(function (s) { return s.id; }), uniq = ids.filter(function (v, i) { return ids.indexOf(v) === i; }).length === ids.length;
     return { facts: facts.length, uncited: uncited, bad: bad, reused: reused, gapsOk: gapsOk, uniq: uniq,
       pass: uncited === 0 && bad === 0 && reused === 0 && gapsOk && uniq && facts.length === ev.accepted.length };
   }
-  var GAP = function (what) { return "The provided source documentation does not contain enough verified information to confidently answer " + what + "."; };
-
   function buildAnswer(ev, an) {
     var cite = function (n) { return h("span", { class: "cite", text: "[" + n + "]", title: ev.accepted[n - 1].src }); };
     var node = h("div", { class: "answer" }), plain = [];
@@ -554,35 +933,165 @@ details > * + * { margin-top: 8px; }
       node.append(h("div", { class: "tbl" }, h("table", {},
         h("thead", {}, h("tr", {}, h("th", { text: "#" }), h("th", { text: "Source" }), h("th", { text: "Type" }), h("th", { text: "Date" }))),
         h("tbody", {}, ev.accepted.map(function (s, i) {
-          return h("tr", {}, h("td", { text: "[" + (i + 1) + "]" }), h("td", { text: s.src }), h("td", { text: "sample line · repo notes" }), h("td", { text: "undated" }));
+          return h("tr", {}, h("td", { text: "[" + (i + 1) + "]" }), h("td", { text: s.src }), h("td", { text: s.fromMemory ? "Brain memory" : "sample line · demo source" }), h("td", { text: "undated" }));
         })))));
       plain.push("Sources: " + ev.accepted.map(function (s, i) { return "[" + (i + 1) + "] " + s.src; }).join("; "));
     }
-    var disclaimer = "Sample sources only. These lines were copied from the RedMed AGENTS.md notes. Nothing was searched or read live, and the lines carry no dates." + (an.temporal.length ? " You asked for the latest: recency cannot be confirmed." : "");
-    node.append(h("p", { class: "note", text: disclaimer }));
+    var disclaimer = "Sample sources only. These lines were written for this demo from Brain's own rules and the Perplexity help article. Nothing was searched or read live, and the lines carry no dates." + (an.temporal.length ? " You asked for the latest: recency cannot be confirmed." : "");
+    node.append(h("p", { class: "note", style: "margin-top:8px", text: disclaimer }));
     plain.push(disclaimer);
     return { node: node, plain: plain.join("\n") };
   }
 
   var phaseEls = Array.prototype.slice.call(document.querySelectorAll(".phase"));
-  function setPhase(i) {
-    phaseEls.forEach(function (el, n) { el.classList.toggle("active", n === i); el.classList.toggle("done", n < i); });
+  function setPhase(i) { phaseEls.forEach(function (el, n) { el.classList.toggle("active", n === i); el.classList.toggle("done", n < i); }); }
+
+  /* ================= Brain: the learning run (mirrors the help article) ================= */
+  var running = false, brainRunning = false;
+  function updateBrainState() {
+    brainEl.classList.toggle("off", !mem.settings.brain);
+    brainEl.classList.toggle("learning", brainRunning);
+    brainEl.classList.toggle("busy", running && !brainRunning);
+    $("#brainTitle").textContent = mem.settings.brain ? "BRAIN" : "BRAIN OFF";
+    $("#runNow").disabled = !mem.settings.brain || brainRunning || running;
+    $("#skip30").disabled = brainRunning || running;
+  }
+  function findWorkstream(kws) {
+    var best = null;
+    mem.entries.forEach(function (e) {
+      if (e.type !== "workstream" || !e.kws || e.key === "ws:orchestration-brain-page") return;
+      var ov = e.kws.filter(function (k) { return kws.indexOf(k) >= 0; }).length;
+      if (ov >= Math.min(2, e.kws.length, kws.length) && ov > 0 && (!best || ov > best.ov)) best = { e: e, ov: ov };
+    });
+    return best && best.e;
+  }
+  function isBlocked(key) { return mem.blocked.indexOf(key) >= 0; }
+  function addSource(e, s) {
+    if (e.sources.some(function (x) { return x.kind === s.kind && x.label === s.label && x.ref === (s.ref || null); })) return;
+    e.sources.push({ kind: s.kind, label: s.label, ref: s.ref || null }); if (e.sources.length > 6) e.sources.shift();
+  }
+  /* write or refresh one entry; tally says what happened, fx says what the graph should show */
+  function upsert(spec, t) {
+    if (isBlocked(spec.key, spec.title)) { t.blocked++; return null; }
+    var e = byKey(spec.key);
+    if (e && t.touched[e.id]) { addSource(e, spec.sources[0]); return e; }
+    if (!e) {
+      if (mem.entries.length >= MAX_ENTRIES) { t.blocked++; return null; }
+      e = mkEntry(spec); mem.entries.push(e); t.fresh++; t.fx.push([e.id, "pop"]);
+    } else {
+      var wasStale = e.status === "stale";
+      e.strength = Math.min(9, e.strength + 1); e.seen = nowTs(); e.status = "fresh"; addSource(e, spec.sources[0]);
+      if (spec.sources[1]) addSource(e, spec.sources[1]);
+      if (spec.kws) e.kws = spec.kws;
+      if (!e.corrected && spec.note && spec.note !== e.note) { e.note = spec.note; t.updated++; t.fx.push([e.id, "flash"]); }
+      else if (wasStale) { t.updated++; t.fx.push([e.id, "flash"]); }
+      else { t.reinforced++; t.fx.push([e.id, "pulse"]); }
+    }
+    t.touched[e.id] = 1;
+    return e;
+  }
+  function learnSession(s, t) {
+    var d = fmtDate(s.ts), src = { kind: "session", label: "Session " + d + ": " + clip(s.q, 40), ref: s.id }, docSrc = { kind: "file", label: "Brain AGENTS.md" };
+    var existing = findWorkstream(s.kws), title = clip(s.kws.slice(0, 3).join(" ") || "question", 40);
+    var covered = s.accepted.map(function (a) { return a.label; });
+    var wnote = "Asked on " + d + ": “" + clip(s.q, 110) + "”. " + (covered.length ? "Covered: " + covered.join(", ") + ". " : "") + (s.uncovered.length ? "Open loop: " + clip(s.uncovered.join("; "), 140) + "." : "No open loops.");
+    var ws = existing ? upsert({ key: existing.key, type: "workstream", title: existing.title, note: wnote, sources: [src], kws: s.kws }, t)
+                      : upsert({ key: "ws:" + s.kws.slice(0, 3).slice().sort().join("-"), type: "workstream", title: title.charAt(0).toUpperCase() + title.slice(1), note: wnote, sources: [src], kws: s.kws }, t);
+    var doc = upsert({ key: "doc:agents", type: "entity", title: "Brain AGENTS.md", note: "The team roles and working rules for the Brain repo. Most sample sources come from it.", sources: [src, docSrc] }, t);
+    link(ws, doc);
+    s.accepted.forEach(function (a) {
+      var c = upsert({ key: "c:corpus:" + a.id, type: "concept", title: a.label, note: a.fact, corpusId: a.id, sources: [src, { kind: "file", label: a.src || docSrc.label }] }, t);
+      if (!c) return; link(ws, c); link(c, doc);
+      if (a.entity) {
+        var pn = NODES.filter(function (n) { return norm(n.name) === norm(a.entity); })[0];
+        var en = pn ? byKey("prog:" + pn.id) : upsert({ key: "ent:" + norm(a.entity), type: "entity", title: a.entity, note: "Named in the line “" + a.label + "”.", sources: [src] }, t);
+        link(c, en);
+      }
+    });
+    NODES.forEach(function (n) { var pe = upsert({ key: "prog:" + n.id, type: "entity", title: n.name, note: n.sub + ". On Max's team chart.", sources: [src] }, t); if (n.id === "claude") link(ws, pe); });
+  }
+  function learnTools(t) {
+    var st = mem.settings, n = 0;
+    if (!st.sources) return 0;
+    if (st.docs) {
+      var doc = upsert({ key: "doc:agents", type: "entity", title: "Brain AGENTS.md", note: "The team roles and working rules for the Brain repo. Most sample sources come from it.", sources: [{ kind: "tool", label: "Docs connector (sample)" }] }, t); n++;
+    }
+    if (st.tracker) {
+      var pr = upsert({ key: "pr:brain1", type: "entity", title: "Brain pull request", note: "Draft pull request “Add Orchestration Brain page, team rules and skills memory”. Waiting for Max to review and merge.", sources: [{ kind: "tool", label: "Issue tracker (sample): Roooted1776/Brain#1" }] }, t); n++;
+      var ws = upsert({ key: "ws:orchestration-brain-page", type: "workstream", title: "Orchestration Brain page", note: "A single-file page in the Brain repo: team chart, simulated sessions, memory graph. Open loop: Max reviews the draft pull request.", sources: [{ kind: "tool", label: "Issue tracker (sample): Roooted1776/Brain#1" }], kws: ["orchestration", "brain", "page"] }, t);
+      link(ws, pr); link(ws, byKey("prog:claude"));
+    }
+    return n;
+  }
+  async function brainRun() {
+    if (brainRunning || running || !mem.settings.brain) return;
+    brainRunning = true; updateBrainState(); mem.runs++;
+    var t = { fresh: 0, reinforced: 0, updated: 0, stale: 0, blocked: 0, fx: [], touched: {} };
+    var inbox = mem.inbox.slice(); mem.inbox = [];
+    var nSess = inbox.filter(function (i) { return i.kind === "session"; }).length, nFile = inbox.filter(function (i) { return i.kind === "file"; }).length, nCorr = inbox.filter(function (i) { return i.kind === "correction"; }).length;
+    var toolsOn = mem.settings.sources && (mem.settings.docs || mem.settings.tracker);
+    function step(i, text) {
+      Array.prototype.forEach.call(document.querySelectorAll("#steps li"), function (li, n) { li.classList.toggle("active", n === i); li.classList.toggle("done", n < i); });
+      if (text != null) $("#s" + i + "t").textContent = text;
+    }
+    ["s1t", "s2t", "s3t"].forEach(function (id) { $("#" + id).textContent = ""; }); $("#runReport").textContent = "";
+    try {
+      step(0, "Looking at: " + nSess + " session(s), " + (toolsOn ? "connected tools on" : "connected tools off") + ", " + nFile + " file(s) or note(s), " + nCorr + " correction(s)."
+        + (mem.settings.instructions ? " Instructions on file: “" + clip(mem.settings.instructions, 80) + "”." : ""));
+      await sleep(1100);
+      step(1, "Writing entries, each linked to its source…");
+      await sleep(500);
+      inbox.filter(function (i) { return i.kind === "session"; }).forEach(function (i) { var s = mem.sessions.filter(function (x) { return x.id === i.ref; })[0]; if (s) learnSession(s, t); });
+      learnTools(t);
+      syncGraph(); render();
+      t.fx.forEach(function (f, i) { setTimeout(function () { nodeFx(f[0], f[1]); }, i * 90 * speed); });
+      $("#s1t").textContent = t.fresh + " new entr" + (t.fresh === 1 ? "y" : "ies") + (t.blocked ? ", " + t.blocked + " skipped because you deleted them before" : "") + ".";
+      await sleep(900 + Math.min(1500, t.fx.length * 90));
+      step(2, "Checking what is still true…");
+      await sleep(600);
+      var cutoff = nowTs() - STALE_DAYS * DAY, staled = [];
+      mem.entries.forEach(function (e) { if (e.status === "fresh" && e.seen < cutoff) { e.status = "stale"; t.stale++; staled.push(e.id); } });
+      inbox.filter(function (i) { return i.kind === "correction"; }).forEach(function (i) { var e = byId(i.ref); if (e) { t.updated++; t.fx.push([e.id, "flash"]); setTimeout(function () { nodeFx(e.id, "flash"); }, 200); } });
+      syncGraph(); render();
+      $("#s2t").textContent = t.reinforced + " reinforced, " + t.updated + " updated, " + t.stale + " marked stale (not seen for " + STALE_DAYS + "+ days).";
+      await sleep(900);
+      var rep = [t.fresh + " new", t.reinforced + " reinforced", t.updated + " updated", t.stale + " stale"];
+      if (nFile) rep.push(nFile + " from files or notes"); if (nCorr) rep.push(nCorr + " correction(s) applied");
+      var nothing = !nSess && !toolsOn && !nFile && !nCorr && !t.stale;
+      step(4, null);
+      $("#s3t").textContent = nothing ? "Nothing new to learn." : "Run " + mem.runs + " finished on " + fmtDate(nowTs()) + ". Brain changed memory only. It took no actions and sent no messages.";
+      $("#runReport").textContent = nothing ? "Nothing new to learn." : "Learned: " + rep.join(" · ");
+      Array.prototype.forEach.call(document.querySelectorAll("#steps li"), function (li) { li.classList.remove("active"); li.classList.add("done"); });
+      var gained = t.fresh + t.updated + t.stale;
+      if (gained && $("#pane-mem").hidden) { $("#memBadge").hidden = false; $("#memBadge").textContent = "+" + gained; }
+      if (gained && mode === "team") $("#modeHint").textContent = "Brain learned " + gained + " thing(s). See the Memory graph.";
+    } catch (err) {
+      mem.inbox = inbox.concat(mem.inbox); $("#runReport").textContent = "The run stopped early. It will try again next time.";
+    } finally {
+      brainRunning = false; persist(); updateBrainState(); render();
+    }
   }
 
-  /* ---------- Run the loop along Max's chart ---------- */
-  var running = false;
-  async function run(q) {
-    if (running) return;
-    running = true; $("#askBtn").disabled = true; brainEl.classList.add("busy");
-    logEl.textContent = "";
-    transcript = ["SIMULATION: no real AI or web search ran. The programs are scripted, and the sources are sample lines copied from the RedMed AGENTS.md notes."];
+  /* ================= Run one session ================= */
+  async function run(qRaw) {
+    if (running || brainRunning) return;
+    running = true; $("#askBtn").disabled = true; updateBrainState();
+    $("#savedBar").hidden = true; viewingSaved = false;
+    logEl.textContent = ""; msgs = [];
+    var red = redact(qRaw), q = red.text, incog = $("#incog").checked;
+    transcript = ["SIMULATION: no real AI or web search ran. The programs are scripted, and the sources are sample lines written for this demo from Brain's own rules and the Perplexity help article."];
+    var sess = null, ok = false;
     try {
-      var an = analyse(q), ev = evaluate(an);
-      /* Phase 1: Grok commands, Claude (hub) plans */
+      SRC = buildSources();
+      var an = analyse(q), ev = evaluate(an), prior = mem.settings.brain && !incog ? findWorkstream(an.kws) : null;
       setPhase(0);
-      say("max", q); light("brain"); await sleep(800);
-      say("brain", "Question received. Four phases: plan, search, filter, answer. I answer only from retrieved sources.");
+      say("max", q);
+      if (red.n) { mem.filtered += red.n; say("brain", "Warning: that looked like a password or key, so I filtered it out and will not remember it. Please do not paste real secrets here.", null, null, "warn"); }
+      light("brain"); await sleep(800);
+      say("brain", "Question received. Four phases: plan, search, filter, answer. I answer only from retrieved sources."
+        + (incog ? " Incognito: I will not learn from this session." : !mem.settings.brain ? " Brain is off, so I will not use or write memory." : ""));
       handoff("brain", "grok"); await sleep(1000);
+      if (prior) { say("brain", "I remember this. You asked about it on " + fmtDate(prior.seen) + ". " + clip(prior.note, 200)); await sleep(900); }
       say("grok", "I command this repo. Claude is the hub and runs the work. Muse audits everyone. I sign off last with pass or fail.");
       handoff("grok", "claude"); await sleep(1100);
       var plan = ["Keywords: " + (an.kws.join(", ") || "none found") + "."];
@@ -590,33 +1099,29 @@ details > * + * { margin-top: 8px; }
       plan.push(an.clauses.length > 1 ? "Hidden sub-questions: " + an.clauses.map(function (c, i) { return (i + 1) + ") " + c; }).join("  ") : "One question, no hidden sub-questions.");
       say("claude", plan.join(" ")); await sleep(1100);
 
-      /* Phase 2: collaborators fan out from Claude */
       setPhase(1);
       handoff("claude", "chatgpt"); await sleep(700);
-      if (!an.queries.length) {
-        say("chatgpt", "I could not build a keyword search from that question, so there is nothing to research."); await sleep(700);
-      } else {
-        say("chatgpt", "Researching with " + an.queries.length + " keyword search(es):", h("ul", { class: "q" }, an.queries.map(function (t) { return h("li", { text: t }); })));
+      if (!an.queries.length) { say("chatgpt", "I could not build a keyword search from that question, so there is nothing to research."); await sleep(700); }
+      else {
+        say("chatgpt", "Researching with " + an.queries.length + " keyword search(es):", h("ul", { class: "q" }, an.queries.map(function (x) { return h("li", { text: x }); })));
         await sleep(1000);
-        say("chatgpt", an.queries.map(function (t, i) { return "Q" + (i + 1) + " → " + search(t).length + " sample line(s)"; }).join("   ") + ". " + ev.pool.length + " distinct line(s) go forward."); await sleep(900);
+        say("chatgpt", an.queries.map(function (x, i) { return "Q" + (i + 1) + " → " + search(x).length + " sample line(s)"; }).join("   ") + ". " + ev.pool.length + " distinct line(s) go forward."); await sleep(900);
       }
       handoff("claude", "gemini"); await sleep(600);
+      var fromMem = ev.accepted.filter(function (s) { return s.fromMemory; }).length;
       say("gemini", ev.accepted.length
-        ? "Studied the " + ev.pool.length + " retrieved line(s) with Claude and kept " + ev.accepted.length + " that cover the question. These are primary repo notes but carry no dates, so freshness is unconfirmed."
+        ? "Studied the " + ev.pool.length + " retrieved line(s) with Claude and kept " + ev.accepted.length + " that cover the question" + (fromMem ? " (" + fromMem + " came from Brain memory, so no new lookup was needed)" : "") + ". These are primary sources (Brain's own rules and the article) but carry no dates, so freshness is unconfirmed."
         : "Studied the " + ev.pool.length + " retrieved line(s). None covers the question well enough to keep."); await sleep(900);
 
-      /* Phase 3: Cursor integrates and reviews, Muse audits (dashed line) */
       setPhase(2);
       handoff("claude", "cursor"); await sleep(600);
       say("cursor", "Merged the results and checked each clause of the question against them. " + (ev.rejected.length
         ? "Rejected " + ev.rejected.length + " partial match(es) (" + ev.rejected.map(function (s) { return s.label; }).join(", ") + ") because they matched under 60% of a clause's keywords."
-        : "No partial matches needed rejecting.")
-        + (/\b(ios|xcode|archive|simulator|scheme|swift)/i.test(q) ? " iOS builds need a Mac worker, so this answer comes from notes, not a build." : "")); await sleep(1000);
+        : "No partial matches needed rejecting.")); await sleep(1000);
       handoff("muse", "claude"); await sleep(600);
       say("muse", "Audit of everyone's work. Citation map: " + (ev.accepted.length ? ev.accepted.map(function (s, i) { return "[" + (i + 1) + "] = " + s.label; }).join(", ") : "none, nothing was kept") + ". "
         + ev.uncovered.length + " point(s) of the question have no source. Conflict detection is not built into this simulation; the sample lines do not overlap on any number or date."); await sleep(1000);
 
-      /* Phase 4: Claude drafts, Grok verifies */
       setPhase(3);
       var built = buildAnswer(ev, an);
       say("claude", "Draft ready. Fact lines carry citations, and unanswered points use the fixed boundary sentence."); await sleep(900);
@@ -628,25 +1133,34 @@ details > * + * { margin-top: 8px; }
       handoff("grok", "brain"); await sleep(500);
       say("brain", "Final answer for Max:", built.node, built.plain);
       setPhase(4);
+      if (incog) say("brain", "Incognito: this session is not saved and Brain will not learn from it.", null, null, "warn");
+      else if (mem.settings.brain) {
+        sess = { id: "s" + (mem.nextSession++), ts: nowTs(), q: q, kws: an.kws,
+          accepted: ev.accepted.map(function (s) { return { id: s.id, label: s.label, fact: s.fact, entity: s.entity || null, src: s.origSrc || s.src }; }), uncovered: ev.uncovered.slice(), msgs: msgs.slice() };
+        mem.sessions.push(sess); if (mem.sessions.length > MAX_SESSIONS) mem.sessions.shift();
+        mem.inbox.push({ kind: "session", ref: sess.id });
+        persist(); render();
+      } else say("brain", "Brain is off, so nothing from this session was written to memory.", null, null, "warn");
+      ok = true;
     } finally {
-      running = false; $("#askBtn").disabled = false; brainEl.classList.remove("busy");
+      running = false; $("#askBtn").disabled = false; updateBrainState(); persist();
     }
+    if (ok && sess && mem.settings.brain) { $("#modeHint").textContent = "Brain will learn from this when the session is over…"; await sleep(1400); await brainRun(); }
   }
 
-  /* ---------- Question form + samples ---------- */
+  /* ================= Samples + form ================= */
   var SAMPLES = [
-    "How close must a tap be to start a band session?",
-    "What chip does the band use and how much can it store?",
-    "When does SOS arm, and does tapping the band arm it?",
-    "Who reviews a change, and who signs off?",
+    "Who is in charge of the repo, and who audits the work?",
+    "What does Brain learn from?",
+    "Does Brain send messages or take actions?",
+    "What does a Brain run do?",
+    "Who decides what ships and who merges?",
     "What is the latest iPhone model price?"
   ];
-  SAMPLES.forEach(function (s) {
-    $("#samples").append(h("button", { class: "chip", type: "button", text: s, onclick: function () { $("#q").value = s; ask(); } }));
-  });
+  SAMPLES.forEach(function (s) { $("#samples").append(h("button", { class: "chip", type: "button", text: s, onclick: function () { $("#q").value = s; ask(); } })); });
   function ask() {
     var q = $("#q").value.trim();
-    if (!q || running) return;
+    if (!q || running || brainRunning) return;
     speed = parseFloat($("#speed").value) || 0;
     tab("chat"); run(q);
   }
@@ -658,123 +1172,192 @@ details > * + * { margin-top: 8px; }
     catch (e) { done("Copy blocked"); }
   }
 
-  /* ---------- Tabs ---------- */
+  /* ================= Tabs ================= */
   function tab(which) {
-    ["chat", "skills"].forEach(function (t) {
-      $("#tab-" + t).setAttribute("aria-selected", String(t === which));
+    ["chat", "mem", "set"].forEach(function (t) {
+      $("#tab-" + t).setAttribute("aria-selected", String(t === which)); $("#tab-" + t).tabIndex = t === which ? 0 : -1;
       $("#pane-" + t).hidden = t !== which;
     });
+    if (which === "mem") { $("#memBadge").hidden = true; $("#modeHint").textContent = ""; }
     if (which === "chat") layout();
   }
-  $("#tab-chat").addEventListener("click", function () { tab("chat"); });
-  $("#tab-skills").addEventListener("click", function () { tab("skills"); });
-
-  /* ---------- Skills memory ---------- */
-  var KEY = "brain.skills.v1";
-  var STARTER = [
-    { name: "claude", use: "I need a precise read, a wording pass, or a plan on RedMed.", prog: "claude" },
-    { name: "cursor-agent", use: "A change must be implemented in the RedMed repo under the Cursor brief.", prog: "cursor" },
-    { name: "chatgpt", use: "I ask for an independent second opinion on a change.", prog: "chatgpt" },
-    { name: "xcode", use: "I need iOS build help: schemes, Dual-Mac, or Archive prep.", prog: "cursor" },
-    { name: "redmed-ship-gates", use: "Before I say a merge is ready: run the four local gates and report pass or fail.", prog: "grok" },
-    { name: "max-ai-coach", use: "I want AI explained in plain words.", prog: "claude" },
-    { name: "max-dev-tutor", use: "I am learning code and want a short plan, then step by step.", prog: "claude" },
-    { name: "max-research-vetting", use: "I need to check whether a source can be trusted.", prog: "muse" },
-    { name: "max-daily-planner", use: "I need a plan for today.", prog: "claude" },
-    { name: "max-learning-tutor", use: "I want a short study plan and a quiz, one question at a time.", prog: "gemini" }
-  ];
-  var skills = [], editing = -1, confirmDel = -1;
-  var storageOk = true, MAX_SKILLS = 200;
-  function validSkill(s) {
-    return !!s && typeof s.name === "string" && typeof s.use === "string" && typeof s.prog === "string" && isNode(s.prog)
-      && s.name.trim().length > 0 && s.name.length <= 60 && s.use.trim().length > 0 && s.use.length <= 160;
-  }
-  function cleanSkill(s) { return { name: s.name.trim(), use: s.use.trim(), prog: s.prog }; }
-  function loadSkills() {
-    try { var raw = localStorage.getItem(KEY); if (raw) { var a = JSON.parse(raw); if (Array.isArray(a)) return a.filter(validSkill).slice(0, MAX_SKILLS).map(cleanSkill); } } catch (e) { storageOk = false; }
-    return STARTER.map(function (s) { return Object.assign({}, s); });
-  }
-  function saveSkills() { try { localStorage.setItem(KEY, JSON.stringify(skills)); storageOk = true; } catch (e) { storageOk = false; } }
-
-  var sProg = $("#sProg");
-  NODES.forEach(function (n) { sProg.append(h("option", { value: n.id, text: n.name + " · " + n.sub })); });
-
-  function renderSkills() {
-    var f = $("#skillFilter").value.trim().toLowerCase();
-    var ul = $("#skillList"); ul.textContent = "";
-    var shown = 0;
-    skills.forEach(function (s, i) {
-      if (f && (s.name + " " + s.use).toLowerCase().indexOf(f) < 0) return;
-      shown++;
-      var p = SPEAKERS[s.prog];
-      ul.append(h("li", { class: "skill", style: "--c:" + color(s.prog) },
-        h("div", { class: "pg", text: p.name }),
-        h("div", { class: "nm", text: s.name }),
-        h("div", { class: "use", text: "Use it when " + s.use.replace(/^use (it )?when\s*/i, "") }),
-        h("div", { class: "row" },
-          h("button", { class: "small", type: "button", text: "Show on chart", onclick: function () { handoff("brain", s.prog); } }),
-          h("button", { class: "small", type: "button", text: "Edit", onclick: function () { startEdit(i); } }),
-          confirmDel === i
-            ? [h("button", { class: "small danger", type: "button", text: "Yes, delete", onclick: function () { skills.splice(i, 1); confirmDel = -1; editing = -1; saveSkills(); renderSkills(); resetForm(); $("#skillList").focus(); } }),
-               h("button", { class: "small", type: "button", text: "Keep", onclick: function () { confirmDel = -1; renderSkills(); $("#skillList").focus(); } })]
-            : h("button", { class: "small danger", type: "button", text: "Delete", onclick: function () { confirmDel = i; renderSkills(); } }))));
+  var TABIDS = ["chat", "mem", "set"];
+  TABIDS.forEach(function (t, i) {
+    $("#tab-" + t).addEventListener("keydown", function (e) {
+      var d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0; if (!d) return;
+      e.preventDefault(); var n = TABIDS[(i + d + 3) % 3]; tab(n); $("#tab-" + n).focus();
     });
-    if (!shown) ul.append(h("li", { class: "empty", text: skills.length ? "No skill matches that filter." : "No skills yet. Add your first one below." }));
-    $("#skillCount").textContent = skills.length + (storageOk ? " saved" : " (not saved)");
-    $("#skillWarn").textContent = storageOk ? "" : "This browser will not keep your skills after you close the page. Open Backup and restore and copy them somewhere safe.";
+  });
+  $("#tab-chat").addEventListener("click", function () { tab("chat"); });
+  $("#tab-mem").addEventListener("click", function () { tab("mem"); });
+  $("#tab-set").addEventListener("click", function () { tab("set"); });
+
+  /* ================= Memory tab: browse, edit, delete ================= */
+  var filter = "all", editingId = null, confirmId = null, SOURCE_LABEL = { session: "session", tool: "connected tool", file: "file", correction: "your correction" };
+  var FILTERS = [["all", "All"], ["concept", "Concepts"], ["entity", "Entities"], ["workstream", "Workstreams"], ["skill", "Skills"]];
+  function renderFilters() {
+    var box = $("#filters"); box.textContent = "";
+    FILTERS.forEach(function (f) {
+      var n = mem.entries.filter(function (e) { return f[0] === "all" || (f[0] === "skill" ? e.skill : e.type === f[0]); }).length;
+      box.append(h("button", { class: "chip", type: "button", "aria-pressed": String(filter === f[0]), text: f[1] + " " + n, onclick: function () { filter = f[0]; render(); } }));
+    });
   }
-  function resetForm() {
-    editing = -1; $("#sName").value = ""; $("#sUse").value = ""; $("#sProg").value = "claude";
-    $("#formTitle").textContent = "Add a skill"; $("#sSave").textContent = "Save skill"; $("#sCancel").hidden = true;
+  function selectEntry(id, openTab) {
+    G.sel = id; hotEdges(id);
+    if (openTab) { tab("mem"); filter = "all"; $("#memSearch").value = ""; }
+    render(); syncGraphSelection();
+    var li = document.querySelector('[data-eid="' + id + '"]'); if (li) li.scrollIntoView({ block: "nearest" });
   }
-  function startEdit(i) {
-    editing = i; var s = skills[i];
-    $("#sName").value = s.name; $("#sUse").value = s.use; $("#sProg").value = s.prog;
-    $("#formTitle").textContent = "Edit skill"; $("#sSave").textContent = "Update skill"; $("#sCancel").hidden = false;
-    $("#sName").focus();
+  function syncGraphSelection() { Object.keys(G.nodes).forEach(function (id) { var e = byId(id); G.nodes[id].g.classList.toggle("sel", G.sel === id); if (e) G.nodes[id].lbl.textContent = (e.strength >= 3 || G.sel === id) ? clip(e.title, 18) : ""; }); hotEdges(G.sel); }
+  function openSession(id) {
+    var s = mem.sessions.filter(function (x) { return x.id === id; })[0];
+    tab("chat"); if (!s) { $("#savedLbl").textContent = "That session is no longer stored (only the last " + MAX_SESSIONS + " are kept)."; $("#savedBar").hidden = false; return; }
+    showSaved(s);
   }
-  $("#sCancel").addEventListener("click", resetForm);
-  $("#skillFilter").addEventListener("input", renderSkills);
-  $("#skillForm").addEventListener("submit", function (e) {
-    e.preventDefault();
-    var s = { name: $("#sName").value.trim(), use: $("#sUse").value.trim(), prog: $("#sProg").value };
-    if (!s.name || !s.use) return;
-    if (editing >= 0) skills[editing] = s; else skills.push(s);
-    saveSkills(); resetForm(); renderSkills();
+  function entryCard(e) {
+    var k = "var(" + TYPE_VAR[e.type] + ")";
+    var sources = e.sources.map(function (s, i) {
+      var lab = SOURCE_LABEL[s.kind] + ": " + clip(s.label, 50);
+      return s.kind === "session" ? h("button", { type: "button", text: lab, title: "Open the original session", onclick: function () { openSession(s.ref); } }) : h("span", { text: lab });
+    });
+    var related = e.links.map(byId).filter(Boolean).slice(0, 6).map(function (o) { return h("button", { type: "button", text: o.title, onclick: function () { selectEntry(o.id, false); } }); });
+    var card = h("li", { class: "entry" + (G.sel === e.id ? " sel" : ""), style: "--k:" + k, "data-eid": e.id },
+      h("div", { class: "hd" }, h("span", { class: "ttl", text: e.title }), h("span", { class: "tag t", text: e.skill ? "Skill · Concept" : TYPE_LABEL[e.type] }),
+        e.status === "stale" ? h("span", { class: "tag stale", text: "stale" }) : null, e.corrected ? h("span", { class: "tag", text: "corrected by you" }) : null,
+        h("span", { class: "dots", title: "Seen " + e.strength + " time(s)", text: new Array(Math.min(5, e.strength) + 1).join("●") })),
+      editingId === e.id
+        ? h("div", { class: "row" }, h("label", { class: "sr", for: "ed-" + e.id, text: "Correct this entry" }), h("input", { type: "text", id: "ed-" + e.id, value: e.note, maxlength: "300", style: "flex:1;min-width:0" }),
+            h("button", { class: "small primary", type: "button", text: "Save correction", onclick: function () { saveCorrection(e.id, $("#ed-" + e.id).value); } }),
+            h("button", { class: "small", type: "button", text: "Cancel", onclick: function () { editingId = null; render(); } }))
+        : h("div", { class: "body", text: e.note }),
+      h("div", { class: "meta" }, h("span", { text: "last seen " + fmtDate(e.seen) }), e.prog ? h("span", { text: "uses " + SPEAKERS[e.prog].name }) : null),
+      h("div", { class: "meta" }, h("span", { text: "From:" }), sources),
+      related.length ? h("div", { class: "meta" }, h("span", { text: "Related:" }), related) : null,
+      h("div", { class: "row" },
+        h("button", { class: "small", type: "button", text: "Show on stage", onclick: function () { if (mode !== "graph") setMode("graph"); selectEntry(e.id, false); nodeFx(e.id, "pulse"); } }),
+        e.prog ? h("button", { class: "small", type: "button", text: "Show on chart", onclick: function () { handoff("brain", e.prog); } }) : null,
+        h("button", { class: "small", type: "button", text: "Correct", onclick: function () { editingId = e.id; render(); var i = $("#ed-" + e.id); if (i) i.focus(); } }),
+        e.status === "stale" ? h("button", { class: "small", type: "button", text: "Still true", onclick: function () { confirmTrue(e.id); } }) : null,
+        confirmId === e.id
+          ? [h("button", { class: "small danger", type: "button", text: "Yes, delete", onclick: function () { deleteEntry(e.id); } }), h("button", { class: "small", type: "button", text: "Keep", onclick: function () { confirmId = null; render(); $("#entryList").focus(); } })]
+          : h("button", { class: "small danger", type: "button", text: "Delete", onclick: function () { confirmId = e.id; render(); } })));
+    return card;
+  }
+  function render() {
+    renderFilters();
+    var q = $("#memSearch").value.trim().toLowerCase(), ul = $("#entryList"); ul.textContent = "";
+    var list = mem.entries.filter(function (e) { return (filter === "all" || (filter === "skill" ? e.skill : e.type === filter)) && (!q || (e.title + " " + e.note).toLowerCase().indexOf(q) >= 0); })
+      .sort(function (a, b) { return b.seen - a.seen || b.strength - a.strength; });
+    list.forEach(function (e) { ul.append(entryCard(e)); });
+    if (!list.length) ul.append(h("li", { class: "empty", text: mem.entries.length ? "Nothing matches. Clear the search or pick another filter." : "Memory is empty. Ask a question, or add a note below." }));
+    var stale = mem.entries.filter(function (e) { return e.status === "stale"; }).length;
+    $("#memCount").textContent = "Memory · " + mem.entries.length + " entries" + (stale ? " · " + stale + " stale" : "");
+    $("#memWarn").hidden = storageOk;
+    $("#runBadge").textContent = "runs: " + mem.runs;
+    $("#clockNote").textContent = "Memory date: " + fmtDate(nowTs()) + (mem.dayShift ? " (demo clock +" + mem.dayShift + " days)" : "") + ". Entries not reinforced for " + STALE_DAYS + " days are marked stale on the next run.";
+    $("#sensCount").textContent = mem.filtered ? mem.filtered + " password or key pattern(s) were filtered out so far." : "";
+    $("#setBrain").checked = mem.settings.brain; $("#setSources").checked = mem.settings.sources;
+    $("#cnDocs").checked = mem.settings.docs; $("#cnMsgs").checked = mem.settings.msgs; $("#cnTrk").checked = mem.settings.tracker;
+    ["cnDocs", "cnMsgs", "cnTrk"].forEach(function (id) { $("#" + id).disabled = !mem.settings.sources; });
+    updateBrainState();
+  }
+  function saveCorrection(id, text) {
+    var e = byId(id); if (!e) return;
+    var r = redact(String(text).trim()); if (!r.text) return;
+    if (r.n) { mem.filtered += r.n; $("#addWarn").textContent = "That looked like a password or key. It was filtered out and not saved."; }
+    e.note = r.text.slice(0, 300); e.corrected = true; e.seen = nowTs(); e.status = "fresh"; addSource(e, { kind: "correction", label: "Your correction on " + fmtDate(nowTs()) });
+    mem.inbox.push({ kind: "correction", ref: e.id }); editingId = null; persist(); syncGraph(); render(); nodeFx(e.id, "flash");
+  }
+  function confirmTrue(id) {
+    var e = byId(id); if (!e) return;
+    e.status = "fresh"; e.seen = nowTs(); e.strength = Math.min(9, e.strength + 1); addSource(e, { kind: "correction", label: "You confirmed it is still true on " + fmtDate(nowTs()) });
+    mem.inbox.push({ kind: "correction", ref: e.id }); persist(); syncGraph(); render(); nodeFx(e.id, "pulse");
+  }
+  function deleteEntry(id) {
+    var e = byId(id); if (!e) return;
+    mem.blocked.push(e.key); if (mem.blocked.length > 400) mem.blocked.splice(0, mem.blocked.length - 400);
+    mem.entries = mem.entries.filter(function (x) { return x.id !== id; });
+    mem.entries.forEach(function (x) { x.links = x.links.filter(function (l) { return l !== id; }); });
+    if (G.sel === id) G.sel = null;
+    confirmId = null; persist(); syncGraph(); render(); $("#entryList").focus();
+  }
+  $("#memSearch").addEventListener("input", render);
+
+  /* ---------- add a note or skill (a "file" Brain can learn from) ---------- */
+  var aProg = $("#aProg");
+  NODES.forEach(function (n) { aProg.append(h("option", { value: n.id, text: n.name + " · " + n.sub })); });
+  $("#aType").addEventListener("change", function () { $("#aProgWrap").hidden = $("#aType").value !== "skill"; });
+  $("#addForm").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var type = $("#aType").value, t = redact($("#aTitle").value.trim()), n = redact($("#aNote").value.trim());
+    var warn = t.n + n.n; if (warn) { mem.filtered += warn; }
+    if (!t.text || !n.text) return;
+    if (mem.entries.length >= MAX_ENTRIES) { $("#addWarn").textContent = "Memory is full (" + MAX_ENTRIES + " entries). Delete some first."; return; }
+    var isSkill = type === "skill", key = (isSkill ? "skill:" : "m:" + type + ":") + norm(t.text);
+    mem.blocked = mem.blocked.filter(function (b) { return b !== key; });
+    var e = byKey(key);
+    if (e) { e.note = n.text; e.corrected = true; e.seen = nowTs(); e.status = "fresh"; addSource(e, { kind: "correction", label: "Updated by you on " + fmtDate(nowTs()) }); mem.inbox.push({ kind: "correction", ref: e.id }); }
+    else {
+      e = mkEntry({ key: key, type: isSkill ? "concept" : type, title: t.text, note: n.text, skill: isSkill, prog: isSkill ? $("#aProg").value : null, manual: true, sources: [{ kind: "file", label: "Your note, " + fmtDate(nowTs()) }] });
+      mem.entries.push(e); if (isSkill) link(e, byKey("prog:" + e.prog)); mem.inbox.push({ kind: "file", ref: e.id });
+    }
+    $("#aTitle").value = ""; $("#aNote").value = "";
+    $("#addWarn").textContent = warn ? "That looked like a password or key. The secret part was filtered out. Please do not paste real secrets." : "Added. Brain will count it on its next run.";
+    persist(); syncGraph(); render(); nodeFx(e.id, "pop");
+    if (mem.settings.brain && !running) { speed = parseFloat($("#speed").value) || 0; setTimeout(brainRun, 900 * speed); }
   });
 
+  /* ---------- run buttons ---------- */
+  $("#runNow").addEventListener("click", function () { speed = parseFloat($("#speed").value) || 0; brainRun(); });
+  $("#skip30").addEventListener("click", function () {
+    speed = parseFloat($("#speed").value) || 0; mem.dayShift = Math.min(3650, mem.dayShift + 30); persist(); render();
+    if (mem.settings.brain) brainRun();
+    else { var cut = nowTs() - STALE_DAYS * DAY; mem.entries.forEach(function (e) { if (e.seen < cut) e.status = "stale"; }); persist(); syncGraph(); render(); }
+  });
+
+  /* ---------- settings ---------- */
+  function setBool(id, key) { $(id).addEventListener("change", function () { mem.settings[key] = $(id).checked; persist(); render(); }); }
+  setBool("#setBrain", "brain"); setBool("#setSources", "sources"); setBool("#cnDocs", "docs"); setBool("#cnMsgs", "msgs"); setBool("#cnTrk", "tracker");
+  $("#saveInstr").addEventListener("click", function () { var r = redact($("#instr").value.trim().slice(0, 400)); mem.settings.instructions = r.text; $("#instr").value = r.text; if (r.n) mem.filtered += r.n; persist(); $("#instrMsg").textContent = r.n ? "Saved. A password or key was filtered out." : "Saved."; render(); });
+  $("#resetMem").addEventListener("click", function () {
+    var b = $("#resetMem");
+    if (running || brainRunning) { $("#resetMsg").textContent = "Wait for the current session or Brain run to finish."; return; }
+    if (b.dataset.armed !== "1") { b.dataset.armed = "1"; b.textContent = "Click again to erase everything"; setTimeout(function () { b.dataset.armed = ""; b.textContent = "Erase all memory and start over"; }, 3000); return; }
+    b.dataset.armed = ""; b.textContent = "Erase all memory and start over";
+    var keepSettings = mem.settings; seedMem(); mem.settings = keepSettings; G.sel = null; persist(); syncGraph(); render(); $("#resetMsg").textContent = "Memory reset to the starter set.";
+  });
+
+  /* ---------- backup and restore ---------- */
   var bMsg = $("#bMsg");
-  function exportText() { return JSON.stringify({ app: "orchestration-brain", version: 1, skills: skills }, null, 2); }
+  function exportText() { return JSON.stringify(mem, null, 2); }
   $("#bExport").addEventListener("click", function () { $("#backup").value = exportText(); bMsg.textContent = "Backup text is in the box above. Copy it into a file."; });
   $("#bCopy").addEventListener("click", function () { $("#backup").value = exportText(); copyText($("#backup").value, $("#bCopy")); });
   $("#bDownload").addEventListener("click", function () {
     $("#backup").value = exportText();
     try {
-      var a = h("a", { href: URL.createObjectURL(new Blob([$("#backup").value], { type: "application/json" })), download: "brain-skills.json" });
+      var a = h("a", { href: URL.createObjectURL(new Blob([$("#backup").value], { type: "application/json" })), download: "brain-memory.json" });
       document.body.append(a); a.click(); a.remove();
       bMsg.textContent = "If no file appeared, your viewer blocks downloads. Use Copy instead.";
     } catch (e) { bMsg.textContent = "Download is blocked here. Use Copy instead."; }
   });
   $("#bLoad").addEventListener("click", function () {
+    if (running || brainRunning) { bMsg.textContent = "Wait for the current session or Brain run to finish."; return; }
+    var lb = $("#bLoad");
+    if (lb.dataset.armed !== "1") { lb.dataset.armed = "1"; lb.textContent = "Click again to replace memory"; setTimeout(function () { lb.dataset.armed = ""; lb.textContent = "Load pasted backup"; }, 3000); return; }
+    lb.dataset.armed = ""; lb.textContent = "Load pasted backup";
     try {
-      var d = JSON.parse($("#backup").value), list = Array.isArray(d) ? d : d.skills;
-      if (!Array.isArray(list)) throw new Error("no list");
-      var ok = list.filter(validSkill).slice(0, MAX_SKILLS).map(cleanSkill);
-      if (!ok.length) throw new Error("none valid");
-      skills = ok; saveSkills(); resetForm(); renderSkills();
-      bMsg.textContent = "Loaded " + ok.length + " skill(s)" + (ok.length < list.length ? " (" + (list.length - ok.length) + " skipped: empty or too long, or not a program from the chart)." : ".") + (storageOk ? "" : " Not saved in this browser.");
+      var m = sanitizeMem(JSON.parse($("#backup").value));
+      if (!m || !m.entries.length) throw new Error("none valid");
+      mem = m; G.sel = null; persist(); syncGraph(); render();
+      bMsg.textContent = "Loaded " + m.entries.length + " entries and " + m.sessions.length + " session(s)." + (storageOk ? "" : " Not saved in this browser.");
     } catch (e) { bMsg.textContent = "Could not read that text. Paste the full backup, starting with {."; }
   });
-  $("#bReset").addEventListener("click", function () {
-    var b = $("#bReset");
-    if (b.dataset.armed !== "1") { b.dataset.armed = "1"; b.textContent = "Click again to reset"; setTimeout(function () { b.dataset.armed = ""; b.textContent = "Reset to starter list"; }, 3000); return; }
-    b.dataset.armed = ""; b.textContent = "Reset to starter list";
-    skills = STARTER.map(function (s) { return Object.assign({}, s); }); saveSkills(); resetForm(); renderSkills(); bMsg.textContent = "Back to the starter list." + (storageOk ? "" : " Not saved in this browser.");
-  });
 
-  /* ---------- Boot ---------- */
-  skills = loadSkills();
-  resetForm(); renderSkills(); clampFrac(); layout();
+  /* ================= Boot ================= */
+  loadMem(); persist();
+  $("#instr").value = mem.settings.instructions;
+  $("#aProgWrap").hidden = $("#aType").value !== "skill";
+  render(); clampFrac(); layout(); syncGraph();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
 })();
 </script>
