@@ -192,6 +192,15 @@ details > * + * { margin-top: 8px; }
 details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 13.5px; }
 a { color: var(--fg); }
 .sr { position: absolute; left: -9999px; }
+.livesec, #liveBox { display: grid; gap: 10px; }
+.liverow { display: grid; grid-template-columns: 74px minmax(0, 1.2fr) minmax(0, 1fr) auto; gap: 6px; align-items: center; }
+.liverow b { font: 700 11px var(--font-display); letter-spacing: .12em; text-transform: uppercase; }
+.liverow .note { grid-column: 2 / -1; }
+.liverow input { min-width: 0; padding: 7px 9px; font-size: 13px; }
+.mapgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.mapcell { display: grid; gap: 3px; font: 700 10.5px var(--font-display); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.mapcell select { font: 400 13px var(--font-body); letter-spacing: 0; text-transform: none; padding: 6px 8px; }
+input[type=number] { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line-2); border-radius: 2px; padding: 5px 7px; }
 @media (max-width: 1000px) {
   .main { grid-template-columns: minmax(0, 1fr); }
   .stage { height: clamp(480px, 70vh, 720px); }
@@ -210,7 +219,7 @@ a { color: var(--fg); }
   <header class="top">
     <h1>Orchestration Brain</h1>
     <p>A live view of your bots working together. Tasks run on their own: Grok commands, Claude coordinates, the collaborators work, Muse audits, and the Brain learns from every task. Nothing to type. Drag any node to move it.</p>
-    <span class="badge">simulation · no real AI calls</span>
+    <span class="badge" id="modeBadge">simulation · no real AI calls</span>
   </header>
 
   <section class="ask" id="controls" aria-label="Playback">
@@ -279,7 +288,7 @@ a { color: var(--fg); }
             <li><b>Memory only.</b> Brain does not take actions or message you.</li>
           </ol>
           <p class="note"><b>From the article:</b> steps 1 to 5 above, from Perplexity's help article <a href="https://www.perplexity.ai/help-center/en/articles/19700001-what-is-brain" target="_blank" rel="noopener">“What is Brain?”</a>. Checked against the live page on 2026-10-21 (it says it was last modified October 2, 2026). In the article, Brain is a Research Preview for Max and Enterprise Max subscribers using Perplexity Computer. This page does not connect to Perplexity.</p>
-          <p class="note"><b>This page's own ideas (not in the article):</b> the animations, the black-and-white look, the drifting network and packets of light, the graph shapes and layout; there is no question box and tasks run on their own from an automatic queue; the Plan / Queries / Sources / Answer task with cited answers; the “Report” step of a run; the Skills filter; the incognito switch and “Run Brain now” button; sample connectors; the 30-day stale rule and the “skip ahead” demo clock (the article gives no time rule); the rule that a deleted entry is not learned again; and the password filter, which is simple pattern matching, not the AI-based filtering the article describes.</p>
+          <p class="note"><b>This page's own ideas (not in the article):</b> the animations, the black-and-white look, the drifting network and packets of light, the graph shapes and layout; there is no question box and tasks run on their own from an automatic queue; the Plan / Queries / Sources / Answer task with cited answers; the “Report” step of a run; the Skills filter; the incognito switch and “Run Brain now” button; sample connectors; the 30-day stale rule and the “skip ahead” demo clock (the article gives no time rule); the rule that a deleted entry is not learned again; and the optional Live AI mode that lets real models from four companies voice the bots; and the password filter, which is simple pattern matching, not the AI-based filtering the article describes.</p>
         </details>
 
         <div class="runcard">
@@ -334,13 +343,14 @@ a { color: var(--fg); }
         <div><h2 style="margin-bottom:6px">Instructions</h2><textarea id="instr" maxlength="400" placeholder="Tell Brain what to pay attention to"></textarea>
           <div class="row" style="margin-top:6px"><button class="small" type="button" id="saveInstr">Save instructions</button><span class="note" id="instrMsg" role="status"></span></div>
           <p class="note" style="margin-top:6px">The article shows an Instructions field only in a screenshot and does not explain it. Here the text is saved and shown in each run. It does not change what is learned.</p></div>
+        <div id="liveSec" class="livesec"></div>
         <h2>Privacy</h2>
         <ul class="note" style="padding-left:18px;display:grid;gap:4px">
           <li>Brain learns only from your own activity, in this browser.</li>
           <li>Incognito sessions are skipped completely.</li>
           <li>Common password and key patterns are filtered out before saving. This is a best-effort filter, not a guarantee, so do not paste real secrets.</li>
           <li>Brain only maintains memory. It does not take actions or message you.</li>
-          <li>This page is a simulation. No real AI or web search runs, and nothing connects to Perplexity.</li>
+          <li>This page is a simulation unless you switch on Live AI below. Even then, web search is never used, and nothing connects to Perplexity.</li>
         </ul>
         <p class="note" id="sensCount"></p>
         <div class="row"><button class="small danger" type="button" id="resetMem">Erase all memory and start over</button><span class="note" id="resetMsg" role="status"></span></div>
@@ -521,7 +531,7 @@ a { color: var(--fg); }
     m.sessions = (Array.isArray(d.sessions) ? d.sessions : []).filter(function (s) { return s && typeof s.id === "string" && /^s\d{1,9}$/.test(s.id) && typeof s.q === "string" && Array.isArray(s.msgs); }).slice(-MAX_SESSIONS)
       .map(function (s) { return { id: s.id, ts: okTs(s.ts), q: scrub(s.q.slice(0, 300)), kws: Array.isArray(s.kws) ? s.kws.filter(function (k) { return typeof k === "string"; }).slice(0, 9).map(function (k) { return scrub(k.slice(0, 30)); }) : [],
         accepted: Array.isArray(s.accepted) ? s.accepted.slice(0, 10).filter(function (a) { return a && typeof a.label === "string" && isFinite(a.id); }).map(function (a) { return { id: +a.id, label: scrub(a.label.slice(0, 60)), fact: scrub(String(a.fact || "").slice(0, 400)), entity: typeof a.entity === "string" ? scrub(a.entity.slice(0, 40)) : null, src: typeof a.src === "string" ? scrub(a.src.slice(0, 120)) : "" }; }) : [], uncovered: Array.isArray(s.uncovered) ? s.uncovered.filter(function (u) { return typeof u === "string"; }).slice(0, 6).map(function (u) { return scrub(u.slice(0, 200)); }) : [],
-        msgs: s.msgs.filter(function (x) { return x && Object.prototype.hasOwnProperty.call(SPEAKERS, x.from) && typeof x.text === "string"; }).slice(0, 40).map(function (x) { return { from: x.from, text: scrub(x.text.slice(0, 4000)) }; }) }; });
+        msgs: s.msgs.filter(function (x) { return x && Object.prototype.hasOwnProperty.call(SPEAKERS, x.from) && typeof x.text === "string"; }).slice(0, 40).map(function (x) { return { from: x.from, text: scrub(x.text.slice(0, 4000)), tag: typeof x.tag === "string" ? scrub(x.tag.slice(0, 80)) : "" }; }) }; });
     m.blocked = (Array.isArray(d.blocked) ? d.blocked : []).filter(function (b) { return typeof b === "string"; }).slice(0, 2000).map(function (b) { return b.slice(0, 120); });
     m.inbox = [];
     m.runs = Math.max(0, +d.runs || 0); m.dayShift = Math.max(0, Math.min(3650, +d.dayShift || 0));
@@ -902,22 +912,22 @@ a { color: var(--fg); }
 
   /* ================= Conversation ================= */
   var logEl = $("#log"), transcript = [], msgs = [], viewingSaved = false;
-  function say(from, text, extra, plain, cls) {
+  function say(from, text, extra, plain, cls, tag) {
     var p = SPEAKERS[from];
     if (logEl.querySelector(".empty")) logEl.textContent = "";
     var msg = h("div", { class: "msg", style: "--c:" + color(from) },
       h("div", { class: "bar" }),
-      h("div", {}, h("div", { class: "who" }, p.name, h("i", { text: p.sub })),
+      h("div", {}, h("div", { class: "who" }, p.name, h("i", { text: p.sub + (tag ? " · " + tag : "") })),
         text ? h("p", { text: text, class: cls || "" }) : null, extra || null));
     logEl.append(msg); logEl.scrollTop = logEl.scrollHeight;
     var t = plain || text || "";
-    transcript.push("[" + p.name + "] " + t); msgs.push({ from: from, text: t });
+    transcript.push("[" + p.name + (tag ? " (" + tag + ")" : "") + "] " + t); msgs.push({ from: from, text: t, tag: tag || "" });
   }
   function showSaved(sess) {
     viewingSaved = true; logEl.textContent = "";
     sess.msgs.forEach(function (m) {
       logEl.append(h("div", { class: "msg", style: "--c:" + color(m.from) }, h("div", { class: "bar" }),
-        h("div", {}, h("div", { class: "who" }, SPEAKERS[m.from].name, h("i", { text: SPEAKERS[m.from].sub })), h("p", { class: "pre", text: m.text }))));
+        h("div", {}, h("div", { class: "who" }, SPEAKERS[m.from].name, h("i", { text: SPEAKERS[m.from].sub + (m.tag ? " · " + m.tag : "") })), h("p", { class: "pre", text: m.text }))));
     });
     $("#savedLbl").textContent = "Saved session from " + fmtDate(sess.ts) + ": " + clip(sess.q, 60); $("#savedBar").hidden = false;
     logEl.scrollTop = 0;
@@ -1182,6 +1192,170 @@ a { color: var(--fg); }
     }
   }
 
+  /* ================= Live AI (optional, off by default, you pay the providers) =================
+     Each bot can be voiced by a real model from a different company. The page's own code still finds the
+     sample lines, writes the cited answer and checks it. A model only writes the short commentary of the bot,
+     so it cannot put an invented fact into the answer. Keys stay in this browser tab (or this device if you tick
+     "remember"). They are never written to memory, backups, transcripts or the repo. */
+  var PROV = {
+    anthropic: { label: "Anthropic", model: "claude-haiku-5-5", hint: "key starts with sk-ant-" },
+    openai:    { label: "OpenAI",    model: "gpt-6-luna",       hint: "key starts with sk-" },
+    google:    { label: "Google",    model: "gemini-3.5-flash-lite", hint: "key starts with AIza" },
+    xai:       { label: "xAI",       model: "grok-4.20-0309-non-reasoning", hint: "key starts with xai-" }
+  };
+  var LIVE_BOTS = ["grok", "claude", "chatgpt", "gemini", "cursor", "muse"];
+  var LIVE = { on: false, stopped: false, remember: false, keys: {}, models: {}, dead: {}, calls: 0, tin: 0, tout: 0, maxTokens: 300, callCap: 60, ctx: "", notices: {},
+    map: { grok: "xai", claude: "anthropic", chatgpt: "openai", gemini: "google", cursor: "sim", muse: "sim" } };
+  Object.keys(PROV).forEach(function (p) { LIVE.models[p] = PROV[p].model; });
+  var LKEY = "brain.live.v1", LKEYS = "brain.livekeys.v1";
+
+  function loadLive() {
+    try {
+      var d = JSON.parse(localStorage.getItem(LKEY) || "null");
+      if (d && typeof d === "object") {
+        LIVE.remember = !!d.remember;
+        if (isFinite(d.maxTokens)) LIVE.maxTokens = Math.max(20, Math.min(1000, Math.round(d.maxTokens)));
+        if (isFinite(d.callCap)) LIVE.callCap = Math.max(1, Math.min(500, Math.round(d.callCap)));
+        Object.keys(PROV).forEach(function (p) { if (d.models && typeof d.models[p] === "string" && /^[A-Za-z0-9._:\-]{1,80}$/.test(d.models[p])) LIVE.models[p] = d.models[p]; });
+        LIVE_BOTS.forEach(function (b) { if (d.map && (d.map[b] === "sim" || PROV[d.map[b]])) LIVE.map[b] = d.map[b]; });
+      }
+      if (LIVE.remember) {
+        var k = JSON.parse(localStorage.getItem(LKEYS) || "null");
+        if (k && typeof k === "object") Object.keys(PROV).forEach(function (p) { if (typeof k[p] === "string") LIVE.keys[p] = k[p].slice(0, 300); });
+      }
+    } catch (e) {}
+  }
+  function saveLive() {
+    try {
+      localStorage.setItem(LKEY, JSON.stringify({ remember: LIVE.remember, maxTokens: LIVE.maxTokens, callCap: LIVE.callCap, models: LIVE.models, map: LIVE.map }));
+      if (LIVE.remember) localStorage.setItem(LKEYS, JSON.stringify(LIVE.keys)); else localStorage.removeItem(LKEYS);
+    } catch (e) {}
+  }
+  function liveActive() {
+    return LIVE.on && !LIVE.stopped && LIVE_BOTS.some(function (b) { var p = LIVE.map[b]; return p !== "sim" && LIVE.keys[p] && !LIVE.dead[p]; });
+  }
+  function refreshBadge() {
+    var n = liveActive() ? LIVE_BOTS.filter(function (b) { var p = LIVE.map[b]; return p !== "sim" && LIVE.keys[p] && !LIVE.dead[p]; }).length : 0;
+    $("#modeBadge").textContent = n ? "live · " + n + " real AI bot" + (n > 1 ? "s" : "") + " · you pay" : "simulation · no real AI calls";
+    if ($("#liveCounters")) $("#liveCounters").textContent = "Calls this page load: " + LIVE.calls + " of " + LIVE.callCap + " · tokens in " + LIVE.tin + " / out " + LIVE.tout + (LIVE.stopped ? " · STOPPED" : "");
+  }
+
+  function httpMessage(status, body) {
+    var m = "";
+    try { var j = JSON.parse(body); m = (j.error && (j.error.message || (typeof j.error === "string" ? j.error : ""))) || j.message || ""; } catch (e) {}
+    return "HTTP " + status + (m ? ": " + redact(String(m)).text.slice(0, 160) : "");
+  }
+  function respText(data) {
+    if (typeof data.output_text === "string") return data.output_text;
+    var out = [];
+    (data.output || []).forEach(function (it) { (it.content || []).forEach(function (c) { if (c && typeof c.text === "string" && (!c.type || c.type === "output_text")) out.push(c.text); }); });
+    return out.join("");
+  }
+  /* one call to one provider. Counts against the cap before sending. Never logs the key. */
+  async function callModel(pv, system, user, maxTok) {
+    var key = LIVE.keys[pv], model = LIVE.models[pv];
+    if (!key) throw new Error("no key for " + PROV[pv].label);
+    if (LIVE.stopped) throw new Error("live mode was stopped");
+    if (LIVE.calls >= LIVE.callCap) throw new Error("call limit reached (" + LIVE.callCap + " per page load)");
+    LIVE.calls++; refreshBadge();
+    var url, headers = { "content-type": "application/json" }, body, ctl = new AbortController(), timer = setTimeout(function () { ctl.abort(); }, 30000);
+    if (pv === "anthropic") {
+      url = "https://api.anthropic.com/v1/messages";
+      headers["x-api-key"] = key; headers["anthropic-version"] = "2023-06-01"; headers["anthropic-dangerous-direct-browser-access"] = "true";
+      body = { model: model, max_tokens: maxTok, system: system, messages: [{ role: "user", content: user }] };
+    } else if (pv === "openai" || pv === "xai") {
+      url = pv === "openai" ? "https://api.openai.com/v1/responses" : "https://api.x.ai/v1/responses";
+      headers.authorization = "Bearer " + key;
+      body = { model: model, input: [{ role: "system", content: system }, { role: "user", content: user }], max_output_tokens: maxTok };
+    } else {
+      url = "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent?key=" + encodeURIComponent(key);
+      body = { systemInstruction: { parts: [{ text: system }] }, contents: [{ role: "user", parts: [{ text: user }] }], generationConfig: { maxOutputTokens: maxTok } };
+    }
+    var res;
+    try { res = await fetch(url, { method: "POST", headers: headers, body: JSON.stringify(body), signal: ctl.signal }); }
+    catch (e) { throw new Error(e && e.name === "AbortError" ? "no answer after 30 seconds" : "the browser blocked the call (open index.html from your computer, not the preview link, and check your internet)"); }
+    finally { clearTimeout(timer); }
+    var raw = await res.text();
+    if (!res.ok) { if (res.status === 401 || res.status === 403) LIVE.dead[pv] = true; throw new Error(httpMessage(res.status, raw) + (res.status === 401 || res.status === 403 ? " (key rejected, so this provider is switched off until you reload)" : "")); }
+    var data; try { data = JSON.parse(raw); } catch (e) { throw new Error("the reply was not JSON"); }
+    var text, tin = 0, tout = 0;
+    if (pv === "anthropic") { text = (data.content || []).filter(function (c) { return c.type === "text"; }).map(function (c) { return c.text; }).join(""); tin = (data.usage || {}).input_tokens; tout = (data.usage || {}).output_tokens; }
+    else if (pv === "google") { text = ((((data.candidates || [])[0] || {}).content || {}).parts || []).map(function (p) { return p.text || ""; }).join(""); tin = (data.usageMetadata || {}).promptTokenCount; tout = (data.usageMetadata || {}).candidatesTokenCount; }
+    else { text = respText(data); tin = (data.usage || {}).input_tokens; tout = (data.usage || {}).output_tokens; }
+    LIVE.tin += +tin || 0; LIVE.tout += +tout || 0; refreshBadge();
+    return { text: String(text || "") };
+  }
+
+  function systemFor(bot) {
+    var sp = SPEAKERS[bot];
+    return "You are " + sp.name + " (" + sp.sub + "), one of six bots on Max's team in a visualization. Speak as that bot in at most two short plain sentences. Use only the task and the lines you are given. Do not invent facts, names, numbers or dates. Never write keys or passwords.";
+  }
+  /* returns the bot's words: from a real model when this bot is mapped and live is on, otherwise the scripted text */
+  async function voice(bot, scripted, brief) {
+    var pv = LIVE.on && !LIVE.stopped ? LIVE.map[bot] : "sim";
+    if (!pv || pv === "sim" || !LIVE.keys[pv]) return { text: scripted, tag: LIVE.on ? "scripted" : "", live: false };
+    if (LIVE.dead[pv]) return { text: scripted, tag: "scripted · " + PROV[pv].label + " off", live: false };
+    try {
+      var r = await callModel(pv, systemFor(bot), brief + "\n\n" + LIVE.ctx, LIVE.maxTokens);
+      var t = redact(r.text.replace(/\s+/g, " ").trim()).text;
+      if (!t) throw new Error("empty reply (a thinking model may need a larger token limit in Settings)");
+      return { text: clip(t, 420), tag: "live · " + PROV[pv].label + " · " + LIVE.models[pv], live: true };
+    } catch (e) {
+      if (!LIVE.notices[pv]) { LIVE.notices[pv] = 1; say("brain", "Live call to " + PROV[pv].label + " failed: " + e.message + ". " + SPEAKERS[bot].name + " uses scripted text.", null, null, "warn"); }
+      refreshBadge();
+      return { text: scripted, tag: "scripted · live call failed", live: false };
+    }
+  }
+  async function sayLive(bot, scripted, brief) { var v = await voice(bot, scripted, brief); say(bot, v.text, null, null, null, v.tag); return v; }
+
+  /* ---------- the Settings panel ---------- */
+  function buildLiveUI() {
+    var host = $("#liveSec"); if (!host) return;
+    var rows = Object.keys(PROV).map(function (p) {
+      return h("div", { class: "liverow" },
+        h("b", { text: PROV[p].label }),
+        h("label", { class: "sr", for: "key-" + p, text: PROV[p].label + " key" }),
+        h("input", { type: "password", id: "key-" + p, autocomplete: "off", spellcheck: "false", placeholder: PROV[p].hint, value: LIVE.keys[p] || "", oninput: function () { LIVE.keys[p] = this.value.trim(); LIVE.dead[p] = false; saveLive(); refreshBadge(); } }),
+        h("label", { class: "sr", for: "model-" + p, text: PROV[p].label + " model" }),
+        h("input", { type: "text", id: "model-" + p, value: LIVE.models[p], maxlength: "80", spellcheck: "false", oninput: function () { var v = this.value.trim(); if (/^[A-Za-z0-9._:\-]{1,80}$/.test(v)) { LIVE.models[p] = v; saveLive(); } } }),
+        h("button", { class: "small", type: "button", id: "test-" + p, text: "Test", onclick: function () { testProvider(p); } }),
+        h("span", { class: "note", id: "status-" + p, role: "status" }));
+    });
+    var maps = LIVE_BOTS.map(function (b) {
+      var sel = h("select", { id: "map-" + b, onchange: function () { LIVE.map[b] = this.value; saveLive(); refreshBadge(); } },
+        h("option", { value: "sim", text: "Scripted (no AI)" }), Object.keys(PROV).map(function (p) { return h("option", { value: p, text: PROV[p].label }); }));
+      sel.value = LIVE.map[b];
+      return h("label", { class: "mapcell", for: "map-" + b }, h("span", { text: SPEAKERS[b].name }), sel);
+    });
+    host.append(
+      h("h2", { text: "Live AI (optional · you pay the providers)" }),
+      h("label", { class: "switch", for: "liveOn" }, h("span", {}, h("b", { text: "Use real AI" }), h("span", { text: "Off: scripted simulation. On: each bot you map below speaks through a real model. It only works when you open index.html from your computer, not in the preview link. Turns itself off every time the page reloads." })),
+        h("input", { type: "checkbox", id: "liveOn", onchange: function () { LIVE.on = this.checked; LIVE.stopped = false; $("#liveBox").hidden = !LIVE.on; refreshBadge(); afterLiveToggle(); } })),
+      h("div", { id: "liveBox", hidden: true },
+        h("p", { class: "note", text: "Create each key yourself on the provider's website and paste it here. Never paste a key in the chat. A key is kept in this tab only, unless you tick “remember” below. Each task makes up to 9 short calls. Prices differ by model, so check each provider's price page. Live tasks never repeat on their own: autopilot waits for you." }),
+        rows,
+        h("h2", { text: "Which company's AI voices which bot" }),
+        h("div", { class: "mapgrid" }, maps),
+        h("p", { class: "note", text: "Cursor and Muse have no public chat API that I know of (unverified), so they stay scripted unless you map them to one of the four." }),
+        h("div", { class: "row" },
+          h("label", { class: "check", for: "liveTokens" }, "Max tokens per reply ", h("input", { type: "number", id: "liveTokens", min: "20", max: "1000", value: String(LIVE.maxTokens), style: "width:80px", onchange: function () { LIVE.maxTokens = Math.max(20, Math.min(1000, Math.round(+this.value || 300))); this.value = LIVE.maxTokens; saveLive(); } })),
+          h("label", { class: "check", for: "liveCap" }, "Max calls per page load ", h("input", { type: "number", id: "liveCap", min: "1", max: "500", value: String(LIVE.callCap), style: "width:80px", onchange: function () { LIVE.callCap = Math.max(1, Math.min(500, Math.round(+this.value || 60))); this.value = LIVE.callCap; saveLive(); refreshBadge(); } }))),
+        h("div", { class: "row" },
+          h("label", { class: "check", for: "liveRemember" }, h("input", { type: "checkbox", id: "liveRemember", onchange: function () { LIVE.remember = this.checked; saveLive(); } }), " Remember keys on this device (anyone using this browser could use them)"),
+          h("button", { class: "small danger", type: "button", id: "liveForget", text: "Forget keys now", onclick: function () { LIVE.keys = {}; LIVE.dead = {}; Object.keys(PROV).forEach(function (p) { $("#key-" + p).value = ""; }); try { localStorage.removeItem(LKEYS); } catch (e) {} refreshBadge(); } }),
+          h("button", { class: "small primary", type: "button", id: "liveStop", text: "Stop live now", onclick: function () { LIVE.stopped = true; refreshBadge(); afterLiveToggle(); } })),
+        h("p", { class: "report", id: "liveCounters", role: "status" }),
+        h("p", { class: "note", text: "Live mode sends the task text and the sample lines to the companies you map. Each bot's message says which model wrote it. The cited answer is still built and checked by this page's own code." })));
+    $("#liveRemember").checked = LIVE.remember; refreshBadge();
+  }
+  async function testProvider(p) {
+    var st = $("#status-" + p); st.textContent = "Testing…";
+    try { var r = await callModel(p, "Reply with the single word OK.", "Say OK.", 40); st.textContent = r.text.trim() ? "Works. The model answered." : "Connected, but the reply was empty (try a larger token limit)."; }
+    catch (e) { st.textContent = "Failed: " + e.message; }
+    refreshBadge();
+  }
+  function afterLiveToggle() { if (typeof scheduleNext === "function") scheduleNext(); }
+
   /* ================= Run one session ================= */
   async function run(qRaw) {
     if (running || brainRunning) return;
@@ -1194,6 +1368,8 @@ a { color: var(--fg); }
     try {
       SRC = buildSources();
       var an = analyse(q), ev = evaluate(an), prior = !incog ? findWorkstream(an.kws) : null;
+      LIVE.notices = {};
+      LIVE.ctx = "Task: " + q + "\nLines kept:\n" + (ev.accepted.map(function (s, i) { return "[" + (i + 1) + "] " + s.label + ": " + clip(s.fact, 260); }).join("\n") || "(none)") + "\nUnanswered points: " + (ev.uncovered.join("; ") || "none");
       setPhase(0);
       say("queue", "Task: " + q);
       if (red.n) { mem.filtered += red.n; say("brain", "Warning: that looked like a password or key, so I filtered it out and will not remember it. Please do not paste real secrets here.", null, null, "warn"); }
@@ -1202,12 +1378,12 @@ a { color: var(--fg); }
         + (incog ? " Incognito: I will not learn from this session." : !mem.settings.brain ? " Brain is off, so I will not write new memory." : ""));
       handoff("brain", "grok"); await sleep(1000);
       if (prior) { say("brain", "I remember this. You asked about it on " + fmtDate(prior.seen) + ". " + clip(prior.note, 200)); await sleep(900); }
-      say("grok", "I command this repo. Claude is the hub and runs the work. Muse audits everyone. I sign off last with pass or fail.");
+      await sayLive("grok", "I command this repo. Claude is the hub and runs the work. Muse audits everyone. I sign off last with pass or fail.", "Say that you lead this team, you are handing the task to Claude, and you will sign off last with pass or fail.");
       handoff("grok", "claude"); await sleep(1100);
       var plan = ["Keywords: " + (an.kws.join(", ") || "none found") + "."];
       plan.push(an.temporal.length ? "Time words: " + an.temporal.join(", ") + ". The sample lines have no dates, so I will warn that recency cannot be confirmed." : "No time words, so no recency check is needed.");
       plan.push(an.clauses.length > 1 ? "Hidden sub-questions: " + an.clauses.map(function (c, i) { return (i + 1) + ") " + c; }).join("  ") : "One question, no hidden sub-questions.");
-      say("claude", plan.join(" ")); await sleep(1100);
+      await sayLive("claude", plan.join(" "), "Explain your plan for this task. Notes: " + plan.join(" ")); await sleep(1100);
 
       setPhase(1);
       handoff("claude", "chatgpt"); await sleep(700);
@@ -1215,31 +1391,41 @@ a { color: var(--fg); }
       else {
         say("chatgpt", "Researching with " + an.queries.length + " keyword search(es):", h("ul", { class: "q" }, an.queries.map(function (x) { return h("li", { text: x }); })));
         await sleep(1000);
-        say("chatgpt", an.queries.map(function (x, i) { return "Q" + (i + 1) + " → " + search(x).length + " sample line(s)"; }).join("  ·  ") + ". " + ev.pool.length + " distinct line(s) go forward."); await sleep(900);
+        var cnt = an.queries.map(function (x, i) { return "Q" + (i + 1) + " → " + search(x).length + " sample line(s)"; }).join("  ·  ") + ". " + ev.pool.length + " distinct line(s) go forward.";
+        await sayLive("chatgpt", cnt, "Report your research results: " + cnt); await sleep(900);
       }
       handoff("claude", "gemini"); await sleep(600);
       var fromMem = ev.accepted.filter(function (s) { return s.fromMemory; }).length;
-      say("gemini", ev.accepted.length
+      var gtxt = ev.accepted.length
         ? "Studied the " + ev.pool.length + " retrieved line(s) with Claude and kept " + ev.accepted.length + " that cover the question" + (fromMem ? " (" + fromMem + " came from Brain memory, so no new lookup was needed)" : "") + ". These are demo lines written from Brain's own rules and the article, and they carry no dates, so freshness is unconfirmed."
-        : "Studied the " + ev.pool.length + " retrieved line(s). None covers the question well enough to keep."); await sleep(900);
+        : "Studied the " + ev.pool.length + " retrieved line(s). None covers the question well enough to keep.";
+      await sayLive("gemini", gtxt, "Report what you studied and kept: " + gtxt);
+      await sleep(900);
 
       setPhase(2);
       handoff("claude", "cursor"); await sleep(600);
-      say("cursor", "Merged the results and checked each clause of the question against them. " + (ev.rejected.length
+      var ctxt = "Merged the results and checked each clause of the question against them. " + (ev.rejected.length
         ? "Rejected " + ev.rejected.length + " partial match(es) (" + ev.rejected.map(function (s) { return s.label; }).join(", ") + ") because they matched under 60% of a clause's keywords."
-        : "No partial matches needed rejecting.")); await sleep(1000);
+        : "No partial matches needed rejecting.");
+      await sayLive("cursor", ctxt, "Report how you merged and reviewed: " + ctxt);
+      await sleep(1000);
       handoff("muse", "claude"); await sleep(600);
-      say("muse", "Audit of everyone's work. Citation map: " + (ev.accepted.length ? ev.accepted.map(function (s, i) { return "[" + (i + 1) + "] = " + s.label; }).join(", ") : "none, nothing was kept") + ". "
-        + ev.uncovered.length + " point(s) of the question have no source. Conflict detection is not built into this simulation; the sample lines do not overlap on any number or date."); await sleep(1000);
+      var mtxt = "Audit of everyone's work. Citation map: " + (ev.accepted.length ? ev.accepted.map(function (s, i) { return "[" + (i + 1) + "] = " + s.label; }).join(", ") : "none, nothing was kept") + ". "
+        + ev.uncovered.length + " point(s) of the question have no source. Conflict detection is not built into this simulation; the sample lines do not overlap on any number or date.";
+      await sayLive("muse", mtxt, "Report your audit of everyone's work: " + mtxt);
+      await sleep(1000);
 
       setPhase(3);
       var built = buildAnswer(ev, an);
-      say("claude", "Draft ready. Fact lines carry citations, and unanswered points use the fixed boundary sentence."); await sleep(900);
+      await sayLive("claude", "Draft ready. Fact lines carry citations, and unanswered points use the fixed boundary sentence.", "Say the draft answer is ready: it has " + ev.accepted.length + " cited fact line(s) and " + ev.uncovered.length + " unanswered point(s). Do not state any facts from the lines."); await sleep(900);
       handoff("claude", "grok"); await sleep(600);
       var v = verify(ev, built);
-      say("grok", "Checks run on the draft: " + v.facts + " fact line(s), " + v.uncited + " without a citation; citation numbers valid: " + (v.bad ? "NO" : "yes") + "; a citation reused: " + (v.reused ? "YES" : "no")
+      var gchk = "Checks run on the draft: " + v.facts + " fact line(s), " + v.uncited + " without a citation; citation numbers valid: " + (v.bad ? "NO" : "yes") + "; a citation reused: " + (v.reused ? "YES" : "no")
         + "; " + ev.uncovered.length + " gap(s) use the exact boundary sentence: " + (v.gapsOk ? "yes" : "NO") + ". Sign-off: " + (v.pass ? "PASS" : "FAIL")
-        + (ev.accepted.length ? "" : " (the answer states no facts, only that the sources do not cover it)") + "."); await sleep(900);
+        + (ev.accepted.length ? "" : " (the answer states no facts, only that the sources do not cover it)") + ".";
+      var gv = await voice("grok", gchk, "Restate these check results in one or two plain sentences. Do not change any number or any PASS or FAIL: " + gchk);
+      say("grok", gv.live ? gv.text + " — " + gchk : gchk, null, null, null, gv.tag);
+      await sleep(900);
       handoff("grok", "brain"); await sleep(500);
       say("brain", "Final answer for Max:", built.node, built.plain);
       setPhase(4);
@@ -1284,15 +1470,19 @@ a { color: var(--fg); }
     setStatus("Task " + taskNo + " · running");
     run(q).then(afterTask, afterTask);
   }
-  function nextTask() { var i = queueIdx % SAMPLES.length; startTask(SAMPLES[i], false, i); }
+  function nextTask(manual) {
+    if (manual !== true && liveActive()) { if (!busy) setStatus("Live mode: autopilot waits for you. Press Next task."); return; }
+    var i = queueIdx % SAMPLES.length; startTask(SAMPLES[i], false, i);
+  }
   function afterTask() {
     busy = false; currentTask = ""; updateHud(); updateBrainState();
     chipEls.forEach(function (c) { c.setAttribute("aria-pressed", "false"); });
-    setStatus(playing ? "Task " + taskNo + " done · next soon" : "Task " + taskNo + " done · paused");
+    setStatus(liveActive() ? "Task " + taskNo + " done · live mode waits for you · press Next task" : playing ? "Task " + taskNo + " done · next soon" : "Task " + taskNo + " done · paused");
     scheduleNext();
   }
   function scheduleNext() {
     clearTimeout(autoTimer); if (!playing) return;
+    if (liveActive()) { if (!busy) setStatus("Live mode: autopilot waits for you. Press Next task."); return; }
     autoTimer = setTimeout(function () { if (document.hidden || busy || running || brainRunning || viewingSaved) { scheduleNext(); return; } nextTask(); }, Math.max(700, 3800 * speed));
   }
   function showPlayState() { $("#playBtn").textContent = playing ? "Pause" : "Play"; $("#playBtn").setAttribute("aria-pressed", String(playing)); }
@@ -1301,7 +1491,7 @@ a { color: var(--fg); }
     if (playing) { if (!busy && !running && !brainRunning) { setStatus("Starting"); autoTimer = setTimeout(nextTask, 500); } else scheduleNext(); }
     else setStatus(running || brainRunning ? "Pausing after this task" : "Paused");
   });
-  $("#nextBtn").addEventListener("click", function () { nextTask(); });
+  $("#nextBtn").addEventListener("click", function () { nextTask(true); });
   showPlayState();
   if (playing) { setStatus("Starting"); autoTimer = setTimeout(nextTask, 1600); }
   else setStatus(REDUCED ? "Paused · reduced motion is on" : "Paused");
@@ -1494,9 +1684,10 @@ a { color: var(--fg); }
   });
 
   /* ================= Boot ================= */
-  loadMem(); persist();
+  loadMem(); persist(); loadLive();
   $("#instr").value = mem.settings.instructions;
   $("#aProgWrap").hidden = $("#aType").value !== "skill";
+  buildLiveUI();
   render(); clampFrac(); layout(); syncGraph();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
 })();
