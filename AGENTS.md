@@ -29,9 +29,9 @@ Flow: Grok commands → Claude plans and builds → Cursor, Gemini and ChatGPT w
 2. **Write.** It writes what it learns as linked entries, each pointing at its source: Concepts, Entities, Workstreams.
 3. **Maintain.** Each run reinforces what is still true, updates what changed, and marks what is stale.
 4. **You stay in charge.** Any entry can be opened, edited or deleted. Corrections feed the next run. A deleted entry is not learned again.
-5. **Memory only.** Brain takes no actions and sends no messages.
+5. **Memory only.** Brain does not take actions or message you.
 
-The article describes no animations. The moving visuals (draggable Brain, graph dots that pop, pulse and fade) are this page's own design. The page does not connect to Perplexity.
+Wording checked against the live article on 2026-10-21 (it says it was last modified October 2, 2026). The article shows the Connected sources toggle and Instructions field only in a screenshot and does not explain them. The article describes no animations. The moving visuals (draggable Brain, graph dots that pop, pulse and fade) are this page's own design. The page does not connect to Perplexity.
 
 ## Working rules
 

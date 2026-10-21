@@ -290,9 +290,9 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
             <li><b>Write.</b> It writes what it learns as linked entries, each pointing to its source: <b>Concepts</b>, <b>Entities</b> and <b>Workstreams</b>.</li>
             <li><b>Maintain.</b> Every run <b>reinforces</b> what is still true, <b>updates</b> what changed, and <b>marks stale</b> what is not.</li>
             <li><b>You stay in charge.</b> Open, edit or delete any entry. Corrections feed the next run, and a deleted entry is not learned again.</li>
-            <li><b>Memory only.</b> Brain takes no actions and sends no messages.</li>
+            <li><b>Memory only.</b> Brain does not take actions or message you.</li>
           </ol>
-          <p class="note">From Perplexity's help article <a href="https://www.perplexity.ai/help-center/en/articles/19700001-what-is-brain" target="_blank" rel="noopener">“What is Brain?”</a>. This page only teaches the idea. It does not connect to Perplexity. The article describes no animations; the moving visuals here are this page's own design.</p>
+          <p class="note">From Perplexity's help article <a href="https://www.perplexity.ai/help-center/en/articles/19700001-what-is-brain" target="_blank" rel="noopener">“What is Brain?”</a>. Checked against the live article on 2026-10-21 (the article says it was last changed October 2, 2026). In the article, Brain is a Research Preview for Max and Enterprise Max subscribers using Perplexity Computer. This page only teaches the idea. It does not connect to Perplexity. The article describes no animations; the moving visuals here are this page's own design.</p>
         </details>
 
         <div class="runcard">
@@ -336,7 +336,7 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
       <div class="tabpane" id="pane-set" role="tabpanel" aria-labelledby="tab-set" hidden>
         <h2>Brain settings</h2>
         <label class="switch" for="setBrain"><span><b>Brain</b><span>When off, Brain stops writing new memory from your activity. Existing memory stays.</span></span><input type="checkbox" id="setBrain" checked></label>
-        <label class="switch" for="setSources"><span><b>Connected sources</b><span>Let Brain learn from linked tools. These are sample connectors, not live accounts.</span></span><input type="checkbox" id="setSources" checked></label>
+        <label class="switch" for="setSources"><span><b>Connected sources</b><span>Let Brain learn from linked tools. These are sample connectors, not live accounts. The article shows this toggle only in a screenshot and does not explain it.</span></span><input type="checkbox" id="setSources" checked></label>
         <ul class="conns" id="conns">
           <li><label class="check" for="cnDocs"><input type="checkbox" id="cnDocs" checked> Docs · Brain AGENTS.md (sample)</label></li>
           <li><label class="check" for="cnMsgs"><input type="checkbox" id="cnMsgs"> Messages · no sample items</label></li>
@@ -345,13 +345,13 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
         <label class="sr" for="instr">Instructions</label>
         <div><h2 style="margin-bottom:6px">Instructions</h2><textarea id="instr" maxlength="400" placeholder="Tell Brain what to pay attention to"></textarea>
           <div class="row" style="margin-top:6px"><button class="small" type="button" id="saveInstr">Save instructions</button><span class="note" id="instrMsg" role="status"></span></div>
-          <p class="note" style="margin-top:6px">In this simulation the instructions are saved and shown in each run. They do not change what is learned.</p></div>
+          <p class="note" style="margin-top:6px">The article shows an Instructions field only in a screenshot and does not explain it. Here the text is saved and shown in each run. It does not change what is learned.</p></div>
         <h2>Privacy</h2>
         <ul class="note" style="padding-left:18px;display:grid;gap:4px">
           <li>Brain learns only from your own activity, in this browser.</li>
           <li>Incognito sessions are skipped completely.</li>
           <li>Common password and key patterns are filtered out before saving. This is a best-effort filter, not a guarantee, so do not paste real secrets.</li>
-          <li>Brain only maintains memory. It takes no actions and sends no messages.</li>
+          <li>Brain only maintains memory. It does not take actions or message you.</li>
         </ul>
         <p class="note" id="sensCount"></p>
         <div class="row"><button class="small danger" type="button" id="resetMem">Erase all memory and start over</button><span class="note" id="resetMsg" role="status"></span></div>
@@ -428,23 +428,23 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
       lead: "Max decides what ships, and nobody merges except Max.",
       fact: "Max is the source of truth and decides what ships. Pull requests are drafts, and nobody merges except Max.",
       tags: "max decides decide ships ship merge merges merged pull request drafts owner approve who" },
-    { id: 6, label: "What Brain learns from", src: ART + " › How Brain learns", entity: null,
+    { id: 6, label: "What Brain learns from", src: ART + " › How does Brain learn?", entity: null,
       lead: "Brain learns from your sessions, connected tools, files and your corrections.",
       fact: "Brain learns from your sessions, your connected tools, files and artifacts you create, and your corrections. Incognito sessions are ignored.",
       tags: "brain learn learns learning sessions session tools connected files artifacts corrections incognito ignored sources" },
-    { id: 7, label: "What a run does", src: ART + " › How Brain learns", entity: null,
+    { id: 7, label: "What a run does", src: ART + " › How does Brain learn? and When does Brain run?", entity: null,
       lead: "Each Brain run reinforces what is true, updates what changed, and marks what is stale.",
       fact: "Each run reinforces what is still true, updates what has changed, and marks what is stale. Brain runs in the background, not during active tasks.",
       tags: "brain run runs reinforces reinforce updates update stale entries old background still true changed" },
-    { id: 8, label: "Memory only", src: ART + " › Timing and actions", entity: null,
-      lead: "Brain only maintains memory. It takes no actions and sends no messages.",
-      fact: "Brain only maintains memory. It takes no actions and sends no messages.",
+    { id: 8, label: "Memory only", src: ART + " › When does Brain run?", entity: null,
+      lead: "Brain only maintains memory. It does not take actions or message you.",
+      fact: "Brain only maintains memory. It does not take actions or message you.",
       tags: "brain actions action messages message send sends take takes memory only maintains act" },
-    { id: 9, label: "Brain vs Memory", src: ART + " › Brain vs. Memory", entity: null,
+    { id: 9, label: "Brain vs Memory", src: ART + " › What’s the difference between Brain and Memory?", entity: null,
       lead: "Memory helps Computer know you, and Brain provides working context.",
       fact: "Memory stores preferences and things you have shared. Brain organizes projects, people, documents, decisions and open loops into a connected graph, grounded in their sources.",
       tags: "brain memory difference graph projects people documents decisions loops preferences context connected" },
-    { id: 10, label: "Viewing and editing", src: ART + " › Viewing and editing", entity: null,
+    { id: 10, label: "Viewing and editing", src: ART + " › Where do I see what Brain has learned, and how do I edit it?", entity: null,
       lead: "You can open, edit or delete any entry Brain wrote.",
       fact: "Entries are organized into Concepts, Entities and Workstreams. You can edit or delete any entry, and corrections feed Brain's next run.",
       tags: "edit delete entry entries concepts entities workstreams view open corrections correct wiki graph" }
@@ -1017,7 +1017,7 @@ details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 
       var doc = upsert({ key: "doc:agents", type: "entity", title: "Brain AGENTS.md", note: "The team roles and working rules for the Brain repo. Most sample sources come from it.", sources: [{ kind: "tool", label: "Docs connector (sample)" }] }, t); n++;
     }
     if (st.tracker) {
-      var pr = upsert({ key: "pr:brain1", type: "entity", title: "Brain pull request", note: "Draft pull request “Add Orchestration Brain page, team rules and skills memory”. Waiting for Max to review and merge.", sources: [{ kind: "tool", label: "Issue tracker (sample): Roooted1776/Brain#1" }] }, t); n++;
+      var pr = upsert({ key: "pr:brain1", type: "entity", title: "Brain pull request", note: "Draft pull request “Add Orchestration Brain page, team rules and skills memory”. This sample note was written while it waited for Max to review and merge.", sources: [{ kind: "tool", label: "Issue tracker (sample): Roooted1776/Brain#1" }] }, t); n++;
       var ws = upsert({ key: "ws:orchestration-brain-page", type: "workstream", title: "Orchestration Brain page", note: "A single-file page in the Brain repo: team chart, simulated sessions, memory graph. Open loop: Max reviews the draft pull request.", sources: [{ kind: "tool", label: "Issue tracker (sample): Roooted1776/Brain#1" }], kws: ["orchestration", "brain", "page"] }, t);
       link(ws, pr); link(ws, byKey("prog:claude"));
     }

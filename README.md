@@ -15,7 +15,17 @@ Max's **Orchestration Brain**. Open `index.html` in any browser (double-click it
 - **Skip ahead 30 days (demo)** shows how stale marking works.
 - **Backup and restore** for memory; **Copy transcript** for a conversation.
 
-The learning steps follow Perplexity's help article [“What is Brain?”](https://www.perplexity.ai/help-center/en/articles/19700001-what-is-brain). The article describes no animations; the moving visuals are this page's own design.
+The learning steps follow Perplexity's help article [“What is Brain?”](https://www.perplexity.ai/help-center/en/articles/19700001-what-is-brain). Wording was checked against the live article on 2026-10-21 (last modified October 2, 2026 per the article). In the article, Brain is a Research Preview for Max and Enterprise Max subscribers using Perplexity Computer. The article describes no animations; the moving visuals are this page's own design.
+
+## How to test (optional, for developers)
+
+The page itself needs nothing installed. To re-run the browser checks:
+
+1. `npm install --no-save playwright` (once), then `npx playwright install chromium` if you have no browser for it.
+2. `node tests/brain-check.mjs`
+3. Read the output. Every line should start with PASS, and the last line should be `ERRORS []`.
+
+The checks cover dragging the Brain in both views, learning, reinforcing, correcting, deleting, going stale, incognito, secret filtering, hostile backup files, and reload.
 
 ## Honest limits
 
