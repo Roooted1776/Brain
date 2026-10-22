@@ -138,7 +138,7 @@ const msgFor = (p, name) => p.locator('.msg').filter({ has: p.locator('.who', { 
   await p.fill('#dispatchText', 'Check the phone layout');
   await p.click('#dispatchGo');
   await p.waitForFunction(() => /done/.test(document.querySelector('#taskStatus').textContent), null, { timeout: 90000 });
-  ok('dispatched live task makes at most 18 calls', reqs.length > 6 && reqs.length <= 18, String(reqs.length));
+  ok('dispatched live task makes at most 16 calls', reqs.length > 6 && reqs.length <= 16, String(reqs.length));
   ok('angle messages say which company wrote them', /live · /i.test(await msgFor(p, 'Grok').first().innerText()));
   const line = await p.locator('#dispatchLine').innerText();
   ok('the paste-ready line never holds a key', !/TESTKEY/.test(line));

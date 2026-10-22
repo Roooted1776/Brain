@@ -1454,7 +1454,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
         } })),
       h("p", { class: "note", id: "liveMsg", role: "status" }),
       h("div", { id: "liveBox", hidden: true },
-        h("p", { class: "note", text: "Create each key yourself on the provider's website and paste it here. Never paste a key in the chat. A key is kept in this tab only, unless you tick “remember” below. A normal task makes up to 9 short calls (about 18 for an “Everyone, go” task). Prices differ by model, so check each provider's price page. Live tasks never repeat on their own: autopilot waits for you." }),
+        h("p", { class: "note", text: "Create each key yourself on the provider's website and paste it here. Never paste a key in the chat. A key is kept in this tab only, unless you tick “remember” below. A normal task makes up to 9 short calls (up to 16 for an “Everyone, go” task). Prices differ by model, so check each provider's price page. Live tasks never repeat on their own: autopilot waits for you." }),
         rows,
         h("h2", { text: "Which company's AI voices which bot" }),
         h("div", { class: "mapgrid" }, maps),
@@ -1495,7 +1495,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     for (var i = 0; i < order.length; i++) {
       var n = NODES.filter(function (x) { return x.id === order[i]; })[0]; if (!n) continue;
       light(n.id);
-      await sayLive(n.id, n.angle.replace("{q}", clip(q, 90)), "Your specialty: " + n.specialty + ". Give your angle on this task in two short sentences, then one idea nobody else on the team would suggest. Do not state facts you were not given.");
+      await sayLive(n.id, n.angle.replace("{q}", function () { return clip(q, 90); }), "Your specialty: " + n.specialty + ". In at most two short sentences, give your angle on this task and one idea nobody else on the team would suggest. Do not state facts you were not given.");
       await sleep(350);
     }
     await sleep(500);
@@ -1511,7 +1511,8 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     var r = redact($("#dispatchText").value.trim());
     if (!r.text) { $("#dispatchMsg").textContent = "Type one line first, then press Everyone, go."; $("#dispatchText").focus(); return; }
     if (busy || running || brainRunning) { $("#dispatchMsg").textContent = "A task is still running. Wait for it to finish."; return; }
-    $("#dispatchMsg").textContent = ""; if (r.n) mem.filtered += r.n;
+    $("#dispatchMsg").textContent = ""; if (r.n) { mem.filtered += r.n; persist(); }
+    if (mode !== "team") setMode("team");
     startTask(r.text, true, null, { dispatch: true });
   }
 

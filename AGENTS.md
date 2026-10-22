@@ -42,7 +42,7 @@ Max asked (2026-10-22) that every bot think from its own angle, to think out of 
 | Xcode | Builds and tests iPhone apps | iOS builds, device testing, archives | iPhone check: does it touch an iPhone app? If not, pass. |
 | Muse | Audits everyone's work and finds what is wrong | audits, finding bugs, honesty checks | Audit: what could go wrong, and how would we know? |
 
-Everyone gives 3 short points plus one idea nobody else would suggest.
+Everyone gives their angle plus one idea nobody else would suggest (live bots: at most two short sentences).
 
 ## What the page models (from the Perplexity article)
 
@@ -68,7 +68,7 @@ Wording checked against the live article on 2026-10-21 (it says it was last modi
 
 - **Off by default and off after every reload.** Autopilot never runs live tasks by itself.
 - **Keys:** Max creates them. **Never ask Max to paste a key into a chat**, never put a key in a file, commit, test, screenshot, log, backup, transcript, or pull request. Keys live in the browser tab (or the device, only if Max ticks "remember"). If a key ever appears anywhere in the repo, stop and tell Max to rotate it.
-- **Spending:** keep the hard limits (calls per page load, tokens per reply, up to 9 calls per normal task, about 18 for a dispatched one) and the "Stop live now" button. Do not raise a limit or add a loop that makes calls without Max pressing Next task.
+- **Spending:** keep the hard limits (calls per page load, tokens per reply, up to 9 calls per normal task, up to 16 for a dispatched one) and the "Stop live now" button. Do not raise a limit or add a loop that makes calls without Max pressing Next task.
 - **Honesty:** every model-written message is labeled with its company and model; scripted ones say scripted. A model only writes bot commentary. Facts, citations, and Grok's PASS/FAIL come from this page's own code. Do not claim the real services were tested: only fake servers have been (`tests/live-check.mjs`).
 - Never send real keys or real traffic from tests. Tests use fake servers only.
 
