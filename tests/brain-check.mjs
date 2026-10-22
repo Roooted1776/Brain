@@ -29,7 +29,7 @@ const chip = (pg, q) => pg.getByRole('button', { name: q, exact: true }).click()
 const waitRuns = (pg, n) => pg.waitForFunction((k)=>document.querySelector('#runBadge').textContent==='runs: '+k && !document.querySelector('#brain').classList.contains('learning') && document.querySelector('#runReport').textContent.length>0, n, {timeout:20000});
 const ask = async (q, expectRun=true) => { await chip(p, q); await settle(expectRun); };
 console.log('start:', await count(), await runs());
-ok('seeded 6 programs + 5 skills = 11', (await count()).includes('11 entries'), await count());
+ok('seeded 9 programs + 5 skills = 14', (await count()).includes('14 entries'), await count());
 // session 1
 await ask('What does Brain learn from?');
 console.log('after s1:', await count(), await runs(), '| report:', await p.locator('#runReport').innerText());
@@ -96,13 +96,13 @@ await p.click('#tab-mem'); await p.locator('summary', {hasText:'Backup'}).click(
 const bk = await p.inputValue('#backup'); ok('backup json', bk.startsWith('{') && bk.length>1000, bk.length);
 await p.click('#tab-set');
 await p.click('#resetMem'); await p.click('#resetMem');
-await p.click('#tab-mem'); ok('reset to 11', (await count()).includes('11 entries'), await count());
+await p.click('#tab-mem'); ok('reset to 14', (await count()).includes('14 entries'), await count());
 await p.fill('#backup', bk); await p.click('#bLoad'); await p.click('#bLoad'); ok('restore brings back the same memory', (await count())===countBeforeBackup, (await count())+' vs '+countBeforeBackup);
 // hostile import
 await p.fill('#backup', '{"entries":[{"id":"e9","key":"k","type":"concept","title":"<img src=x onerror=alert(1)>","note":"n","sources":[],"links":["zz"],"strength":2,"seen":1,"created":1,"status":"fresh"},null,5]}');
 await p.click('#bLoad'); await p.click('#bLoad'); ok('hostile import safe', await p.locator('.entry .ttl', {hasText:'<img'}).count()===1 && await p.locator('.entry img').count()===0);
 // reload persistence
-await p.reload(); ok('persist after reload', (await count()).startsWith('memory · 1 entries'), await count());
+await p.reload(); ok('persist after reload (1 imported entry + the 9 team members added on load)', (await count()).startsWith('memory · 10 entries'), await count());
 await ctx.close();
 
 // ---- Muse's cases ----
@@ -135,7 +135,7 @@ const st2 = JSON.parse(await r.evaluate(()=>localStorage.getItem('brain.mem.v2')
 ok('bad id dropped, forged corpusId dropped', st2.entries.length===2 && st2.entries.find(e=>e.id==='e3').corpusId===null, st2.entries.map(e=>e.id+':'+e.corpusId).join(','));
 ok('timestamps clamped', st2.entries.every(e=>e.seen<=8.64e15&&e.created>=0) && st2.sessions[0].ts<=8.64e15);
 ok('constructor speaker dropped, secret scrubbed', st2.sessions[0].msgs.length===1 && !/hunter2/.test(JSON.stringify(st2)) && !/abc123456/.test(JSON.stringify(st2)));
-await r.reload(); ok('boots after hostile import', (await r.locator('#memCount').innerText()).toLowerCase().includes('2 entries'));
+await r.reload(); ok('boots after hostile import (2 kept entries + 9 team members)', (await r.locator('#memCount').innerText()).toLowerCase().includes('11 entries'));
 // spoof: entry e1 (key c:corpus:6) used as memory source -> label comes from CORPUS not the fake title
 await r.selectOption('#speed','0'); await chip(r, 'What does Brain learn from?'); await waitRuns(r, 1);
 const srcCell = await r.locator('.answer table td').nth(1).innerText();

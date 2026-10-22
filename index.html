@@ -391,15 +391,38 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   function svg(tag, attrs) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); return e; }
 
   /* ================= Max's chart ================= */
+  /* The team. Roles come from Max's chart; Grok Bot, Perplexity and Xcode and every "specialty", "skills" and "angle" are starting guesses that Max can change (they are Max's assignments, not claims about the products).
+     "angle" is the question each bot asks about a task from its own specialty; {q} is the task. xs = x position on a narrow phone. */
   var NODES = [
-    { id: "grok",    name: "Grok",    sub: "Commands the repo",      kind: "lead",   x: 0.5, y: 0.13 },
-    { id: "claude",  name: "Claude",  sub: "UI, frontend, logic",    kind: "hub",    x: 0.5, y: 0.38 },
-    { id: "cursor",  name: "Cursor",  sub: "Integrates & reviews",   kind: "collab", x: 0.2, y: 0.63 },
-    { id: "gemini",  name: "Gemini",  sub: "Studies UI together",    kind: "collab", x: 0.5, y: 0.63 },
-    { id: "chatgpt", name: "ChatGPT", sub: "Research together",      kind: "collab", x: 0.8, y: 0.63 },
-    { id: "muse",    name: "Muse",    sub: "Audits everyone's work", kind: "audit",  x: 0.5, y: 0.87 }
+    { id: "grok",       name: "Grok",       sub: "Commands the repo",        kind: "lead",   x: 0.36, xs: 0.27, y: 0.11,
+      specialty: "Challenges the plan and asks what everyone is missing", skills: ["spotting weak assumptions", "contrarian questions", "final sign-off"],
+      angle: "Challenge: what in “{q}” could be wrong, risky, or missing?" },
+    { id: "grokbot",    name: "Grok Bot",   sub: "Runs Grok's orders",       kind: "lead",   x: 0.64, xs: 0.73, y: 0.11,
+      specialty: "Keeps the order: hands tasks out and logs every hand-off", skills: ["task hand-offs", "logging", "keeping the order"],
+      angle: "Order: I will hand “{q}” to each bot and log every hand-off." },
+    { id: "claude",     name: "Claude",     sub: "UI, frontend, logic",      kind: "hub",    x: 0.5,  y: 0.33,
+      specialty: "Careful reasoning, clear writing and code", skills: ["step-by-step plans", "clear writing", "building the page"],
+      angle: "Plan: break “{q}” into small steps and build it carefully." },
+    { id: "cursor",     name: "Cursor",     sub: "Integrates & reviews",     kind: "collab", x: 0.2,  y: 0.56,
+      specialty: "Edits code in the repo and reviews changes", skills: ["editing files", "merging work", "code review"],
+      angle: "Build: which files would change for “{q}”, and what could break?" },
+    { id: "gemini",     name: "Gemini",     sub: "Studies UI together",      kind: "collab", x: 0.5,  y: 0.56,
+      specialty: "Reads lots of material at once and cross-checks it, including pictures and long documents", skills: ["long documents", "images", "cross-checking"],
+      angle: "Cross-check: which long documents or images should we study for “{q}”?" },
+    { id: "chatgpt",    name: "ChatGPT",    sub: "Research together",        kind: "collab", x: 0.8,  y: 0.56,
+      specialty: "Brainstorms many options fast and gives a second opinion", skills: ["brainstorming", "second opinions", "explaining"],
+      angle: "Options: three different ways to approach “{q}”." },
+    { id: "perplexity", name: "Perplexity", sub: "Finds and cites sources",  kind: "collab", x: 0.28, y: 0.74,
+      specialty: "Finds sources on the web and cites them", skills: ["web research", "citations", "fact checking"],
+      angle: "Sources: what must be looked up and cited for “{q}”?" },
+    { id: "xcode",      name: "Xcode",      sub: "Builds iPhone apps",       kind: "collab", x: 0.72, y: 0.74,
+      specialty: "Builds and tests iPhone apps", skills: ["iOS builds", "device testing", "archives"],
+      angle: "iPhone check: does “{q}” touch an iPhone app? If not, I pass." },
+    { id: "muse",       name: "Muse",       sub: "Audits everyone's work",   kind: "audit",  x: 0.5,  y: 0.92,
+      specialty: "Audits everyone's work and finds what is wrong", skills: ["audits", "finding bugs", "honesty checks"],
+      angle: "Audit: what could go wrong with “{q}”, and how would we know?" }
   ];
-  var TREE = [["grok", "claude"], ["claude", "cursor"], ["claude", "gemini"], ["claude", "chatgpt"]];
+  var TREE = [["grok", "claude"], ["grok", "grokbot"], ["claude", "cursor"], ["claude", "gemini"], ["claude", "chatgpt"], ["claude", "perplexity"], ["claude", "xcode"]];
   var KIND_VAR = { lead: "--lead", hub: "--hub", collab: "--collab", audit: "--audit" };
   var SPEAKERS = { max: { name: "Max", sub: "owner" }, queue: { name: "Task queue", sub: "automatic" }, brain: { name: "Brain", sub: "orchestrates" } };
   NODES.forEach(function (n) { SPEAKERS[n.id] = { name: n.name, sub: n.sub.toLowerCase() }; });
@@ -518,6 +541,13 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
       mem.entries.push(e); link(e, byKey("prog:" + s.prog));
     });
   }
+  /* saved memory from before a bot joined the team gets that bot's entity too (unless Max deleted it) */
+  function ensureTeamEntities() {
+    NODES.forEach(function (n) {
+      if (byKey("prog:" + n.id) || mem.blocked.indexOf("prog:" + n.id) >= 0) return;
+      mem.entries.push(mkEntry({ key: "prog:" + n.id, type: "entity", title: n.name, note: n.sub + ". On Max's team chart.", sources: [{ kind: "file", label: "Max's team chart" }] }));
+    });
+  }
   function validEntry(e) {
     return !!e && typeof e.id === "string" && /^e\d{1,9}$/.test(e.id) && typeof e.key === "string" && TYPES.indexOf(e.type) >= 0 && typeof e.title === "string" && e.title.trim() && e.title.length <= 80
       && typeof e.note === "string" && e.note.length <= 600 && Array.isArray(e.sources) && Array.isArray(e.links) && isFinite(e.strength) && isFinite(e.seen) && isFinite(e.created)
@@ -583,7 +613,8 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   function frac() { return fracs[mode]; }
   var box = {}, T = {}, tEdges = [], TIME = 0, lastTs = 0, loopId = 0, hands = [], currentTask = "";
   var TEAM_SPR = TREE.concat([["muse", "claude"]]);
-  var TEAM_EDGES = [["grok", "claude", "arrow"], ["claude", "cursor", "arrow"], ["claude", "gemini", "arrow"], ["claude", "chatgpt", "arrow"], ["muse", "claude", "audit"], ["brain", "grok", "tether"]];
+  var TEAM_EDGES = TREE.map(function (e) { return [e[0], e[1], "arrow"]; }).concat([["muse", "claude", "audit"], ["brain", "grok", "tether"]]);
+  function pickX(n) { return (stage.clientWidth < 520 && n.xs != null) ? n.xs : n.x; }
   var speed = 1;
   function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms * speed); }); }
   function progEntry(id) { return byKey("prog:" + id); }
@@ -594,7 +625,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   NODES.forEach(function (n, i) {
     var el = h("div", { class: "node r-" + n.kind, tabindex: "0", role: "group", "aria-label": n.name + ", " + n.sub + ". Drag it, or use the arrow keys.", title: n.name + ": " + n.sub + ". Drag me." }, h("b", { text: n.name }), h("span", { text: n.sub }));
     stage.append(el);
-    var b = T[n.id] = { id: n.id, el: el, x: 0, y: 0, vx: 0, vy: 0, ax: 0, ay: 0, fx: n.x, fy: n.y, w: 0, h: 0, init: false, drag: false,
+    var b = T[n.id] = { id: n.id, el: el, x: 0, y: 0, vx: 0, vy: 0, ax: 0, ay: 0, fx: pickX(n), fy: n.y, w: 0, h: 0, init: false, drag: false,
       p: [i * 1.7 + 0.3, i * 2.3 + 1.1, 0.35 + (i % 3) * 0.12, 0.28 + (i % 4) * 0.09] };
     dragify(el, function () { return b; }, null, function (bb) { var c = teamClamp(bb, bb.x, bb.y); bb.fx = c.x / stage.clientWidth; bb.fy = c.y / stage.clientHeight; });
     el.addEventListener("keydown", function (e) {
@@ -734,7 +765,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   });
   $("#center").addEventListener("click", function () {
     fracs.team = { x: HOME.team.x, y: HOME.team.y }; fracs.graph = graphHome();
-    NODES.forEach(function (n) { T[n.id].fx = n.x; T[n.id].fy = n.y; });
+    NODES.forEach(function (n) { T[n.id].fx = pickX(n); T[n.id].fy = n.y; });
     Object.keys(G.nodes).forEach(function (id) { G.nodes[id].ox = 0; G.nodes[id].oy = 0; });
     clampFrac(); layout();
   });
@@ -942,7 +973,9 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     if (el) { el.classList.add("on"); setTimeout(function () { el.classList.remove("on"); }, Math.max(600, 1200 * speed)); }
     if (mode === "graph" && isNode(id)) { var pe = progEntry(id); if (pe) nodeFx(pe.id, "pulse"); }
   }
+  var HAND_N = 0;
   function handoff(a, b) {
+    HAND_N++;
     var g = geom(a, b);
     if (!g) { light(a); light(b); return; }
     var ln = svg("path", { class: "hand", d: pathD(g) }), dot = svg("circle", { class: "pkt", r: 3.8, cx: g.x1, cy: g.y1 });
@@ -1257,9 +1290,9 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     google:    { label: "Google",    model: "gemini-3.5-flash-lite", hint: "key starts with AIza" },
     xai:       { label: "xAI",       model: "grok-4.20-0309-non-reasoning", hint: "key starts with xai-" }
   };
-  var LIVE_BOTS = ["grok", "claude", "chatgpt", "gemini", "cursor", "muse"];
+  var LIVE_BOTS = ["grok", "claude", "chatgpt", "gemini", "perplexity", "cursor", "muse"];
   var LIVE = { on: false, stopped: false, ctls: new Set(), remember: false, keys: {}, models: {}, dead: {}, calls: 0, tin: 0, tout: 0, maxTokens: 300, callCap: 60, ctx: "", notices: {},
-    map: { grok: "xai", claude: "anthropic", chatgpt: "openai", gemini: "google", cursor: "sim", muse: "sim" } };
+    map: { grok: "xai", claude: "anthropic", chatgpt: "openai", gemini: "google", perplexity: "sim", cursor: "sim", muse: "sim" } };
   Object.keys(PROV).forEach(function (p) { LIVE.models[p] = PROV[p].model; });
   var LKEY = "brain.live.v1", LKEYS = "brain.livekeys.v1";
 
@@ -1396,11 +1429,11 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
         } })),
       h("p", { class: "note", id: "liveMsg", role: "status" }),
       h("div", { id: "liveBox", hidden: true },
-        h("p", { class: "note", text: "Create each key yourself on the provider's website and paste it here. Never paste a key in the chat. A key is kept in this tab only, unless you tick “remember” below. Each task makes up to 8 short calls. Prices differ by model, so check each provider's price page. Live tasks never repeat on their own: autopilot waits for you." }),
+        h("p", { class: "note", text: "Create each key yourself on the provider's website and paste it here. Never paste a key in the chat. A key is kept in this tab only, unless you tick “remember” below. A normal task makes up to 9 short calls. Prices differ by model, so check each provider's price page. Live tasks never repeat on their own: autopilot waits for you." }),
         rows,
         h("h2", { text: "Which company's AI voices which bot" }),
         h("div", { class: "mapgrid" }, maps),
-        h("p", { class: "note", text: "Cursor and Muse have no public chat API that I know of (unverified), so they stay scripted unless you map them to one of the four." }),
+        h("p", { class: "note", text: "Cursor, Muse, Grok Bot and Xcode have no public chat API that I know of (unverified), and Perplexity is not wired to its own API yet, so they stay scripted unless you map them to one of the four companies above." }),
         h("div", { class: "row" },
           h("label", { class: "check", for: "liveTokens" }, "Max tokens per reply ", h("input", { type: "number", id: "liveTokens", min: "20", max: "1000", value: String(LIVE.maxTokens), style: "width:80px", onchange: function () { LIVE.maxTokens = Math.max(20, Math.min(1000, Math.round(+this.value || 300))); this.value = LIVE.maxTokens; saveLive(); } })),
           h("label", { class: "check", for: "liveCap" }, "Max calls per page load ", h("input", { type: "number", id: "liveCap", min: "1", max: "500", value: String(LIVE.callCap), style: "width:80px", onchange: function () { LIVE.callCap = Math.max(1, Math.min(500, Math.round(+this.value || 60))); this.value = LIVE.callCap; saveLive(); refreshBadge(); } }))),
@@ -1428,7 +1461,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     logEl.textContent = ""; msgs = [];
     var red = redact(qRaw), q = red.text, incog = $("#incog").checked;
     transcript = [liveActive() ? "LIVE: some bots are voiced by real AI models (each message is labelled with its company and model). The sample lines, the cited answer and the pass/fail checks are produced by this page's own code. No web search ran." : "SIMULATION: no real AI or web search ran. The programs are scripted, and the sources are sample lines written for this demo from Brain's own rules and the Perplexity help article."];
-    var sess = null, ok = false;
+    var sess = null, ok = false, hand0 = HAND_N;
     try {
       SRC = buildSources();
       var an = analyse(q), ev = evaluate(an), prior = !incog ? findWorkstream(an.kws) : null;
@@ -1443,6 +1476,8 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
       handoff("brain", "grok"); await sleep(1000);
       if (prior) { say("brain", "I remember this. You asked about it on " + fmtDate(prior.seen) + ". " + clip(prior.note, 200)); await sleep(900); }
       await sayLive("grok", "I command this repo. Claude is the hub and runs the work. Muse audits everyone. I sign off last with pass or fail.", "Say that you lead this team, you are handing the task to Claude, and you will sign off last with pass or fail.");
+      handoff("grok", "grokbot"); await sleep(500);
+      say("grokbot", "Order logged. I hand the task out and count every hand-off.");
       handoff("grok", "claude"); await sleep(1100);
       var plan = ["Keywords: " + (an.kws.join(", ") || "none found") + "."];
       plan.push(an.temporal.length ? "Time words: " + an.temporal.join(", ") + ". The sample lines have no dates, so I will warn that recency cannot be confirmed." : "No time words, so no recency check is needed.");
@@ -1466,6 +1501,10 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
       await sayLive("gemini", gtxt, "Report what you studied and kept: " + gtxt);
       await sleep(900);
 
+      handoff("claude", "perplexity"); await sleep(600);
+      var ptxt = ev.accepted.length ? "Sources check: " + ev.accepted.length + " kept line(s), each can be cited as [1] to [" + ev.accepted.length + "]. These are demo lines, so nothing was looked up on the web." : "Sources check: nothing to cite for this task. Nothing was looked up on the web.";
+      await sayLive("perplexity", ptxt, "Report your sources check: " + ptxt); await sleep(700);
+
       setPhase(2);
       handoff("claude", "cursor"); await sleep(600);
       var ctxt = "Merged the results and checked each clause of the question against them. " + (ev.rejected.length
@@ -1473,6 +1512,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
         : "No partial matches needed rejecting.");
       await sayLive("cursor", ctxt, "Report how you merged and reviewed: " + ctxt);
       await sleep(1000);
+      if (/\b(ios|iphone|ipad|xcode|swift|app store)\b/i.test(q)) { handoff("claude", "xcode"); say("xcode", "This is an iPhone-related task. I would build and test it on a Mac. This page only talks about it, so nothing was built."); await sleep(800); }
       handoff("muse", "claude"); await sleep(600);
       var mtxt = "Audit of everyone's work. Citation map: " + (ev.accepted.length ? ev.accepted.map(function (s, i) { return "[" + (i + 1) + "] = " + s.label; }).join(", ") : "none, nothing was kept") + ". "
         + ev.uncovered.length + " point(s) of the question have no source. Conflict detection is not built into this simulation; the sample lines do not overlap on any number or date.";
@@ -1491,6 +1531,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
       if (gv.live) { say("grok", gv.text, null, null, null, gv.tag); say("grok", gchk, null, null, null, "page checks"); } else say("grok", gchk, null, null, null, gv.tag);
       await sleep(900);
       handoff("grok", "brain"); await sleep(500);
+      say("grokbot", "Hand-offs logged this task: " + (HAND_N - hand0) + ".");
       say("brain", "Final answer for Max:", built.node, built.plain);
       setPhase(4);
       if (incog) say("brain", "Incognito: this session is not saved and Brain will not learn from it.", null, null, "warn");
@@ -1748,7 +1789,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   });
 
   /* ================= Boot ================= */
-  loadMem(); persist(); loadLive();
+  loadMem(); ensureTeamEntities(); persist(); loadLive();
   $("#instr").value = mem.settings.instructions;
   $("#aProgWrap").hidden = $("#aType").value !== "skill";
   buildLiveUI();
