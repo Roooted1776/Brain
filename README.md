@@ -1,6 +1,6 @@
 # Brain
 
-Max's **Orchestration Brain**. Open `index.html` in any browser (double-click it). No install, no keys, free.
+Max's **Orchestration Brain**. Open `index.html` in any browser (double-click it). No install, free by default. The optional Live AI mode needs your own keys and costs money.
 
 ## What it does
 
@@ -26,7 +26,8 @@ By default every bot is scripted. In Settings you can switch on **Use real AI** 
 - **It only works when you open `index.html` from your computer.** The preview link blocks calls to other websites.
 - **It turns itself off on every reload.** Live tasks never repeat on their own: autopilot waits for you to press Next task.
 - **Spending limits:** at most 8 short calls per task, a token limit per reply (default 300), a call limit per page load (default 60), and a "Stop live now" button. Prices differ by model, so check each provider's price page.
-- **What the models do:** each bot's short message is written by its model and labeled with the company and model. The sample lines, the cited answer, and Grok's pass/fail checks are still produced by this page's own code, so a model cannot put an invented fact into an answer. The task text and the sample lines are sent to the companies you map.
+- **Stop live now** also cancels any call still in flight. A Google key goes in the web address (that is how Google's docs show it), so it can appear in your browser's network tab. OpenAI is asked not to store prompts; xAI may keep them (unverified), so check each company's data settings.
+- **What the models do:** each bot's short message is written by its model and labeled with the company and model. The sample lines, the cited answer, and Grok's pass/fail checks are still produced by this page's own code, so a model cannot put an invented fact into an answer. The task text and the built-in sample lines (never your memory notes) are sent to the companies you map, even for incognito tasks.
 - **Model names** (`claude-haiku-5-5`, `gpt-6-luna`, `gemini-3.5-flash-lite`, `grok-4.20-0309-non-reasoning`) came from each provider's docs on 2026-10-21 through a page summary. They change often, so edit them in Settings if a call says "model not found".
 - **Not tested against the real services.** `node tests/live-check.mjs` uses fake servers that answer in each company's reply format, which checks how the page builds requests, labels messages, counts calls, protects keys, and stops. It cannot prove the real services accept the requests. A first real try with a small token limit is the real test.
 

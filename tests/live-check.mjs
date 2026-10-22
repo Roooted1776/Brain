@@ -20,6 +20,7 @@ const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-headers
 
 async function setup(behaviour = {}) {
   const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
+  await ctx.grantPermissions(['clipboard-read', 'clipboard-write']).catch(() => {});
   const reqs = [];
   const counter = {};
   await ctx.route(u => !!HOSTS[new URL(u).hostname], async (route) => {
@@ -28,13 +29,15 @@ async function setup(behaviour = {}) {
     let body = null; try { body = JSON.parse(req.postData() || 'null'); } catch (e) {}
     reqs.push({ prov, url: req.url(), headers: req.headers(), body });
     counter[prov] = (counter[prov] || 0) + 1;
-    const mode = behaviour[prov] || 'ok', text = 'LIVE-' + prov + '-' + counter[prov];
+    const mode = behaviour[prov] || 'ok', text = 'LIVE-' + prov + '-' + counter[prov] + (mode === 'echo' ? ' my key is ' + KEYS[prov] + ' and also xai-ZYXWVUTSRQPONMLKJIHGFEDCBA' : '');
     if (mode === 'abort') return route.abort('failed');
+    if (mode === 'badkey') return route.fulfill({ status: 400, headers: { ...CORS, 'content-type': 'application/json' }, body: JSON.stringify({ error: { code: 400, message: 'API key not valid. Please pass a valid API key.', status: 'INVALID_ARGUMENT', details: [{ reason: 'API_KEY_INVALID' }] } }) });
+    if (mode === 'slow') await new Promise(r => setTimeout(r, 2500));
     if (mode === '401') return route.fulfill({ status: 401, headers: { ...CORS, 'content-type': 'application/json' }, body: JSON.stringify({ error: { message: 'invalid key' } }) });
     const shape = prov === 'anthropic' ? { content: [{ type: 'text', text }], usage: { input_tokens: 10, output_tokens: 5 } }
       : prov === 'google' ? { candidates: [{ content: { parts: [{ text }] } }], usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 5 } }
       : { output: [{ type: 'message', content: [{ type: 'output_text', text }] }], usage: { input_tokens: 10, output_tokens: 5 } };
-    return route.fulfill({ status: 200, headers: { ...CORS, 'content-type': 'application/json' }, body: JSON.stringify(shape) });
+    try { return await route.fulfill({ status: 200, headers: { ...CORS, 'content-type': 'application/json' }, body: JSON.stringify(shape) }); } catch (e) { return; }
   });
   const p = await ctx.newPage();
   p.on('pageerror', e => errs.push('PAGEERR ' + e.message));
@@ -74,6 +77,11 @@ const msgFor = (p, name) => p.locator('.msg').filter({ has: p.locator('.who', { 
   ok('OpenAI request is built right', !!o && o.url.endsWith('/v1/responses') && o.headers.authorization === 'Bearer ' + KEYS.openai && o.body.input[0].role === 'system' && o.body.input[1].role === 'user' && o.body.max_output_tokens === 300);
   ok('xAI request is built right', !!x && x.url === 'https://api.x.ai/v1/responses' && x.headers.authorization === 'Bearer ' + KEYS.xai && o.body.model !== x.body.model && x.body.max_output_tokens === 300);
   ok('Google request is built right', !!g && g.url.includes(':generateContent?key=' + KEYS.google) && g.body.systemInstruction.parts[0].text.length > 10 && g.body.generationConfig.maxOutputTokens === 300 && !g.headers.authorization);
+  ok('OpenAI is asked not to store the prompt; xAI body has no store flag', o.body.store === false && x.body.store === undefined);
+  ok('page-only messages are labelled as page, not as live', /page/i.test(await msgFor(p, 'Brain').first().innerText()));
+  await p.click('#copyLog');
+  let clip = ''; try { clip = await p.evaluate(() => navigator.clipboard.readText()); } catch (e) { clip = 'CLIPBOARD-BLOCKED'; }
+  ok('transcript header says LIVE (not simulation) and has no key', /^LIVE:/.test(clip) && /live · Anthropic/.test(clip) && !/TESTKEY/.test(clip), clip.slice(0, 40));
   ok('at most 8 calls for one task', reqs.length > 0 && reqs.length <= 8, String(reqs.length));
   ok('exactly 6 calls: Grok 2, Claude 2, ChatGPT 1, Gemini 1 (Cursor and Muse make none)', by('xai').length === 2 && by('anthropic').length === 2 && by('openai').length === 1 && by('google').length === 1 && reqs.length === 6, JSON.stringify(reqs.map(r => r.prov)));
   const claudeMsg = await msgFor(p, 'Claude').first().innerText(), grokMsgs = await msgFor(p, 'Grok').allInnerTexts(), chatMsg = await msgFor(p, 'ChatGPT').last().innerText(), gemMsg = await msgFor(p, 'Gemini').first().innerText();
@@ -149,6 +157,63 @@ const msgFor = (p, name) => p.locator('.msg').filter({ has: p.locator('.who', { 
   ok('keys are saved only after the Remember box is ticked', /TESTKEY-ANTHROPIC/.test(await p.evaluate(() => localStorage.getItem('brain.livekeys.v1') || '')));
   await p.click('#liveForget');
   ok('Forget keys removes them', (await p.evaluate(() => localStorage.getItem('brain.livekeys.v1'))) === null && (await p.inputValue('#key-anthropic')) === '');
+  await ctx.close();
+}
+
+// 7) a model or an error that echoes a key: it must be cleaned everywhere
+{
+  const { ctx, p } = await setup({ anthropic: 'echo', xai: 'echo' });
+  await enableLive(p);
+  await runTask(p, Q);
+  const log = await p.locator('#log').innerText();
+  ok('an echoed key is replaced by [filtered] in the log', !/TESTKEY-ANTHROPIC|TESTKEY-XAI|xai-ZYXW/.test(log) && /\[filtered\]/.test(log));
+  await p.click('#tab-mem'); await p.locator('summary', { hasText: 'Backup' }).click(); await p.click('#bExport');
+  ok('an echoed key is not in the backup either', !/TESTKEY|xai-ZYXW/.test(await p.inputValue('#backup')));
+  await ctx.close();
+}
+// 8) Google's bad-key answer (HTTP 400) switches Google off
+{
+  const { ctx, p, reqs } = await setup({ google: 'badkey' });
+  await enableLive(p);
+  await runTask(p, Q);
+  const n1 = reqs.filter(r => r.prov === 'google').length, said = /key rejected/i.test(await p.locator('#log').innerText());
+  await p.getByRole('button', { name: 'What does a Brain run do?', exact: true }).click(); await p.waitForFunction(() => /Task 2 done/.test(document.querySelector('#taskStatus').textContent), null, { timeout: 60000 });
+  ok('a bad Google key is explained, and Google is not called again', said && n1 === 1 && reqs.filter(r => r.prov === 'google').length === 1, String(reqs.filter(r => r.prov === 'google').length));
+  await ctx.close();
+}
+// 9) no switching live mode in the middle of a task
+{
+  const { ctx, p } = await setup({ xai: 'slow' });
+  await enableLive(p);
+  await p.getByRole('button', { name: Q, exact: true }).click();
+  await p.waitForFunction(() => /running/i.test(document.querySelector('#taskStatus').textContent));
+  await p.click('#tab-set');
+  await p.locator('#liveOn').uncheck({ timeout: 3000 }).catch(() => {});
+  ok('live mode cannot be switched off in the middle of a task', (await p.isChecked('#liveOn')) && /wait/i.test(await p.locator('#liveMsg').innerText()));
+  await p.waitForFunction(() => /done/.test(document.querySelector('#taskStatus').textContent), null, { timeout: 60000 });
+  await ctx.close();
+}
+// 9b) Stop during a call in flight
+{
+  const { ctx, p, reqs } = await setup({ xai: 'slow' });
+  await enableLive(p);
+  await p.getByRole('button', { name: Q, exact: true }).click();
+  await p.waitForFunction(() => /running/i.test(document.querySelector('#taskStatus').textContent));
+  await p.click('#tab-set'); await p.click('#liveStop', { timeout: 3000 });
+  await p.waitForFunction(() => /done/.test(document.querySelector('#taskStatus').textContent), null, { timeout: 60000 });
+  await p.click('#tab-chat');
+  ok('Stop cancels the call in flight, so no live text appears', !/LIVE-/.test(await p.locator('#log').innerText()), String(reqs.length));
+  await ctx.close();
+}
+// 10) a restored backup cannot carry forged "live" labels
+{
+  const { ctx, p } = await setup();
+  await p.click('#tab-mem'); await p.locator('summary', { hasText: 'Backup' }).click();
+  const forged = { entries: [{ id: 'e1', key: 'k', type: 'concept', title: 'x', note: 'n', sources: [], links: [], strength: 1, seen: 1, created: 1, status: 'fresh' }],
+    sessions: [{ id: 's1', ts: 1, q: 'q', msgs: [{ from: 'grok', text: 'hi', tag: 'live · OpenAI · fake-model' }] }] };
+  await p.fill('#backup', JSON.stringify(forged)); await p.click('#bLoad'); await p.click('#bLoad');
+  const st = JSON.parse(await p.evaluate(() => localStorage.getItem('brain.mem.v2')));
+  ok('forged live labels in a restored backup are dropped', st.sessions.length === 1 && st.sessions[0].msgs[0].tag === '');
   await ctx.close();
 }
 
