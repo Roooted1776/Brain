@@ -79,7 +79,7 @@ input[type=checkbox] { accent-color: #fff; }
 .pkt { fill: #fff; filter: drop-shadow(0 0 5px #fff); }
 @keyframes flow { to { stroke-dashoffset: -26; } }
 .stage[data-mode="graph"] .node, .stage[data-mode="graph"] #edges { display: none; }
-.stage[data-mode="team"] #gEdges, .stage[data-mode="team"] #gNodes, .stage[data-mode="team"] .gempty { display: none; }
+.stage[data-mode="team"] #gEdges, .stage[data-mode="team"] #gNodes, .stage[data-mode="team"] #gShape, .stage[data-mode="team"] .gempty { display: none; }
 .node { position: absolute; transform: translate(-50%, -50%); z-index: 2; display: grid; align-content: center; justify-items: center; text-align: center; gap: 2px; padding: 4px 8px; cursor: grab; touch-action: none; user-select: none;
   border: 1px solid var(--c); border-radius: 2px; background: var(--nbg); color: var(--ntx); transition: background .2s, color .2s, box-shadow .2s; }
 .node:active { cursor: grabbing; }
@@ -105,9 +105,14 @@ input[type=checkbox] { accent-color: #fff; }
 @keyframes pop { from { transform: scale(0); opacity: 0; } 60% { opacity: 1; } }
 @keyframes flash { 0% { fill: #fff; } }
 @keyframes ringout { from { transform: scale(1); opacity: .9; } to { transform: scale(3.2); opacity: 0; } }
-.gl { stroke: #fff; stroke-width: 1; opacity: .13; }
-.gl.link { opacity: .42; stroke-width: 1.2; }
-.gl.hot { opacity: 1; stroke-width: 2; }
+.gspokes, .glinks, .ghot, .gshape path { fill: none; vector-effect: non-scaling-stroke; }
+.gspokes { stroke: #fff; stroke-width: 1; opacity: .09; }
+.glinks { stroke: #fff; stroke-width: 1.2; opacity: .42; }
+.ghot { stroke: #fff; stroke-width: 2; opacity: 1; }
+.gshape .outline { fill: rgba(255,255,255,.03); stroke: #fff; stroke-width: 1.3; opacity: .6; }
+.gshape .folds { stroke: #fff; stroke-width: 1; opacity: .17; }
+.gshape .region { stroke: #fff; stroke-width: 1; stroke-dasharray: 2 6; opacity: .16; }
+.gshape text { fill: var(--muted); font: 600 15px var(--font-body); letter-spacing: .22em; text-transform: uppercase; text-anchor: middle; opacity: .8; }
 .tip { position: absolute; z-index: 6; pointer-events: none; background: #fff; color: #000; font: 600 10.5px var(--font-body); letter-spacing: .08em; text-transform: uppercase; padding: 4px 8px; border-radius: 1px; max-width: 240px; transform: translate(-50%, -150%); }
 .gempty { position: absolute; left: 50%; bottom: 52px; transform: translateX(-50%); font: 12px var(--font-mono); color: var(--muted); text-align: center; max-width: 80%; z-index: 3; }
 .brain { touch-action: none; position: absolute; transform: translate(-50%, -50%); z-index: 5; width: 96px; height: 96px; border-radius: 50%; cursor: grab; display: grid; place-items: center; align-content: center; text-align: center;
@@ -243,15 +248,15 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   <div class="main">
     <div class="stagewrap">
       <div class="modes" role="group" aria-label="Stage view">
-        <button type="button" id="modeTeam" aria-pressed="true">Team network</button>
-        <button type="button" id="modeGraph" aria-pressed="false">Memory graph</button>
+        <button type="button" id="modeTeam" aria-pressed="false">Team network</button>
+        <button type="button" id="modeGraph" aria-pressed="true">Memory graph</button>
         <label class="check" for="driftToggle"><input type="checkbox" id="driftToggle" checked> Drift</label>
         <span class="hintbadge" id="modeHint" role="status"></span>
       </div>
-      <section class="stage" id="stage" data-mode="team" aria-label="Team chart or memory graph, with a draggable Brain">
+      <section class="stage" id="stage" data-mode="graph" aria-label="Team chart or memory graph, with a draggable Brain">
         <svg id="links" aria-hidden="false">
           <defs><marker id="ahm" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path class="ah" d="M1.5 1.5 L8.5 5 L1.5 8.5"/></marker></defs>
-          <g id="edges"></g><g id="gEdges"></g><g id="gNodes"></g><g id="hand"></g>
+          <g id="gShape"></g><g id="edges"></g><g id="gEdges"></g><g id="gNodes"></g><g id="hand"></g>
         </svg>
         <div class="brain" id="brain" tabindex="0" role="group" aria-roledescription="draggable" aria-label="Brain. Drag it, or press the arrow keys, to move it."><span id="brainTitle">BRAIN</span><small id="brainSub">drag me<br>or any node</small></div>
         <div class="tip" id="tip" hidden></div>
@@ -260,8 +265,8 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
           <span id="coords"></span>
         </div>
       </section>
-      <p class="legend" id="legendTeam"><i>filled</i> = lead · <i>double line</i> = hub · <i>thin line</i> = collaborator · <i>dashed</i> = auditor · drag any node</p>
-      <p class="legend" id="legendGraph" hidden><i>circle</i> = concept · <i>square</i> = entity · <i>triangle</i> = workstream · <i>dashed</i> = stale · bigger = seen more · drag any dot</p>
+      <p class="legend" id="legendTeam" hidden><i>filled</i> = lead · <i>double line</i> = hub · <i>thin line</i> = collaborator · <i>dashed</i> = auditor · drag any node</p>
+      <p class="legend" id="legendGraph"><i>circle</i> = concept · <i>square</i> = entity · <i>triangle</i> = workstream · <i>dashed</i> = stale · bigger = seen more · drag any dot</p>
     </div>
 
     <section class="panel">
@@ -571,8 +576,8 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   function persist() { try { localStorage.setItem(KEY, JSON.stringify(mem)); storageOk = true; } catch (e) { storageOk = false; } }
 
   /* ================= Stage: a living network. Bots drift, springs link them, every node can be dragged ================= */
-  var stage = $("#stage"), brainEl = $("#brain"), edgesG = $("#edges"), hand = $("#hand"), gEdges = $("#gEdges"), gNodes = $("#gNodes"), tip = $("#tip");
-  var mode = "team", REDUCED = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  var stage = $("#stage"), brainEl = $("#brain"), edgesG = $("#edges"), hand = $("#hand"), gEdges = $("#gEdges"), gNodes = $("#gNodes"), gShape = $("#gShape"), tip = $("#tip");
+  var mode = "graph", REDUCED = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   var drift = !REDUCED;
   var fracs = { team: { x: 0.12, y: 0.14 }, graph: { x: 0.5, y: 0.5 } }, HOME = { team: { x: 0.12, y: 0.14 }, graph: { x: 0.5, y: 0.5 } };
   function frac() { return fracs[mode]; }
@@ -652,6 +657,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
       if (!b.init) { b.x = b.fx * W; b.y = b.fy * H; b.init = true; }
       box[n.id] = { x: b.x, y: b.y, w: b.w, h: b.h };
     });
+    if (!G.homed && W > 0) { G.homed = true; fracs.graph = graphHome(); f = frac(); }
     var bs = brainEl.offsetWidth || 96;
     box.brain = { x: f.x * W, y: f.y * H, r: bs / 2 };
     brainEl.style.left = box.brain.x + "px"; brainEl.style.top = box.brain.y + "px";
@@ -727,7 +733,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     clampFrac(); layout();
   });
   $("#center").addEventListener("click", function () {
-    fracs.team = { x: HOME.team.x, y: HOME.team.y }; fracs.graph = { x: HOME.graph.x, y: HOME.graph.y };
+    fracs.team = { x: HOME.team.x, y: HOME.team.y }; fracs.graph = graphHome();
     NODES.forEach(function (n) { T[n.id].fx = n.x; T[n.id].fy = n.y; });
     Object.keys(G.nodes).forEach(function (id) { G.nodes[id].ox = 0; G.nodes[id].oy = 0; });
     clampFrac(); layout();
@@ -749,9 +755,38 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   $("#modeGraph").addEventListener("click", function () { setMode("graph"); });
 
   /* ---------- the memory graph: shapes tell the types apart (circle = concept, square = entity, triangle = workstream) ---------- */
-  var G = { nodes: {}, edges: [], sel: null };
+  var G = { nodes: {}, edges: [], sel: null, edgesDirty: true, lastBrain: "", hotId: null };
   var TYPE_VAR = { concept: "--t-concept", entity: "--t-entity", workstream: "--t-workstream" };
-  var SECTOR = { concept: { c: -90, span: 150 }, entity: { c: 28, span: 100 }, workstream: { c: 152, span: 80 } };
+
+  /* The brain shape. PLACEHOLDER: a generic side view drawn by hand, in a 1000 x 740 box. Max's traced MRI outline will replace BRAIN_OUTLINE and
+     BRAIN_FOLDS (just the numbers); nothing else changes. Regions say where each kind of memory lives: concepts in the large upper part,
+     entities through the middle, workstreams in the lower back part. HUB is where the Brain orb sits. */
+  var BRAIN = {
+    w: 1000, h: 740, hub: { x: 480, y: 250 },
+    outline: "M70 360 C60 230 180 110 340 85 C470 55 620 60 740 110 C860 160 930 260 925 360 C922 430 880 470 840 490 C880 520 900 580 850 625 C800 665 720 660 670 620 C650 650 640 700 620 735 L560 735 C560 690 555 640 540 600 C470 610 380 600 320 560 C280 600 200 600 160 540 C100 500 70 430 70 360 Z",
+    folds: ["M330 120 C380 200 360 260 420 330", "M520 85 C560 180 600 230 640 300 C660 340 700 360 760 360", "M215 250 C300 270 360 300 430 300", "M700 150 C720 220 800 260 860 270", "M250 430 C340 440 420 470 500 520", "M760 440 C780 470 820 480 860 480"],
+    regions: { concept: { cx: 470, cy: 245, rx: 340, ry: 120, label: "Concepts" }, entity: { cx: 470, cy: 455, rx: 265, ry: 68, label: "Entities" }, workstream: { cx: 775, cy: 572, rx: 90, ry: 50, label: "Workstreams" } }
+  };
+  var shapeTf = svg("g", { class: "gshape" });
+  gShape.append(shapeTf);
+  shapeTf.append(svg("path", { class: "outline", d: BRAIN.outline }), svg("path", { class: "folds", d: BRAIN.folds.join(" ") }));
+  TYPES.forEach(function (t) {
+    var r = BRAIN.regions[t];
+    shapeTf.append(svg("ellipse", { class: "region", cx: r.cx, cy: r.cy, rx: r.rx, ry: r.ry, fill: "none" }));
+    var tx = svg("text", { x: r.cx, y: r.cy - r.ry - 10 }); tx.textContent = r.label; shapeTf.append(tx);
+  });
+  var pSpokes = svg("path", { class: "gspokes" }), pLinks = svg("path", { class: "glinks" }), pHot = svg("path", { class: "ghot" });
+  gEdges.append(pSpokes, pLinks, pHot);
+  function shapeFit() {
+    var W = stage.clientWidth, H = stage.clientHeight, sc = Math.max(0.2, Math.min(W * 0.92 / BRAIN.w, H * 0.84 / BRAIN.h)), b = box.brain || { x: W / 2, y: H / 2 };
+    return { s: sc, tx: b.x - sc * BRAIN.hub.x, ty: b.y - sc * BRAIN.hub.y };
+  }
+  /* where the hub orb should sit so the whole shape is centred in the stage */
+  function graphHome() {
+    var W = stage.clientWidth || 800, H = stage.clientHeight || 600, sc = Math.max(0.2, Math.min(W * 0.92 / BRAIN.w, H * 0.84 / BRAIN.h));
+    return { x: Math.min(0.95, Math.max(0.05, (W / 2 + sc * (BRAIN.hub.x - BRAIN.w / 2)) / W)), y: Math.min(0.95, Math.max(0.05, (H / 2 + sc * (BRAIN.hub.y - BRAIN.h / 2)) / H)) };
+  }
+  function drawShape() { var f = shapeFit(); shapeTf.setAttribute("transform", "translate(" + f.tx.toFixed(1) + "," + f.ty.toFixed(1) + ") scale(" + f.s.toFixed(4) + ")"); }
   function radiusFor(e) { return 6 + Math.min(9, e.strength * 1.3); }
   function shapeEl(type) { return svg(type === "concept" ? "circle" : type === "entity" ? "rect" : "polygon", { class: "dot" }); }
   function setShape(n, e) {
@@ -797,17 +832,16 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
       }
       n.r = radiusFor(e); setShape(n, e);
       n.g.classList.toggle("stale", e.status === "stale");
-      n.lbl.textContent = (e.strength >= 3 || G.sel === e.id) ? clip(e.title, 18) : "";
+      n.lbl.textContent = (e.strength >= 5 || G.sel === e.id) ? clip(e.title, 18) : "";
       n.lbl.setAttribute("y", -n.r - 6);
       n.g.classList.toggle("sel", G.sel === e.id);
     });
     Object.keys(G.nodes).forEach(function (id) { if (!live[id]) { G.nodes[id].g.remove(); delete G.nodes[id]; } });
-    gEdges.textContent = ""; G.edges = [];
-    mem.entries.forEach(function (e) { var l = svg("line", { class: "gl" }); gEdges.append(l); G.edges.push({ a: "brain", b: e.id, el: l }); });
+    G.edges = []; G.edgesDirty = true;
     var seen = {};
     mem.entries.forEach(function (e) { e.links.forEach(function (o) {
       var k = e.id < o ? e.id + "|" + o : o + "|" + e.id; if (seen[k] || !G.nodes[o]) return; seen[k] = 1;
-      var l = svg("line", { class: "gl link" }); gEdges.append(l); G.edges.push({ a: e.id, b: o, el: l, link: true });
+      G.edges.push({ a: e.id, b: o, link: true });
     }); });
     $("#brainSub").innerHTML = ""; $("#brainSub").append(mode === "team" ? "drag me" : mem.entries.length + " entries", h("br"), "or any node");
     gempty.textContent = mem.entries.length ? "" : "Memory is empty. Tasks will fill it.";
@@ -815,24 +849,27 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   }
   function placeGraph() {
     if (!box.brain) return;
-    var w = stage.clientWidth, hgt = stage.clientHeight, R = Math.max(120, Math.min(w, hgt) / 2 - 34), bx = box.brain.x, by = box.brain.y;
+    var W = stage.clientWidth, H = stage.clientHeight, f = shapeFit(), orbR = (box.brain.r || 48) + 20;
     TYPES.forEach(function (t) {
       var list = mem.entries.filter(function (e) { return e.type === t; }).sort(function (a, b) { return a.created - b.created || (a.id < b.id ? -1 : 1); });
-      var sec = SECTOR[t], n = list.length;
+      var R = BRAIN.regions[t], n = list.length;
       list.forEach(function (e, i) {
         var nd = G.nodes[e.id]; if (!nd) return;
-        var a = (sec.c + (n > 1 ? (i / (n - 1) - 0.5) * sec.span : 0)) * Math.PI / 180, tier = 0.58 + 0.2 * (i % 3);
-        nd.sx = Math.min(w - 18, Math.max(18, bx + R * tier * Math.cos(a)));
-        nd.sy = Math.min(hgt - 40, Math.max(22, by + R * tier * Math.sin(a) * 0.92));
+        var r = Math.sqrt((i + 0.5) / n), th = i * 2.39996323;
+        var x = f.tx + f.s * (R.cx + R.rx * r * Math.cos(th)), y = f.ty + f.s * (R.cy + R.ry * r * Math.sin(th));
+        var dx = x - box.brain.x, dy = y - box.brain.y, d = Math.hypot(dx, dy);
+        if (d < orbR) { var ux = d > 0.01 ? dx / d : 1, uy = d > 0.01 ? dy / d : 0; x = box.brain.x + ux * orbR; y = box.brain.y + uy * orbR; }
+        nd.sx = Math.min(W - 18, Math.max(18, x)); nd.sy = Math.min(H - 40, Math.max(22, y));
       });
     });
+    drawShape();
   }
   function showTip(id) {
     var e = byId(id), n = G.nodes[id]; if (!e || !n) return;
     tip.textContent = e.title + " · " + TYPE_LABEL[e.type] + " · " + (e.status === "stale" ? "stale" : "fresh") + " · seen " + e.strength + "×";
     tip.style.left = n.x + "px"; tip.style.top = n.y + "px"; tip.hidden = false;
   }
-  function hotEdges(id) { G.edges.forEach(function (ed) { ed.el.classList.toggle("hot", !!id && (ed.a === id || ed.b === id) && ed.a !== "brain"); }); }
+  function hotEdges(id) { G.hotId = id || null; G.edgesDirty = true; ensureLoop(); }
 
   /* ---------- the physics loop: springs pull each body toward its place, a slow drift keeps it alive ---------- */
   function ensureLoop() { if (!loopId) { lastTs = 0; loopId = requestAnimationFrame(frame); } }
@@ -841,7 +878,8 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     var dt = lastTs ? Math.min(0.033, (ts - lastTs) / 1000) : 0.016; lastTs = ts; TIME += dt;
     var W = stage.clientWidth, H = stage.clientHeight, moving = mode === "team" ? stepTeam(dt, W, H) : stepGraph(dt, W, H);
     stepHands(ts);
-    if (drift || moving || hands.length) loopId = requestAnimationFrame(frame); else lastTs = 0;
+    var resting = mode === "graph" && Object.keys(G.nodes).length > 150;
+    if ((drift && !resting) || moving || hands.length) loopId = requestAnimationFrame(frame); else lastTs = 0;
   }
   function stepTeam(dt, W, H) {
     var K = 34, C = 7.5, KE = 9, A = drift ? 8 : 0, moving = false;
@@ -863,13 +901,12 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     return moving;
   }
   function stepGraph(dt, W, H) {
-    var K = 26, C = 6.5, KE = 2.5, A = drift ? 5 : 0, moving = false, ids = Object.keys(G.nodes);
+    var K = 26, C = 6.5, KE = 2.5, ids = Object.keys(G.nodes), big = ids.length > 150, A = (drift && !big) ? 5 : 0, moving = false, changed = G.edgesDirty;
     ids.forEach(function (id) {
       var n = G.nodes[id]; n.ax = 0; n.ay = 0; if (n.drag) return;
       n.ax += K * (n.sx + n.ox + Math.sin(TIME * n.p[2] + n.p[0]) * A - n.x); n.ay += K * (n.sy + n.oy + Math.cos(TIME * n.p[3] + n.p[1]) * A - n.y);
     });
     G.edges.forEach(function (ed) {
-      if (!ed.link) return;
       var a = G.nodes[ed.a], b = G.nodes[ed.b]; if (!a || !b) return;
       var dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1, rest = Math.hypot(b.sx + b.ox - a.sx - a.ox, b.sy + b.oy - a.sy - a.oy), f = KE * (len - rest), fx = f * dx / len, fy = f * dy / len;
       if (!a.drag) { a.ax += fx; a.ay += fy; } if (!b.drag) { b.ax -= fx; b.ay -= fy; }
@@ -881,12 +918,21 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
         n.x = Math.min(W - 10, Math.max(10, n.x + n.vx * dt)); n.y = Math.min(H - 10, Math.max(10, n.y + n.vy * dt));
         if (Math.abs(n.vx) + Math.abs(n.vy) > 0.4) moving = true;
       } else moving = true;
-      n.g.setAttribute("transform", "translate(" + n.x.toFixed(1) + "," + n.y.toFixed(1) + ")");
+      if (n.px === undefined || Math.abs(n.x - n.px) > 0.05 || Math.abs(n.y - n.py) > 0.05) { n.g.setAttribute("transform", "translate(" + n.x.toFixed(1) + "," + n.y.toFixed(1) + ")"); n.px = n.x; n.py = n.y; changed = true; }
     });
-    G.edges.forEach(function (ed) {
-      var a = ed.a === "brain" ? box.brain : G.nodes[ed.a], b = ed.b === "brain" ? box.brain : G.nodes[ed.b]; if (!a || !b) return;
-      ed.el.setAttribute("x1", a.x); ed.el.setAttribute("y1", a.y); ed.el.setAttribute("x2", b.x); ed.el.setAttribute("y2", b.y);
-    });
+    var bk = box.brain ? Math.round(box.brain.x * 10) + "," + Math.round(box.brain.y * 10) : "";
+    if (bk !== G.lastBrain) { G.lastBrain = bk; changed = true; }
+    if (changed) {
+      /* all lines are drawn as three shapes, not hundreds of separate lines: this is what keeps a big graph fast */
+      var sp = "", lk = "", ht = "";
+      if (box.brain && !big) ids.forEach(function (id) { var n = G.nodes[id]; sp += "M" + box.brain.x.toFixed(1) + " " + box.brain.y.toFixed(1) + "L" + n.x.toFixed(1) + " " + n.y.toFixed(1); });
+      G.edges.forEach(function (ed) {
+        var a = G.nodes[ed.a], b = G.nodes[ed.b]; if (!a || !b) return;
+        var seg = "M" + a.x.toFixed(1) + " " + a.y.toFixed(1) + "L" + b.x.toFixed(1) + " " + b.y.toFixed(1);
+        lk += seg; if (G.hotId && (ed.a === G.hotId || ed.b === G.hotId)) ht += seg;
+      });
+      pSpokes.setAttribute("d", sp); pLinks.setAttribute("d", lk); pHot.setAttribute("d", ht); G.edgesDirty = false;
+    }
     return moving;
   }
 
@@ -1556,7 +1602,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     render(); syncGraphSelection();
     var li = document.querySelector('[data-eid="' + id + '"]'); if (li) li.scrollIntoView({ block: "nearest" });
   }
-  function syncGraphSelection() { Object.keys(G.nodes).forEach(function (id) { var e = byId(id); G.nodes[id].g.classList.toggle("sel", G.sel === id); if (e) G.nodes[id].lbl.textContent = (e.strength >= 3 || G.sel === id) ? clip(e.title, 18) : ""; }); hotEdges(G.sel); }
+  function syncGraphSelection() { Object.keys(G.nodes).forEach(function (id) { var e = byId(id); G.nodes[id].g.classList.toggle("sel", G.sel === id); if (e) G.nodes[id].lbl.textContent = (e.strength >= 5 || G.sel === id) ? clip(e.title, 18) : ""; }); hotEdges(G.sel); }
   function openSession(id) {
     var s = mem.sessions.filter(function (x) { return x.id === id; })[0];
     tab("chat"); if (!s) { $("#savedLbl").textContent = "That session is no longer stored (only the last " + MAX_SESSIONS + " are kept)."; $("#savedBar").hidden = false; return; }

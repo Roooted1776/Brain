@@ -165,6 +165,26 @@ const a3 = await u.locator('.answer').last().innerText(); ok('corrected text wit
 await u.focus('#tab-chat'); await u.keyboard.press('ArrowRight'); ok('arrow key moves tab', (await u.getAttribute('#tab-mem','aria-selected'))==='true');
 await ctx3.close();
 
+// ---- the default view: a brain-shaped memory graph, drawn fast ----
+{
+  const gctx = await b.newContext({ viewport: { width: 1440, height: 1000 } });
+  const g = await gctx.newPage(); g.on('pageerror', e=>errs.push('PAGEERR-g '+e.message));
+  await g.goto(PAGE); await g.waitForTimeout(1200);
+  ok('the memory graph is the default view', (await g.getAttribute('#stage','data-mode')) === 'graph' && (await g.getAttribute('#modeGraph','aria-pressed')) === 'true');
+  ok('a brain outline is drawn behind the dots', (await g.locator('#gShape path.outline').count()) === 1 && (await g.locator('#gShape text').count()) === 3);
+  const sbox = await g.locator('#stage').boundingBox(), ob = await g.locator('#gShape path.outline').boundingBox();
+  ok('the brain outline sits inside the stage', ob.x >= sbox.x - 2 && ob.x + ob.width <= sbox.x + sbox.width + 2 && ob.y >= sbox.y - 2 && ob.y + ob.height <= sbox.y + sbox.height + 2);
+  ok('lines are drawn as shapes, not as hundreds of separate lines', (await g.locator('#gEdges line').count()) === 0 && (await g.locator('#gEdges path').count()) === 3);
+  const dots = await g.locator('#gNodes .gn .hit').evaluateAll(els => els.map(e => { const r = e.getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; }));
+  ok('every dot is inside the stage', dots.length > 0 && dots.every(([x, y]) => x >= sbox.x && x <= sbox.x + sbox.width && y >= sbox.y && y <= sbox.y + sbox.height), String(dots.length));
+  // a big memory stays smooth
+  const big = []; for (let i = 1; i <= 400; i++) big.push({ id: 'e' + i, key: 'k' + i, type: ['concept','entity','workstream'][i % 3], title: 'Entry ' + i, note: 'n', sources: [], links: i > 3 ? ['e' + (i - 1), 'e' + (i - 3)] : [], strength: 1 + (i % 5), seen: Date.now(), created: Date.now() + i, status: 'fresh' });
+  await g.evaluate(([e]) => localStorage.setItem('brain.mem.v2', JSON.stringify({ version: 2, entries: e, sessions: [], blocked: [], runs: 0, dayShift: 0, settings: {} })), [big]);
+  await g.reload(); await g.waitForTimeout(2500);
+  const fps = await g.evaluate(() => new Promise(res => { let n = 0, t0 = 0; function f(t) { if (!t0) t0 = t; n++; if (t - t0 < 2000) requestAnimationFrame(f); else res(Math.round(n / ((t - t0) / 1000))); } requestAnimationFrame(f); }));
+  ok('400 memories still draw smoothly (30 frames a second or more)', fps >= 30, fps + ' fps');
+  await gctx.close();
+}
 // ---- the living network ----
 const nctx = await b.newContext({ viewport: { width: 1440, height: 900 } });
 const n = await nctx.newPage(); n.on('pageerror', e=>errs.push('PAGEERR-net '+e.message)); n.on('console', m => { if (m.type()==='error') errs.push('net:'+m.text()); });
