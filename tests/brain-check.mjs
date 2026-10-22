@@ -29,7 +29,7 @@ const chip = (pg, q) => pg.getByRole('button', { name: q, exact: true }).click()
 const waitRuns = (pg, n) => pg.waitForFunction((k)=>document.querySelector('#runBadge').textContent==='runs: '+k && !document.querySelector('#brain').classList.contains('learning') && document.querySelector('#runReport').textContent.length>0, n, {timeout:20000});
 const ask = async (q, expectRun=true) => { await chip(p, q); await settle(expectRun); };
 console.log('start:', await count(), await runs());
-ok('seeded 6 programs + 5 skills = 11', (await count()).includes('11 entries'), await count());
+ok('seeded 9 programs + 5 skills = 14', (await count()).includes('14 entries'), await count());
 // session 1
 await ask('What does Brain learn from?');
 console.log('after s1:', await count(), await runs(), '| report:', await p.locator('#runReport').innerText());
@@ -96,13 +96,13 @@ await p.click('#tab-mem'); await p.locator('summary', {hasText:'Backup'}).click(
 const bk = await p.inputValue('#backup'); ok('backup json', bk.startsWith('{') && bk.length>1000, bk.length);
 await p.click('#tab-set');
 await p.click('#resetMem'); await p.click('#resetMem');
-await p.click('#tab-mem'); ok('reset to 11', (await count()).includes('11 entries'), await count());
+await p.click('#tab-mem'); ok('reset to 14', (await count()).includes('14 entries'), await count());
 await p.fill('#backup', bk); await p.click('#bLoad'); await p.click('#bLoad'); ok('restore brings back the same memory', (await count())===countBeforeBackup, (await count())+' vs '+countBeforeBackup);
 // hostile import
 await p.fill('#backup', '{"entries":[{"id":"e9","key":"k","type":"concept","title":"<img src=x onerror=alert(1)>","note":"n","sources":[],"links":["zz"],"strength":2,"seen":1,"created":1,"status":"fresh"},null,5]}');
 await p.click('#bLoad'); await p.click('#bLoad'); ok('hostile import safe', await p.locator('.entry .ttl', {hasText:'<img'}).count()===1 && await p.locator('.entry img').count()===0);
 // reload persistence
-await p.reload(); ok('persist after reload', (await count()).startsWith('memory · 1 entries'), await count());
+await p.reload(); ok('persist after reload (1 imported entry + the 9 team members added on load)', (await count()).startsWith('memory · 10 entries'), await count());
 await ctx.close();
 
 // ---- Muse's cases ----
@@ -135,7 +135,7 @@ const st2 = JSON.parse(await r.evaluate(()=>localStorage.getItem('brain.mem.v2')
 ok('bad id dropped, forged corpusId dropped', st2.entries.length===2 && st2.entries.find(e=>e.id==='e3').corpusId===null, st2.entries.map(e=>e.id+':'+e.corpusId).join(','));
 ok('timestamps clamped', st2.entries.every(e=>e.seen<=8.64e15&&e.created>=0) && st2.sessions[0].ts<=8.64e15);
 ok('constructor speaker dropped, secret scrubbed', st2.sessions[0].msgs.length===1 && !/hunter2/.test(JSON.stringify(st2)) && !/abc123456/.test(JSON.stringify(st2)));
-await r.reload(); ok('boots after hostile import', (await r.locator('#memCount').innerText()).toLowerCase().includes('2 entries'));
+await r.reload(); ok('boots after hostile import (2 kept entries + 9 team members)', (await r.locator('#memCount').innerText()).toLowerCase().includes('11 entries'));
 // spoof: entry e1 (key c:corpus:6) used as memory source -> label comes from CORPUS not the fake title
 await r.selectOption('#speed','0'); await chip(r, 'What does Brain learn from?'); await waitRuns(r, 1);
 const srcCell = await r.locator('.answer table td').nth(1).innerText();
@@ -162,9 +162,29 @@ await u.click('#tab-chat'); await chip(u, 'Does Brain send messages or take acti
 const a3 = await u.locator('.answer').last().innerText(); ok('corrected text without keywords is not cited for them', !/Brain is blue/.test(a3), a3.slice(0,120));
 // delete skill 'claude'-like title doesn't cross-block: delete entity Claude must not block ... (titles differ now) skip
 // tab keys
-await u.focus('#tab-chat'); await u.keyboard.press('ArrowRight'); ok('arrow key moves tab', (await u.getAttribute('#tab-mem','aria-selected'))==='true');
+await u.focus('#tab-chat'); await u.keyboard.press('ArrowRight'); ok('arrow key moves tab', (await u.getAttribute('#tab-team','aria-selected'))==='true');
 await ctx3.close();
 
+// ---- the default view: a brain-shaped memory graph, drawn fast ----
+{
+  const gctx = await b.newContext({ viewport: { width: 1440, height: 1000 } });
+  const g = await gctx.newPage(); g.on('pageerror', e=>errs.push('PAGEERR-g '+e.message));
+  await g.goto(PAGE); await g.waitForTimeout(1200);
+  ok('the memory graph is the default view', (await g.getAttribute('#stage','data-mode')) === 'graph' && (await g.getAttribute('#modeGraph','aria-pressed')) === 'true');
+  ok('a brain outline is drawn behind the dots', (await g.locator('#gShape path.outline').count()) === 1 && (await g.locator('#gShape text').count()) === 3);
+  const sbox = await g.locator('#stage').boundingBox(), ob = await g.locator('#gShape path.outline').boundingBox();
+  ok('the brain outline sits inside the stage', ob.x >= sbox.x - 2 && ob.x + ob.width <= sbox.x + sbox.width + 2 && ob.y >= sbox.y - 2 && ob.y + ob.height <= sbox.y + sbox.height + 2);
+  ok('lines are drawn as shapes, not as hundreds of separate lines', (await g.locator('#gEdges line').count()) === 0 && (await g.locator('#gEdges path').count()) === 3);
+  const dots = await g.locator('#gNodes .gn .hit').evaluateAll(els => els.map(e => { const r = e.getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; }));
+  ok('every dot is inside the stage', dots.length > 0 && dots.every(([x, y]) => x >= sbox.x && x <= sbox.x + sbox.width && y >= sbox.y && y <= sbox.y + sbox.height), String(dots.length));
+  // a big memory stays smooth
+  const big = []; for (let i = 1; i <= 400; i++) big.push({ id: 'e' + i, key: 'k' + i, type: ['concept','entity','workstream'][i % 3], title: 'Entry ' + i, note: 'n', sources: [], links: i > 3 ? ['e' + (i - 1), 'e' + (i - 3)] : [], strength: 1 + (i % 5), seen: Date.now(), created: Date.now() + i, status: 'fresh' });
+  await g.evaluate(([e]) => localStorage.setItem('brain.mem.v2', JSON.stringify({ version: 2, entries: e, sessions: [], blocked: [], runs: 0, dayShift: 0, settings: {} })), [big]);
+  await g.reload(); await g.waitForTimeout(2500);
+  const fps = await g.evaluate(() => new Promise(res => { let n = 0, t0 = 0; function f(t) { if (!t0) t0 = t; n++; if (t - t0 < 2000) requestAnimationFrame(f); else res(Math.round(n / ((t - t0) / 1000))); } requestAnimationFrame(f); }));
+  ok('400 memories still draw smoothly (30 frames a second or more)', fps >= 30, fps + ' fps');
+  await gctx.close();
+}
 // ---- the living network ----
 const nctx = await b.newContext({ viewport: { width: 1440, height: 900 } });
 const n = await nctx.newPage(); n.on('pageerror', e=>errs.push('PAGEERR-net '+e.message)); n.on('console', m => { if (m.type()==='error') errs.push('net:'+m.text()); });
@@ -237,6 +257,34 @@ await q.goto(PAGE); await q.selectOption('#speed','0');
 await q.click('#modeGraph'); await q.waitForTimeout(800);
 await q.click('#tab-mem'); await q.waitForTimeout(200);
 ok('phone no hscroll', !(await q.evaluate(()=>document.documentElement.scrollWidth>innerWidth)));
+// ---- Dispatch bar, nine bots, Team tab ----
+const dctx = await b.newContext({ viewport: { width: 1440, height: 900 } });
+const d = await dctx.newPage(); d.on('pageerror', e=>errs.push('PAGEERR-dispatch '+e.message)); d.on('console', m => { if (m.type()==='error') errs.push('dispatch:'+m.text()); });
+await d.goto(PAGE); await d.selectOption('#speed','0');
+ok('Dispatch bar is on the page', await d.locator('#dispatchText').count()===1 && await d.locator('#dispatchGo').count()===1);
+await d.click('#modeTeam'); await d.waitForTimeout(600);
+ok('nine bots on the stage', (await d.locator('.node').count())===9);
+await d.fill('#dispatchText', 'Add dark mode to the iPhone app');
+await d.waitForTimeout(100);
+const line = await d.locator('#dispatchLine').innerText();
+ok('paste-ready line holds the task and points at AGENTS.md', /dark mode to the iPhone app/.test(line) && /AGENTS\.md/.test(line) && /RedMed/.test(line), line.slice(0, 100));
+await d.click('#dispatchGo');
+await d.waitForFunction(()=>document.querySelectorAll('.node.jump').length>=9, null, {timeout:3000}).catch(()=>{});
+ok('everyone jumps when you press Everyone, go', (await d.locator('.node.jump').count())===9, String(await d.locator('.node.jump').count()));
+await d.waitForFunction(()=>/done/.test(document.querySelector('#taskStatus').textContent), null, {timeout:60000});
+const feed = await d.locator('#log').innerText();
+ok('feed says Everyone, go', /Everyone, go: Add dark mode/.test(feed));
+const whoAll = await d.evaluate(()=>[...document.querySelectorAll('.msg .who')].map(e=>e.textContent.toLowerCase()));
+const need = ['grok bot','claude','chatgpt','gemini','perplexity','cursor','xcode','muse'];
+ok('every bot speaks from its own angle', need.every(n=>whoAll.some(w=>w.includes(n))) && whoAll.some(w=>/^grok/.test(w)), JSON.stringify(whoAll.slice(0,14)));
+await d.click('#tab-team');
+ok('Team tab lists nine cards with specialties', (await d.locator('#teamList .entry').count())===9 && /Specialty/.test(await d.locator('#teamList').innerText()));
+await d.click('#tab-chat');
+await d.fill('#dispatchText', 'my key is sk-abcdefghijklmnopqrstuvwx1234 ok');
+await d.waitForTimeout(100);
+const line2 = await d.locator('#dispatchLine').innerText();
+ok('a secret typed in the dispatch box is filtered', !/sk-abcdefghijkl/.test(line2), line2.slice(0, 120));
+await dctx.close();
 console.log('ERRORS', JSON.stringify(errs));
 console.log(failed ? failed+' CHECK(S) FAILED' : 'ALL CHECKS PASSED');
 if (failed || errs.length) process.exitCode = 1;
