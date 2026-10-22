@@ -519,7 +519,9 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
       && (e.status === "fresh" || e.status === "stale") && (!e.prog || isNode(e.prog));
   }
   function scrub(t) { return redact(String(t)).text; }
-  function sanitizeMem(d) {
+  /* labels like "live · Anthropic · model" are kept for your own saved data, in a strict format; a pasted backup never keeps them */
+  var TAG_RE = /^(live · (Anthropic|OpenAI|Google|xAI) · [A-Za-z0-9._:\-]{1,80}|scripted(?: · [A-Za-z0-9 .\-]{1,40})?|page|page checks)$/;
+  function sanitizeMem(d, fromBackup) {
     var m = blankMem(), ids = Object.create(null);
     if (!d || typeof d !== "object" || !Array.isArray(d.entries)) return null;
     d.entries.filter(validEntry).slice(0, MAX_ENTRIES).forEach(function (e) {
@@ -535,7 +537,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     m.sessions = (Array.isArray(d.sessions) ? d.sessions : []).filter(function (s) { return s && typeof s.id === "string" && /^s\d{1,9}$/.test(s.id) && typeof s.q === "string" && Array.isArray(s.msgs); }).slice(-MAX_SESSIONS)
       .map(function (s) { return { id: s.id, ts: okTs(s.ts), q: scrub(s.q.slice(0, 300)), kws: Array.isArray(s.kws) ? s.kws.filter(function (k) { return typeof k === "string"; }).slice(0, 9).map(function (k) { return scrub(k.slice(0, 30)); }) : [],
         accepted: Array.isArray(s.accepted) ? s.accepted.slice(0, 10).filter(function (a) { return a && typeof a.label === "string" && isFinite(a.id); }).map(function (a) { return { id: +a.id, label: scrub(a.label.slice(0, 60)), fact: scrub(String(a.fact || "").slice(0, 400)), entity: typeof a.entity === "string" ? scrub(a.entity.slice(0, 40)) : null, src: typeof a.src === "string" ? scrub(a.src.slice(0, 120)) : "" }; }) : [], uncovered: Array.isArray(s.uncovered) ? s.uncovered.filter(function (u) { return typeof u === "string"; }).slice(0, 6).map(function (u) { return scrub(u.slice(0, 200)); }) : [],
-        msgs: s.msgs.filter(function (x) { return x && Object.prototype.hasOwnProperty.call(SPEAKERS, x.from) && typeof x.text === "string"; }).slice(0, 40).map(function (x) { return { from: x.from, text: scrub(x.text.slice(0, 4000)), tag: "" }; }) }; });
+        msgs: s.msgs.filter(function (x) { return x && Object.prototype.hasOwnProperty.call(SPEAKERS, x.from) && typeof x.text === "string"; }).slice(0, 40).map(function (x) { return { from: x.from, text: scrub(x.text.slice(0, 4000)), tag: (!fromBackup && typeof x.tag === "string" && TAG_RE.test(x.tag)) ? x.tag : "" }; }) }; });
     m.blocked = (Array.isArray(d.blocked) ? d.blocked : []).filter(function (b) { return typeof b === "string"; }).slice(0, 2000).map(function (b) { return b.slice(0, 120); });
     m.inbox = [];
     m.runs = Math.max(0, +d.runs || 0); m.dayShift = Math.max(0, Math.min(3650, +d.dayShift || 0));
@@ -1692,7 +1694,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     if (lb.dataset.armed !== "1") { lb.dataset.armed = "1"; lb.textContent = "Click again to replace memory"; setTimeout(function () { lb.dataset.armed = ""; lb.textContent = "Load pasted backup"; }, 3000); return; }
     lb.dataset.armed = ""; lb.textContent = "Load pasted backup";
     try {
-      var m = sanitizeMem(JSON.parse($("#backup").value));
+      var m = sanitizeMem(JSON.parse($("#backup").value), true);
       if (!m || !m.entries.length) throw new Error("none valid");
       mem = m; G.sel = null; persist(); syncGraph(); render();
       bMsg.textContent = "Loaded " + m.entries.length + " entries and " + m.sessions.length + " session(s)." + (storageOk ? "" : " Not saved in this browser.");

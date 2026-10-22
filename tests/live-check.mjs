@@ -114,6 +114,9 @@ const msgFor = (p, name) => p.locator('.msg').filter({ has: p.locator('.who', { 
   ok('Stop live now stops every call', reqs.length === afterStop, String(reqs.length - afterStop));
   await p.reload(); await p.click('#tab-set');
   ok('after a reload live mode is off again', !(await p.isChecked('#liveOn')));
+  await p.click('#tab-mem');
+  await p.locator('.entry .meta button', { hasText: 'session' }).first().click();
+  ok('your own saved live messages keep their "live · company" label after a reload', /live · Anthropic/.test(await p.locator('#log').innerText()));
   await ctx.close();
 }
 
