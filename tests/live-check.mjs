@@ -130,6 +130,21 @@ const msgFor = (p, name) => p.locator('.msg').filter({ has: p.locator('.who', { 
   await ctx.close();
 }
 
+// 3b) a dispatched ("Everyone, go") live task: more calls, still capped, still labeled, key never in the line
+{
+  const { ctx, p, reqs } = await setup();
+  await enableLive(p);
+  await p.click('#tab-chat');
+  await p.fill('#dispatchText', 'Check the phone layout');
+  await p.click('#dispatchGo');
+  await p.waitForFunction(() => /done/.test(document.querySelector('#taskStatus').textContent), null, { timeout: 90000 });
+  ok('dispatched live task makes at most 18 calls', reqs.length > 6 && reqs.length <= 18, String(reqs.length));
+  ok('angle messages say which company wrote them', /live · /i.test(await msgFor(p, 'Grok').first().innerText()));
+  const line = await p.locator('#dispatchLine').innerText();
+  ok('the paste-ready line never holds a key', !/TESTKEY/.test(line));
+  await ctx.close();
+}
+
 // 4) key rejected (401): that provider is switched off, no more calls to it
 {
   const { ctx, p, reqs } = await setup({ openai: '401' });

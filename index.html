@@ -130,6 +130,13 @@ input[type=checkbox] { accent-color: #fff; }
 .stage-tools button { background: #000; }
 .legend { font: 500 11px var(--font-mono); letter-spacing: .06em; color: var(--muted); text-align: center; margin: 0; text-transform: uppercase; }
 .legend i { font-style: normal; color: var(--fg); }
+.dispatch { display: flex; gap: 8px; flex-wrap: wrap; }
+.dispatch input { flex: 1 1 280px; min-width: 0; }
+.dispatchline { display: grid; gap: 6px; }
+.dispatchline .lbl { font: 600 10.5px var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.dispatchline code { display: block; border: 1px solid var(--line-2); border-radius: 2px; padding: 8px 10px; font: 400 12.5px/1.5 var(--font-body); color: var(--fg); background: #000; overflow-wrap: anywhere; user-select: all; }
+.node.jump { animation: jump .85s cubic-bezier(.3, 1.4, .5, 1); }
+@keyframes jump { 0% { transform: translate(-50%, -50%); } 35% { transform: translate(-50%, calc(-50% - 18px)) scale(1.07); box-shadow: 0 0 0 3px #fff, 0 0 30px rgba(255,255,255,.6); } 100% { transform: translate(-50%, -50%); } }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 2px; display: grid; grid-template-rows: auto 1fr; min-width: 0; }
 .tabs { display: flex; border-bottom: 1px solid var(--line); }
 .tabs button { flex: 1; border: 0; border-radius: 0; background: transparent; padding: 12px 6px; font: 600 11px var(--font-display); letter-spacing: .16em; color: var(--muted); border-bottom: 2px solid transparent; }
@@ -235,6 +242,16 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
       <select id="speed"><option value="1">Normal speed</option><option value="0.35">Fast</option><option value="0">Instant</option></select>
       <span class="badge" id="taskStatus" role="status">Starting</span>
     </div>
+    <div class="dispatch" id="dispatch">
+      <label class="sr" for="dispatchText">One line for everyone</label>
+      <input type="text" id="dispatchText" maxlength="200" autocomplete="off" placeholder="One line: what should everyone jump on?">
+      <button class="primary" id="dispatchGo" type="button">Everyone, go</button>
+    </div>
+    <div class="dispatchline">
+      <span class="lbl">The one line to paste into each of your real AI apps</span>
+      <code id="dispatchLine"></code>
+      <div class="row"><button class="small" id="dispatchCopy" type="button">Copy line</button><span class="note" id="dispatchMsg" role="status"></span></div>
+    </div>
     <div class="chips" id="samples"><span class="lbl">Task queue · click one to run it now</span></div>
   </section>
 
@@ -272,6 +289,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     <section class="panel">
       <div class="tabs" role="tablist" aria-label="Conversation, memory, settings">
         <button role="tab" id="tab-chat" aria-selected="true" aria-controls="pane-chat">Activity</button>
+        <button role="tab" id="tab-team" aria-selected="false" aria-controls="pane-team">Team</button>
         <button role="tab" id="tab-mem" aria-selected="false" aria-controls="pane-mem">Memory<span class="pill" id="memBadge" hidden></span></button>
         <button role="tab" id="tab-set" aria-selected="false" aria-controls="pane-set">Settings</button>
       </div>
@@ -280,6 +298,12 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
         <div class="row spread"><h2>Live activity</h2><button class="small" type="button" id="copyLog">Copy transcript</button></div>
         <div class="savedbar" id="savedBar" hidden><span id="savedLbl"></span><button class="small" type="button" id="backLive">Back to live</button></div>
         <div class="log" id="log" aria-live="off"><div class="empty">Waiting for the first task. Tasks start on their own. Each program speaks in turn, a packet of light travels along the line when work is handed over, and when a task ends the Brain learns from it in the background.</div></div>
+      </div>
+
+      <div class="tabpane" id="pane-team" role="tabpanel" aria-labelledby="tab-team" hidden>
+        <h2>Team · everyone thinks differently</h2>
+        <p class="note">Each bot has its own specialty, skills and angle. These are starting guesses: Max's assignments, not claims about the products. They are written in AGENTS.md, which every real bot reads. “Everyone, go” makes each bot give its angle on your task before the work starts.</p>
+        <ul class="entries" id="teamList" tabindex="-1"></ul>
       </div>
 
       <div class="tabpane" id="pane-mem" role="tabpanel" aria-labelledby="tab-mem" hidden>
@@ -293,7 +317,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
             <li><b>Memory only.</b> Brain does not take actions or message you.</li>
           </ol>
           <p class="note"><b>From the article:</b> steps 1 to 5 above, from Perplexity's help article <a href="https://www.perplexity.ai/help-center/en/articles/19700001-what-is-brain" target="_blank" rel="noopener">“What is Brain?”</a>. Checked against the live page on 2026-10-21 (it says it was last modified October 2, 2026). In the article, Brain is a Research Preview for Max and Enterprise Max subscribers using Perplexity Computer. This page does not connect to Perplexity.</p>
-          <p class="note"><b>This page's own ideas (not in the article):</b> the animations, the black-and-white look, the drifting network and packets of light, the graph shapes and layout; there is no question box and tasks run on their own from an automatic queue; the Plan / Queries / Sources / Answer task with cited answers; the “Report” step of a run; the Skills filter; the incognito switch and “Run Brain now” button; sample connectors; the 30-day stale rule and the “skip ahead” demo clock (the article gives no time rule); the rule that a deleted entry is not learned again; and the optional Live AI mode that lets real models from four companies voice the bots; and the password filter, which is simple pattern matching, not the AI-based filtering the article describes.</p>
+          <p class="note"><b>This page's own ideas (not in the article):</b> the animations, the black-and-white look, the drifting network and packets of light, the graph shapes and layout; tasks run on their own from an automatic queue, and the Dispatch bar (one box and an “Everyone, go” button) lets you send your own task to all nine bots; the nine-bot team, each bot's specialty, skills and angle (Max's starting guesses, not claims about the real products); the brain-shaped layout (a placeholder outline until Max's traced one is added); Perplexity and Xcode are scripted here and the page does not connect to them; the Plan / Queries / Sources / Answer task with cited answers; the “Report” step of a run; the Skills filter; the incognito switch and “Run Brain now” button; sample connectors; the 30-day stale rule and the “skip ahead” demo clock (the article gives no time rule); the rule that a deleted entry is not learned again; and the optional Live AI mode that lets real models from four companies voice the bots; and the password filter, which is simple pattern matching, not the AI-based filtering the article describes.</p>
         </details>
 
         <div class="runcard">
@@ -1162,6 +1186,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     $("#runNow").disabled = !mem.settings.brain || brainRunning || running || busy;
     $("#skip30").disabled = brainRunning || running || busy;
     $("#nextBtn").disabled = brainRunning || running || busy;
+    $("#dispatchGo").disabled = brainRunning || running || busy;
   }
   function findWorkstream(kws) {
     var best = null;
@@ -1380,8 +1405,8 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   }
 
   function systemFor(bot) {
-    var sp = SPEAKERS[bot];
-    return "You are " + sp.name + " (" + sp.sub + "), one of six bots on Max's team in a visualization. Speak as that bot in at most two short plain sentences. Use only the task and the lines you are given. Do not invent facts, names, numbers or dates. Never write keys or passwords.";
+    var sp = SPEAKERS[bot], nd = NODES.filter(function (n) { return n.id === bot; })[0];
+    return "You are " + sp.name + " (" + sp.sub + "), one of nine bots on Max's team in a visualization. " + (nd ? "Your specialty: " + nd.specialty + ". Think from that angle. " : "") + "Speak as that bot in at most two short plain sentences. Use only the task and the lines you are given. Do not invent facts, names, numbers or dates. Never write keys or passwords.";
   }
   /* returns the bot's words: from a real model when this bot is mapped and live is on, otherwise the scripted text */
   async function voice(bot, scripted, brief) {
@@ -1429,7 +1454,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
         } })),
       h("p", { class: "note", id: "liveMsg", role: "status" }),
       h("div", { id: "liveBox", hidden: true },
-        h("p", { class: "note", text: "Create each key yourself on the provider's website and paste it here. Never paste a key in the chat. A key is kept in this tab only, unless you tick “remember” below. A normal task makes up to 9 short calls. Prices differ by model, so check each provider's price page. Live tasks never repeat on their own: autopilot waits for you." }),
+        h("p", { class: "note", text: "Create each key yourself on the provider's website and paste it here. Never paste a key in the chat. A key is kept in this tab only, unless you tick “remember” below. A normal task makes up to 9 short calls (about 18 for an “Everyone, go” task). Prices differ by model, so check each provider's price page. Live tasks never repeat on their own: autopilot waits for you." }),
         rows,
         h("h2", { text: "Which company's AI voices which bot" }),
         h("div", { class: "mapgrid" }, maps),
@@ -1453,8 +1478,45 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   }
   function afterLiveToggle() { if (typeof scheduleNext === "function") scheduleNext(); }
 
+  /* ================= Dispatch: one line makes everyone jump on a task ================= */
+  /* everyone leaps at once, with a packet of light from the Brain to each bot */
+  function jumpAll() {
+    light("brain");
+    NODES.forEach(function (n) {
+      var el = T[n.id].el; el.classList.remove("jump"); void el.offsetWidth; el.classList.add("jump");
+      setTimeout(function () { el.classList.remove("jump"); }, 1000);
+      handoff("brain", n.id);
+    });
+  }
+  /* each bot says how it would look at the task from its own specialty (a template; in Live AI mode a real model writes it) */
+  async function angleRound(q) {
+    say("brain", "Everyone, go. First, each bot looks at the task from its own specialty:", null, null, null, "page");
+    var order = ["grok", "grokbot", "claude", "chatgpt", "gemini", "perplexity", "cursor", "xcode", "muse"];
+    for (var i = 0; i < order.length; i++) {
+      var n = NODES.filter(function (x) { return x.id === order[i]; })[0]; if (!n) continue;
+      light(n.id);
+      await sayLive(n.id, n.angle.replace("{q}", clip(q, 90)), "Your specialty: " + n.specialty + ". Give your angle on this task in two short sentences, then one idea nobody else on the team would suggest. Do not state facts you were not given.");
+      await sleep(350);
+    }
+    await sleep(500);
+  }
+  var LINE_TAIL = " \u2014 Read AGENTS.md in Roooted1776/Brain first and find your own row under Specialties; think from YOUR angle (3 short points plus one idea nobody else would suggest). Grok commands and signs off, Claude builds, Muse audits last, Max merges; draft PR only, never touch RedMed, never put a key in chat, report pass/fail plainly.";
+  function updateLine() {
+    var r = redact($("#dispatchText").value.trim());
+    $("#dispatchLine").textContent = "TEAM TASK: " + (r.text || "<TASK>") + LINE_TAIL;
+    if (r.n) $("#dispatchMsg").textContent = "That looked like a password or key, so it is filtered out of the line. Please do not paste real secrets.";
+    else if (/filtered out of the line/.test($("#dispatchMsg").textContent)) $("#dispatchMsg").textContent = "";
+  }
+  function dispatchGo() {
+    var r = redact($("#dispatchText").value.trim());
+    if (!r.text) { $("#dispatchMsg").textContent = "Type one line first, then press Everyone, go."; $("#dispatchText").focus(); return; }
+    if (busy || running || brainRunning) { $("#dispatchMsg").textContent = "A task is still running. Wait for it to finish."; return; }
+    $("#dispatchMsg").textContent = ""; if (r.n) mem.filtered += r.n;
+    startTask(r.text, true, null, { dispatch: true });
+  }
+
   /* ================= Run one session ================= */
-  async function run(qRaw) {
+  async function run(qRaw, opts) {
     if (running || brainRunning) return;
     running = true; updateBrainState();
     $("#savedBar").hidden = true; viewingSaved = false;
@@ -1468,7 +1530,8 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
       LIVE.notices = {};
       LIVE.ctx = "Task: " + q + "\nLines kept:\n" + (ev.accepted.map(function (s, i) { return "[" + (i + 1) + "] " + s.label + ": " + clip(s.origFact || s.fact, 260); }).join("\n") || "(none)") + "\nUnanswered points: " + (ev.uncovered.join("; ") || "none");
       setPhase(0);
-      say("queue", "Task: " + q);
+      say("queue", (opts && opts.dispatch ? "Everyone, go: " : "Task: ") + q);
+      if (opts && opts.dispatch) { jumpAll(); await sleep(900); await angleRound(q); }
       if (red.n) { mem.filtered += red.n; say("brain", "Warning: that looked like a password or key, so I filtered it out and will not remember it. Please do not paste real secrets here.", null, null, "warn"); }
       light("brain"); await sleep(800);
       say("brain", "Task received. Four phases: Plan, Queries, Sources, Answer. I answer only from retrieved sources."
@@ -1564,7 +1627,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     chipEls.push(c); $("#samples").append(c);
   });
   function setStatus(t) { $("#taskStatus").textContent = t; }
-  function startTask(q, manual, idx) {
+  function startTask(q, manual, idx, opts) {
     if (busy || running || brainRunning) return;
     busy = true; clearTimeout(autoTimer);
     speed = parseFloat($("#speed").value); if (!isFinite(speed)) speed = 1;
@@ -1573,7 +1636,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     taskNo++; currentTask = q; updateHud();
     chipEls.forEach(function (c, i) { c.setAttribute("aria-pressed", String(i === idx)); });
     setStatus("Task " + taskNo + " · running");
-    run(q).then(afterTask, afterTask);
+    run(q, opts).then(afterTask, afterTask);
   }
   function nextTask(manual) {
     if (manual !== true && liveActive()) { if (!busy) setStatus("Live mode: autopilot waits for you. Press Next task."); return; }
@@ -1597,6 +1660,11 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     else setStatus(running || brainRunning ? "Pausing after this task" : "Paused");
   });
   $("#nextBtn").addEventListener("click", function () { nextTask(true); });
+  $("#dispatchText").addEventListener("input", updateLine);
+  $("#dispatchText").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); dispatchGo(); } });
+  $("#dispatchGo").addEventListener("click", dispatchGo);
+  $("#dispatchCopy").addEventListener("click", function () { updateLine(); copyText($("#dispatchLine").textContent, $("#dispatchCopy")); });
+  updateLine();
   showPlayState();
   if (playing) { setStatus("Starting"); autoTimer = setTimeout(nextTask, 1600); }
   else setStatus(REDUCED ? "Paused · reduced motion is on" : "Paused");
@@ -1609,23 +1677,41 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
 
   /* ================= Tabs ================= */
   function tab(which) {
-    ["chat", "mem", "set"].forEach(function (t) {
+    ["chat", "team", "mem", "set"].forEach(function (t) {
       $("#tab-" + t).setAttribute("aria-selected", String(t === which)); $("#tab-" + t).tabIndex = t === which ? 0 : -1;
       $("#pane-" + t).hidden = t !== which;
     });
     if (which === "mem") { $("#memBadge").hidden = true; $("#modeHint").textContent = ""; }
     if (which === "chat") layout();
+    if (which === "team") renderTeamList();
   }
-  var TABIDS = ["chat", "mem", "set"];
+  var TABIDS = ["chat", "team", "mem", "set"];
   TABIDS.forEach(function (t, i) {
     $("#tab-" + t).addEventListener("keydown", function (e) {
       var d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0; if (!d) return;
-      e.preventDefault(); var n = TABIDS[(i + d + 3) % 3]; tab(n); $("#tab-" + n).focus();
+      e.preventDefault(); var n = TABIDS[(i + d + TABIDS.length) % TABIDS.length]; tab(n); $("#tab-" + n).focus();
     });
   });
   $("#tab-chat").addEventListener("click", function () { tab("chat"); });
+  $("#tab-team").addEventListener("click", function () { tab("team"); });
   $("#tab-mem").addEventListener("click", function () { tab("mem"); });
   $("#tab-set").addEventListener("click", function () { tab("set"); });
+
+  /* ================= Team tab: each bot's specialty, skills and angle ================= */
+  var LOOK = { lead: "filled", hub: "double line", collab: "thin line", audit: "dashed line" };
+  function renderTeamList() {
+    var ul = $("#teamList"); ul.textContent = "";
+    NODES.forEach(function (n) {
+      var pv = LIVE.map[n.id], voice = LIVE_BOTS.indexOf(n.id) < 0 ? "always scripted" : (pv && pv !== "sim") ? "can be voiced by " + PROV[pv].label + " in Live AI" : "scripted unless you map it in Settings";
+      ul.append(h("li", { class: "entry", style: "--k:" + color(n.id) },
+        h("div", { class: "hd" }, h("span", { class: "ttl", text: n.name }), h("span", { class: "tag t", text: LOOK[n.kind] }), h("span", { class: "tag", text: n.sub })),
+        h("div", { class: "body" }, h("b", { text: "Specialty: " }), n.specialty),
+        h("div", { class: "meta" }, h("span", { text: "Skills:" }), n.skills.map(function (k) { return h("span", { class: "tag", text: k }); })),
+        h("div", { class: "meta" }, h("span", { text: "Angle on a task: " + n.angle.replace("{q}", "your task") })),
+        h("div", { class: "meta" }, h("span", { text: "Voice: " + voice })),
+        h("div", { class: "row" }, h("button", { class: "small", type: "button", text: "Find on stage", onclick: function () { if (mode !== "team") setMode("team"); light(n.id); T[n.id].el.classList.add("jump"); setTimeout(function () { T[n.id].el.classList.remove("jump"); }, 1000); } }))));
+    });
+  }
 
   /* ================= Memory tab: browse, edit, delete ================= */
   var filter = "all", editingId = null, confirmId = null, SOURCE_LABEL = { session: "session", tool: "connected tool", file: "file", correction: "your correction" };

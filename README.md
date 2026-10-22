@@ -4,11 +4,12 @@ Max's **Orchestration Brain**. Open `index.html` in any browser (double-click it
 
 ## What it does
 
-A live view of Max's bots working together. Black and white, one sans font, no question box: **tasks run on their own** (Play / Pause / Next task controls, and a task queue you can click to run one now).
+A live view of Max's bots working together. Black and white, one sans font. **Tasks run on their own** (Play / Pause / Next task controls, and a task queue you can click to run one now).
 
 - **Living network.** Each bot is a node that drifts gently and is pulled by springs along its connections. **Drag any node** and the rest stretch with it; it stays where you drop it. "Reset layout" puts everything back. A "Drift" switch turns the floating off.
-  - **Team network** (Max's chart): Grok (lead, filled) → Claude (hub, double line) → Cursor, Gemini, ChatGPT (collaborators, thin line); Muse (auditor, dashed) is joined to Claude by a dashed curve. A packet of light travels along the line each time work is handed over.
-  - **Memory graph**: what Brain has learned. Circle = concept, square = entity, triangle = workstream. Dots pop in when learned, pulse when seen again, flash when updated, and turn dashed when stale. Drag any dot.
+  - **Team network** (Max's chart, nine bots): Grok (lead, filled) → Claude (hub, double line) and Grok Bot (lead); Claude → Cursor, Gemini, ChatGPT, Perplexity, Xcode (collaborators, thin line); Muse (auditor, dashed) is joined to Claude by a dashed curve. Each bot has its own specialty, skills and angle (Team tab). A packet of light travels along the line each time work is handed over.
+  - **Memory graph** (the default view, laid out inside a brain shape; the outline is a placeholder until Max's traced one is added): what Brain has learned. Circle = concept, square = entity, triangle = workstream. Dots pop in when learned, pulse when seen again, flash when updated, and turn dashed when stale. Drag any dot.
+- **Dispatch bar.** Type a task, press **Everyone, go**: all nine bots jump, each gives its own angle, then the normal task runs. The box also shows one paste-ready line with a Copy button. Grok, ChatGPT, Gemini and Perplexity are separate apps, so this page cannot push the task into them; you paste the line into each, and each reads `AGENTS.md` (Specialties) and follows the chart.
 - **Tasks** move through four phases as a conversation between the programs (plan, 3–5 searches, source check, cited answer), shown in the Activity tab.
 - **Brain learns afterwards**, in the background, in four steps shown on the Memory tab: review recent activity, write what it learns, reinforce / update / mark stale (these three follow the article), then a report (this page's own step).
 - **Memory tab**: browse Concepts, Entities, Workstreams and Skills. Open an entry's source (a saved task replays), edit it, delete it, or confirm it is still true. Corrections change later answers.
@@ -20,12 +21,12 @@ The learning steps follow Perplexity's help article [“What is Brain?”](https
 
 ## Live AI (optional, off by default, you pay the providers)
 
-By default every bot is scripted. In Settings you can switch on **Use real AI** and let each bot be voiced by a real model from a different company: Grok by xAI, Claude by Anthropic, ChatGPT by OpenAI, Gemini by Google. Cursor and Muse have no public chat API that I know of (unverified), so they stay scripted unless you map them to one of the four.
+By default every bot is scripted. In Settings you can switch on **Use real AI** and let each bot be voiced by a real model from a different company: Grok by xAI, Claude by Anthropic, ChatGPT by OpenAI, Gemini by Google. Cursor, Muse, Grok Bot and Xcode have no public chat API that I know of (unverified), and Perplexity is not wired to its API yet, so they stay scripted unless you map them to one of the four.
 
 - **You create the keys yourself** on each provider's website and paste them into Settings. Never paste a key into a chat. Keys stay in the browser tab only. Tick "Remember keys on this device" to keep them (anyone using this browser could use them). Keys are never written to memory, backups, transcripts, or this repo.
 - **It only works when you open `index.html` from your computer.** The preview link blocks calls to other websites.
 - **It turns itself off on every reload.** Live tasks never repeat on their own: autopilot waits for you to press Next task.
-- **Spending limits:** at most 8 short calls per task, a token limit per reply (default 300), a call limit per page load (default 60), and a "Stop live now" button. Prices differ by model, so check each provider's price page.
+- **Spending limits:** up to 9 short calls for a normal task and about 18 for an “Everyone, go” task, a token limit per reply (default 300), a call limit per page load (default 60), and a "Stop live now" button. Prices differ by model, so check each provider's price page.
 - **Stop live now** also cancels any call still in flight. A Google key goes in the web address (that is how Google's docs show it), so it can appear in your browser's network tab. OpenAI is asked not to store prompts; xAI may keep them (unverified), so check each company's data settings.
 - **What the models do:** each bot's short message is written by its model and labeled with the company and model. The sample lines, the cited answer, and Grok's pass/fail checks are still produced by this page's own code, so a model cannot put an invented fact into an answer. The task text and the built-in sample lines (never your memory notes) are sent to the companies you map, even for incognito tasks.
 - **Model names** (`claude-haiku-5-5`, `gpt-6-luna`, `gemini-3.5-flash-lite`, `grok-4.20-0309-non-reasoning`) came from each provider's docs on 2026-10-21 through a page summary. They change often, so edit them in Settings if a call says "model not found".

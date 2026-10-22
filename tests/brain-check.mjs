@@ -162,7 +162,7 @@ await u.click('#tab-chat'); await chip(u, 'Does Brain send messages or take acti
 const a3 = await u.locator('.answer').last().innerText(); ok('corrected text without keywords is not cited for them', !/Brain is blue/.test(a3), a3.slice(0,120));
 // delete skill 'claude'-like title doesn't cross-block: delete entity Claude must not block ... (titles differ now) skip
 // tab keys
-await u.focus('#tab-chat'); await u.keyboard.press('ArrowRight'); ok('arrow key moves tab', (await u.getAttribute('#tab-mem','aria-selected'))==='true');
+await u.focus('#tab-chat'); await u.keyboard.press('ArrowRight'); ok('arrow key moves tab', (await u.getAttribute('#tab-team','aria-selected'))==='true');
 await ctx3.close();
 
 // ---- the default view: a brain-shaped memory graph, drawn fast ----
@@ -257,6 +257,34 @@ await q.goto(PAGE); await q.selectOption('#speed','0');
 await q.click('#modeGraph'); await q.waitForTimeout(800);
 await q.click('#tab-mem'); await q.waitForTimeout(200);
 ok('phone no hscroll', !(await q.evaluate(()=>document.documentElement.scrollWidth>innerWidth)));
+// ---- Dispatch bar, nine bots, Team tab ----
+const dctx = await b.newContext({ viewport: { width: 1440, height: 900 } });
+const d = await dctx.newPage(); d.on('pageerror', e=>errs.push('PAGEERR-dispatch '+e.message)); d.on('console', m => { if (m.type()==='error') errs.push('dispatch:'+m.text()); });
+await d.goto(PAGE); await d.selectOption('#speed','0');
+ok('Dispatch bar is on the page', await d.locator('#dispatchText').count()===1 && await d.locator('#dispatchGo').count()===1);
+await d.click('#modeTeam'); await d.waitForTimeout(600);
+ok('nine bots on the stage', (await d.locator('.node').count())===9);
+await d.fill('#dispatchText', 'Add dark mode to the iPhone app');
+await d.waitForTimeout(100);
+const line = await d.locator('#dispatchLine').innerText();
+ok('paste-ready line holds the task and points at AGENTS.md', /dark mode to the iPhone app/.test(line) && /AGENTS\.md/.test(line) && /RedMed/.test(line), line.slice(0, 100));
+await d.click('#dispatchGo');
+await d.waitForFunction(()=>document.querySelectorAll('.node.jump').length>=9, null, {timeout:3000}).catch(()=>{});
+ok('everyone jumps when you press Everyone, go', (await d.locator('.node.jump').count())===9, String(await d.locator('.node.jump').count()));
+await d.waitForFunction(()=>/done/.test(document.querySelector('#taskStatus').textContent), null, {timeout:60000});
+const feed = await d.locator('#log').innerText();
+ok('feed says Everyone, go', /Everyone, go: Add dark mode/.test(feed));
+const whoAll = await d.evaluate(()=>[...document.querySelectorAll('.msg .who')].map(e=>e.textContent.toLowerCase()));
+const need = ['grok bot','claude','chatgpt','gemini','perplexity','cursor','xcode','muse'];
+ok('every bot speaks from its own angle', need.every(n=>whoAll.some(w=>w.includes(n))) && whoAll.some(w=>/^grok/.test(w)), JSON.stringify(whoAll.slice(0,14)));
+await d.click('#tab-team');
+ok('Team tab lists nine cards with specialties', (await d.locator('#teamList .entry').count())===9 && /Specialty/.test(await d.locator('#teamList').innerText()));
+await d.click('#tab-chat');
+await d.fill('#dispatchText', 'my key is sk-abcdefghijklmnopqrstuvwx1234 ok');
+await d.waitForTimeout(100);
+const line2 = await d.locator('#dispatchLine').innerText();
+ok('a secret typed in the dispatch box is filtered', !/sk-abcdefghijkl/.test(line2), line2.slice(0, 120));
+await dctx.close();
 console.log('ERRORS', JSON.stringify(errs));
 console.log(failed ? failed+' CHECK(S) FAILED' : 'ALL CHECKS PASSED');
 if (failed || errs.length) process.exitCode = 1;
