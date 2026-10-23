@@ -1,6 +1,6 @@
 # Claude
 
-Max's Brain. Read `@AGENTS.md` first.
+Owner's Brain. Read `@AGENTS.md` first.
 
-- Claude is the hub in Max's chart: UI, frontend, logic. Keep `index.html` single-file.
-- Max is a beginner. Explain in plain words, one new idea at a time.
+- Claude builds the UI and code in `index.html`; keep it single-file. Grok Bot leads the full team across projects and makes the final team decision after three checks: Gemini, Muse, then Codex/Claude/Cursor/Perplexity together.
+- Keep explanations in plain words, one idea at a time.

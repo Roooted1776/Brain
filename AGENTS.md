@@ -1,48 +1,40 @@
 # Agents
 
-Brain is Max's personal "Orchestration Brain": one page (`index.html`) that shows his AI programs working together, plus a small memory that learns from those sessions the way the Perplexity help article "What is Brain?" describes.
+Brain is Owner's personal "Orchestration Brain": one page (`index.html`) that shows his AI programs working together, plus a small memory that learns from those sessions the way the Perplexity help article "What is Brain?" describes.
 
 Canonical repo: **`Roooted1776/Brain`**.
 
 ## Hard rule: RedMed stays untouched
 
-Max also has a separate project called RedMed. **Do not read, copy from, change, branch, or open pull requests on RedMed from this repo or this work.** Nothing from RedMed goes into Brain, including text, file names, skills lists or sample data. If a task seems to need RedMed, stop and ask Max.
+Owner also has a separate project called RedMed. **Do not read, copy from, change, branch, or open pull requests on RedMed from this repo or this work.** Nothing from RedMed goes into Brain, including text, file names, skills lists or sample data. If a task seems to need RedMed, stop and ask Owner.
 
-## Who does what (Max's chart)
+## Who does what (Owner's chart)
 
-| Program | Role | Look on the page | In this repo |
+| Program | Role and strength | Look on the page | In this repo |
 | --- | --- | --- | --- |
-| **Grok** | Lead. Commands the repo. | filled white | Sets the order, verifies every change, calls pass or fail. |
-| **Claude** | Hub. UI, frontend, logic. | double line | Writes and changes `index.html`. Everything flows through Claude. |
-| **Cursor** | Collaborator. Integrates and reviews. | thin line | Merges work into one change and reviews it. |
-| **Gemini** | Collaborator. Studies UI together. | thin line | Second reader on layout and long-context cross-checks. |
-| **ChatGPT** | Collaborator. Research together. | thin line | Independent research and second opinions. |
-| **Grok Bot** | Lead's runner. Runs Grok's orders. | filled white | Hands tasks out and logs every hand-off, so the order is kept. |
-| **Perplexity** | Collaborator. Finds and cites sources. | thin line | Source finder. (Retired in the RedMed repo's briefs; on this page it is a scripted bot only.) |
-| **Xcode** | Collaborator. Builds iPhone apps. | thin line | iOS builds and device testing. Speaks only for iPhone tasks. |
-| **Muse** | Auditor. Audits everyone's work. | dashed line | Reads the finished change and reports problems. Does not edit. |
+| **Grok Bot** | Team head across every project; gathers the three checks and makes the final team decision. | filled white | Routes the work, logs hand-offs, and gives the final PASS or FAIL. |
+| **Grok (xAI)** | Strategy reviewer; challenges assumptions, risks, and missed options. | thin line | Gives an independent challenge; does not overrule Grok Bot. |
+| **Claude (Anthropic)** | Careful reasoning, writing, and code. | double line | Plans and builds the single-file page. |
+| **Cursor** | Repository editing and code integration. | thin line | Reviews the actual changed files and integration risks. |
+| **Gemini (Google)** | Multimodal and long-context cross-checking. | thin line | First review check: inspect relevant context, documents, images, and UI. |
+| **Codex (OpenAI)** | Tool use, coding, planning, and synthesis. | thin line | Consolidates findings from the third review check. |
+| **Perplexity** | Web research and citations. | thin line | Checks claims against sources; scripted in this page, not connected to its service. |
+| **Xcode (Apple)** | iOS builds and device work. | thin line | Checks iPhone-related work when relevant. |
+| **Muse** | Independent audit and issue finding. | dashed line | Second review check: report errors, risks, and missing evidence. |
 
-**Max** is the source of truth. He decides what ships and presses push and merge.
+Grok Bot is the head of the AI team across projects and has the final team decision after the review checks. Owner remains the repository owner and controls Git push and merge.
 
-Flow: Grok commands (Grok Bot runs the orders) → Claude plans and builds → Cursor, Gemini, ChatGPT, Perplexity and Xcode work with Claude → Muse audits everyone → Grok verifies and signs off → Max decides.
+## Three-check review order
+
+1. **Gemini:** first pass for context, long documents, images, and whether the work fits the request.
+2. **Muse:** second pass, independently checking errors, gaps, risks, and evidence.
+3. **Collective review:** Codex synthesizes; Claude checks reasoning and implementation; Cursor checks the repository changes; Perplexity checks source quality and citations. They combine their findings as the third check.
+
+Codex brings the three-check report to Grok Bot. Grok Bot makes and records the final team decision (PASS or FAIL) for every project. Keep this order even when a program is scripted or unavailable; state clearly when a review is simulated or could not run. Owner controls repository ownership and external Git actions.
 
 ## Specialties (each bot thinks differently on purpose)
 
-Max asked (2026-10-22) that every bot think from its own angle, to think out of the box. These are Max's starting guesses, not claims about the real products. The Dispatch line tells every bot to find its own row here. The page holds the same text in `NODES` (`index.html`); keep them in step.
-
-| Bot | Specialty | Skills | Angle on a task |
-| --- | --- | --- | --- |
-| Grok | Challenges the plan and asks what everyone is missing | spotting weak assumptions, contrarian questions, final sign-off | Challenge: what could be wrong, risky, or missing? |
-| Grok Bot | Keeps the order: hands tasks out and logs every hand-off | task hand-offs, logging, keeping the order | Order: hand the task to each bot and log every hand-off. |
-| Claude | Careful reasoning, clear writing and code | step-by-step plans, clear writing, building the page | Plan: break it into small steps and build it carefully. |
-| Cursor | Edits code in the repo and reviews changes | editing files, merging work, code review | Build: which files would change, and what could break? |
-| Gemini | Reads lots of material at once and cross-checks it, including pictures and long documents | long documents, images, cross-checking | Cross-check: which long documents or images should we study? |
-| ChatGPT | Brainstorms many options fast and gives a second opinion | brainstorming, second opinions, explaining | Options: three different ways to approach it. |
-| Perplexity | Finds sources on the web and cites them | web research, citations, fact checking | Sources: what must be looked up and cited? |
-| Xcode | Builds and tests iPhone apps | iOS builds, device testing, archives | iPhone check: does it touch an iPhone app? If not, pass. |
-| Muse | Audits everyone's work and finds what is wrong | audits, finding bugs, honesty checks | Audit: what could go wrong, and how would we know? |
-
-Everyone gives their angle plus one idea nobody else would suggest (live bots: at most two short sentences).
+Use each program's name and actual strength in reports; do not label every program as a generic reviewer. For this page, the brief descriptions above are the starting point. Keep `NODES` (`index.html`) in step with this table. Grok Bot's leadership applies across projects, not only this Brain repo.
 
 ## What the page models (from the Perplexity article)
 
@@ -52,24 +44,24 @@ Everyone gives their angle plus one idea nobody else would suggest (live bots: a
 4. **You stay in charge.** Any entry can be opened, edited or deleted. Your corrections feed forward into the next run.
 5. **Memory only.** Brain does not take actions or message you.
 
-Wording checked against the live article on 2026-10-21 (it says it was last modified October 2, 2026). The article shows the Connected sources toggle and Instructions field only in a screenshot and does not explain them. **This page's own ideas, not in the article:** the animations, the black-and-white look, the drifting network and packets of light, the graph shapes and layout (a brain-shaped layout using an outline Max asked for, traced by hand from one side-view MRI slice; the picture itself is not stored, and the outline is decorative, not medical); the nine-bot team, the specialties above, and the Dispatch bar; the Plan / Queries / Sources / Answer session and cited answers; the "Report" step of a run; the Skills filter; the incognito switch and "Run Brain now" button; the automatic task queue; sample connectors; the 30-day stale rule and the "skip ahead" demo clock (the article gives no time rule); the rule that a deleted entry is not learned again; the optional Live AI mode; and the password filter (simple pattern matching, not the AI-based filtering the article describes). The page does not connect to Perplexity (the Perplexity bot is scripted).
+Wording checked against the live article on 2026-10-21 (it says it was last modified October 2, 2026). The article shows the Connected sources toggle and Instructions field only in a screenshot and does not explain them. **This page's own ideas, not in the article:** the animations, the black-and-white look, the drifting network and packets of light, the two outlined hemispheres, listening pulses and time-based motion; the nine-bot team, the specialties above, and the Dispatch bar; the Plan / Queries / Sources / Answer session and cited answers; the "Report" step of a run; the Skills filter; the incognito switch and "Run Brain now" button; the automatic task queue; sample connectors; the 30-day stale rule and the "skip ahead" demo clock (the article gives no time rule); the rule that a deleted entry is not learned again; the optional Live AI mode; and the password filter (simple pattern matching, not the AI-based filtering the article describes). The page does not connect to Perplexity (the Perplexity bot is scripted).
 
 ## Working rules
 
-- **MRI privacy:** the brain outline comes from Max's own MRI (see `mri/`). Only the traced outline numbers belong in this repo. Never add DICOM files, scan pictures (a side view shows the face), names, dates or IDs.
-- One branch per piece of work. Open a **draft** pull request. Nobody merges except Max.
-- Never commit passwords, API keys or private data. The page filters common key and password patterns before saving (best effort, not a guarantee) and warns when it sees one. If a real secret shows up in a file, stop and tell Max.
-- `index.html` stays a single self-contained file with no build step, so Max can open it by double-click.
-- The page is a **simulation by default**. It makes no real AI or search calls unless Max switches on Live AI in Settings (see below). It never uses web search. Its sample sources are lines written for the demo from this repo's own rules and the article, and the page must say so. Never present them as live search.
+- **MRI privacy:** traced dimensions from Owner's own MRI are in `mri/`; the visible paired-hemisphere diagram is a schematic, not a scan reconstruction. Only the traced outline numbers belong in this repo. Never add DICOM files, scan pictures (a side view shows the face), names, dates or IDs.
+- One branch per piece of work. Open a **draft** pull request. Nobody merges except Owner.
+- Never commit passwords, API keys or private data. The page filters common key and password patterns before saving (best effort, not a guarantee) and warns when it sees one. If a real secret shows up in a file, stop and tell Owner.
+- `index.html` stays a single self-contained file with no build step, so Owner can open it by double-click.
+- The page is a **simulation by default**. It makes no real AI or search calls unless Owner switches on Live AI in Settings (see below). It never uses web search. Its sample sources are lines written for the demo from this repo's own rules and the article, and the page must say so. Never present them as live search.
 - Every fact in an answer carries a citation, citations are never reused across sources, and an unanswerable point uses the fixed sentence "The provided source documentation does not contain enough verified information to confidently answer …".
-- Look: Max asked (2026-10-21) for black and white, Palantir-style, one sans font. Roles are shown by line style, not colour: filled = lead (Grok), double line = hub (Claude), thin line = collaborators (Cursor, Gemini, ChatGPT), dashed = auditor (Muse). Keep Max's chart hierarchy and the dashed audit line from Muse to Claude. Change the look only when Max says so.
-- The page is a visualization, not a chat. Tasks run on their own from a built-in queue (Play / Pause / Next task, click a queued task to run it now). Bots drift, and every node and dot can be dragged. Max asked (2026-10-22) for one **Dispatch bar** (a box and an “Everyone, go” button that sends his task to all nine bots and shows a paste-ready line). That is the only text box. Do not add other question boxes unless Max asks.
+- Look: black and white, one sans font, free-floating with no enclosing stage panel. The default Hive mind view shows two distinct inside-facing hemisphere outlines, the agents with pulsing listening rings, and linked memory nodes. Keep interior detail to active agent, memory and handoff signals. Use time-based pulses and handoff motion for the 4D effect. Roles are shown by line style, not colour: filled = team head (Grok Bot), double line = builder hub (Claude), thin line = reviewers and collaborators (Grok, Cursor, Gemini, Codex), dashed = auditor (Muse). Keep Perplexity and Xcode on the team map. Change the look only when Owner says so.
+- The page is a visualization, not a chat. Tasks run on their own from a built-in queue (Play / Pause / Next task, click a queued task to run it now). Bots drift, and every node and dot can be dragged. Owner asked (2026-10-22) for one **Dispatch bar** (a box and an “Everyone, go” button that sends his task to all nine bots and shows a paste-ready line). That is the only text box. Do not add other question boxes unless Owner asks.
 
-## Live AI rules (optional mode; Max chose to build it on 2026-10-21)
+## Live AI rules (optional mode; Owner chose to build it on 2026-10-21)
 
 - **Off by default and off after every reload.** Autopilot never runs live tasks by itself.
-- **Keys:** Max creates them. **Never ask Max to paste a key into a chat**, never put a key in a file, commit, test, screenshot, log, backup, transcript, or pull request. Keys live in the browser tab (or the device, only if Max ticks "remember"). If a key ever appears anywhere in the repo, stop and tell Max to rotate it.
-- **Spending:** keep the hard limits (calls per page load, tokens per reply, up to 9 calls per normal task, up to 16 for a dispatched one) and the "Stop live now" button. Do not raise a limit or add a loop that makes calls without Max pressing Next task.
+- **Keys:** Owner creates them. **Never ask Owner to paste a key into a chat**, never put a key in a file, commit, test, screenshot, log, backup, transcript, or pull request. Keys live in the browser tab (or the device, only if Owner ticks "remember"). If a key ever appears anywhere in the repo, stop and tell Owner to rotate it.
+- **Spending:** keep the hard limits (calls per page load, tokens per reply, up to 9 calls per normal task, up to 16 for a dispatched one) and the "Stop live now" button. Do not raise a limit or add a loop that makes calls without Owner pressing Next task.
 - **Honesty:** every model-written message is labeled with its company and model; scripted ones say scripted. A model only writes bot commentary. Facts, citations, and Grok's PASS/FAIL come from this page's own code. Do not claim the real services were tested: only fake servers have been (`tests/live-check.mjs`).
 - Never send real keys or real traffic from tests. Tests use fake servers only.
 
@@ -77,4 +69,4 @@ Wording checked against the live article on 2026-10-21 (it says it was last modi
 
 1. Open `index.html` in a browser. Watch a task start on its own. Drag a bot, then Reset layout. Drag the Brain and a memory dot. Run each task in the queue. Check Memory learns, reinforces, and goes stale after "Skip ahead 30 days". Correct and delete an entry. Reload and check memory is still there. Or run `node tests/brain-check.mjs` and `node tests/live-check.mjs` (see README).
 2. Check phone width (about 400px) and light and dark mode.
-3. Muse audits. Grok verifies. Report pass or fail plainly.
+3. Complete the review sequence above: Gemini checks context, Muse independently audits, then Codex, Claude, Cursor and Perplexity combine their specialty reviews. Codex brings the findings to Grok Bot, who makes the final team PASS or FAIL decision. Report unavailable or simulated reviews plainly.

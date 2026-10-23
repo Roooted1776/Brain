@@ -128,7 +128,7 @@ const evil = {entries:[
   {id:'e1',key:'c:corpus:6',corpusId:6,type:'concept',title:'Fake title',note:'Spoofed note',sources:[],links:[],strength:2,seen:1e20,created:-5,status:'fresh',corrected:true},
   {id:'e2"] ,x',key:'k',type:'concept',title:'bad id',note:'n',sources:[],links:[],strength:1,seen:1,created:1,status:'fresh'},
   {id:'e3',key:'zz',corpusId:5,type:'concept',title:'forged corpus id',note:'n',sources:[],links:[],strength:1,seen:1,created:1,status:'fresh'}],
-  sessions:[{id:'s1',ts:1e30,q:'q',msgs:[{from:'constructor',text:'x'},{from:'max',text:'my password hunter2'}]}],settings:{instructions:'token: abc123456'}};
+  sessions:[{id:'s1',ts:1e30,q:'q',msgs:[{from:'constructor',text:'x'},{from:'owner',text:'my password hunter2'}]}],settings:{instructions:'token: abc123456'}};
 await r.fill('#backup', JSON.stringify(evil)); await r.click('#bLoad'); await r.click('#bLoad');
 await r.waitForTimeout(200);
 const st2 = JSON.parse(await r.evaluate(()=>localStorage.getItem('brain.mem.v2')));

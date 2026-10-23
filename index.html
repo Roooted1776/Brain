@@ -19,7 +19,7 @@
   --collab: #c4c4c4; --collab-bg: #000000; --collab-tx: #f4f4f4;
   --audit: #8f8f8f; --audit-bg: #080808; --audit-tx: #c4c4c4;
   --t-concept: #ffffff; --t-entity: #d0d0d0; --t-workstream: #9a9a9a;
-  --c-max: #ffffff; --c-brain: #ffffff;
+  --c-owner: #ffffff; --c-brain: #ffffff;
   --font-display: "Hanken Grotesk", "Helvetica Neue", Arial, system-ui, sans-serif;
   --font-body: "Hanken Grotesk", "Helvetica Neue", Arial, system-ui, sans-serif;
   --font-mono: "Hanken Grotesk", "Helvetica Neue", Arial, system-ui, sans-serif;
@@ -66,9 +66,8 @@ input[type=checkbox] { accent-color: #fff; }
 .modes button[aria-pressed=true] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
 .modes .hintbadge { font: 600 10.5px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg); }
 .modes .spacer { flex: 1; }
-.stage { position: relative; height: clamp(560px, 78vh, 880px); background: #000; border: 1px solid var(--line); border-radius: 2px; overflow: hidden; touch-action: pan-y;
-  background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 64px 64px; background-position: -1px -1px; }
-.stage::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,.85) 100%); }
+.stage { position: relative; height: clamp(560px, 78vh, 880px); background: transparent; border: 0; overflow: hidden; touch-action: pan-y; }
+.stage::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 65%, rgba(0,0,0,.18) 100%); }
 .stage svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
 .hud { position: absolute; top: 10px; right: 12px; z-index: 4; font: 600 10.5px var(--font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); text-align: right; pointer-events: none; }
 .edge { fill: none; stroke: var(--arrow); stroke-width: 1.25; }
@@ -78,7 +77,12 @@ input[type=checkbox] { accent-color: #fff; }
 .hand { fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-dasharray: 6 7; animation: flow .6s linear infinite; opacity: .9; }
 .pkt { fill: #fff; filter: drop-shadow(0 0 5px #fff); }
 @keyframes flow { to { stroke-dashoffset: -26; } }
-.stage[data-mode="graph"] .node, .stage[data-mode="graph"] #edges { display: none; }
+.stage[data-mode="graph"] #edges { display: block; opacity: .24; }
+.stage[data-mode="graph"] .node { width: 82px !important; height: 28px !important; padding: 2px 5px; border-radius: 20px; background: rgba(0,0,0,.88); }
+.stage[data-mode="graph"] .node b { font-size: 9px; letter-spacing: .08em; }
+.stage[data-mode="graph"] .node span { display: none; }
+.stage[data-mode="graph"] .node::after { content: ""; position: absolute; inset: -5px; border: 1px solid var(--c); border-radius: 24px; opacity: .28; animation: listenPulse 4.2s ease-out var(--listen-delay, 0s) infinite; pointer-events: none; }
+@keyframes listenPulse { 0% { transform: scale(.84); opacity: .38; } 80%,100% { transform: scale(1.48); opacity: 0; } }
 .stage[data-mode="team"] #gEdges, .stage[data-mode="team"] #gNodes, .stage[data-mode="team"] #gShape, .stage[data-mode="team"] .gempty { display: none; }
 .node { position: absolute; transform: translate(-50%, -50%); z-index: 2; display: grid; align-content: center; justify-items: center; text-align: center; gap: 2px; padding: 4px 8px; cursor: grab; touch-action: none; user-select: none;
   border: 1px solid var(--c); border-radius: 2px; background: var(--nbg); color: var(--ntx); transition: background .2s, color .2s, box-shadow .2s; }
@@ -109,10 +113,11 @@ input[type=checkbox] { accent-color: #fff; }
 .gspokes { stroke: #fff; stroke-width: 1; opacity: .09; }
 .glinks { stroke: #fff; stroke-width: 1.2; opacity: .42; }
 .ghot { stroke: #fff; stroke-width: 2; opacity: 1; }
-.gshape .outline { fill: rgba(255,255,255,.03); stroke: #fff; stroke-width: 1.3; opacity: .6; }
-.gshape .folds { stroke: #fff; stroke-width: 1; opacity: .17; }
-.gshape .region { stroke: #fff; stroke-width: 1; stroke-dasharray: 2 6; opacity: .16; }
-.gshape text { fill: var(--muted); font: 600 15px var(--font-body); letter-spacing: .22em; text-transform: uppercase; text-anchor: middle; opacity: .8; }
+.gshape .hemisphere { fill: none; stroke: #f4f4f4; stroke-width: 2; opacity: .82; filter: drop-shadow(0 0 8px rgba(255,255,255,.18)); vector-effect: non-scaling-stroke; }
+.gshape .hemisphere.back { stroke: #777; stroke-width: 1.4; opacity: .48; filter: none; }
+.gshape .hemisphere.right { opacity: .55; stroke-dasharray: 9 4; animation: phaseShift 14s linear infinite; }
+.gshape .fissure { fill: none; stroke: #777; stroke-width: 1; stroke-dasharray: 2 7; opacity: .7; vector-effect: non-scaling-stroke; }
+@keyframes phaseShift { to { stroke-dashoffset: -52; } }
 .tip { position: absolute; z-index: 6; pointer-events: none; background: #fff; color: #000; font: 600 10.5px var(--font-body); letter-spacing: .08em; text-transform: uppercase; padding: 4px 8px; border-radius: 1px; max-width: 240px; transform: translate(-50%, -150%); }
 .gempty { position: absolute; left: 50%; bottom: 52px; transform: translateX(-50%); font: 12px var(--font-mono); color: var(--muted); text-align: center; max-width: 80%; z-index: 3; }
 .brain { touch-action: none; position: absolute; transform: translate(-50%, -50%); z-index: 5; width: 96px; height: 96px; border-radius: 50%; cursor: grab; display: grid; place-items: center; align-content: center; text-align: center;
@@ -230,7 +235,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
 <div class="wrap">
   <header class="top">
     <h1>Orchestration Brain</h1>
-    <p>A live view of your bots working together. Tasks run on their own: Grok commands, Claude coordinates, the collaborators work, Muse audits, and the Brain learns from every task. Nothing to type. Drag any node to move it.</p>
+    <p>A live view of the team at work. Gemini checks context, Muse audits, then Codex, Claude, Cursor and Perplexity review together. Grok Bot leads every project and makes the final call. The Brain learns from each task.</p>
     <span class="badge" id="modeBadge">simulation · no real AI calls</span>
   </header>
 
@@ -257,7 +262,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
 
   <div class="phases" id="phases" role="group" aria-label="Progress through the four phases of a session">
     <div class="phase"><b>1 Plan</b>Grok → Claude</div>
-    <div class="phase"><b>2 Queries</b>ChatGPT + Gemini</div>
+    <div class="phase"><b>2 Queries</b>Codex + Gemini</div>
     <div class="phase"><b>3 Sources</b>Cursor + Muse</div>
     <div class="phase"><b>4 Answer</b>Claude → Grok</div>
   </div>
@@ -266,16 +271,16 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     <div class="stagewrap">
       <div class="modes" role="group" aria-label="Stage view">
         <button type="button" id="modeTeam" aria-pressed="false">Team network</button>
-        <button type="button" id="modeGraph" aria-pressed="true">Memory graph</button>
+        <button type="button" id="modeGraph" aria-pressed="true">Hive mind · 4D</button>
         <label class="check" for="driftToggle"><input type="checkbox" id="driftToggle" checked> Drift</label>
         <span class="hintbadge" id="modeHint" role="status"></span>
       </div>
-      <section class="stage" id="stage" data-mode="graph" aria-label="Team chart or memory graph, with a draggable Brain">
+      <section class="stage" id="stage" data-mode="graph" aria-label="Floating four-dimensional hive mind with two outlined hemispheres, listening agents, live handoffs and memory connections">
         <svg id="links" aria-hidden="false">
           <defs><marker id="ahm" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path class="ah" d="M1.5 1.5 L8.5 5 L1.5 8.5"/></marker></defs>
           <g id="gShape"></g><g id="edges"></g><g id="gEdges"></g><g id="gNodes"></g><g id="hand"></g>
         </svg>
-        <div class="brain" id="brain" tabindex="0" role="group" aria-roledescription="draggable" aria-label="Brain. Drag it, or press the arrow keys, to move it."><span id="brainTitle">BRAIN</span><small id="brainSub">drag me<br>or any node</small></div>
+        <div class="brain" id="brain" tabindex="0" role="group" aria-roledescription="draggable" aria-label="Hive mind. Drag it, or press the arrow keys, to move it."><span id="brainTitle">HIVE MIND</span><small id="brainSub">drag me<br>agents listening</small></div>
         <div class="tip" id="tip" hidden></div>
         <div class="stage-tools">
           <button class="small" type="button" id="center">Reset layout</button>
@@ -283,7 +288,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
         </div>
       </section>
       <p class="legend" id="legendTeam" hidden><i>filled</i> = lead · <i>double line</i> = hub · <i>thin line</i> = collaborator · <i>dashed</i> = auditor · drag any node</p>
-      <p class="legend" id="legendGraph"><i>circle</i> = concept · <i>square</i> = entity · <i>triangle</i> = workstream · <i>dashed</i> = stale · bigger = seen more · drag any dot</p>
+      <p class="legend" id="legendGraph"><i>solid / dashed</i> = left / right hemisphere · <i>pulse</i> = listening · <i>moving light</i> = handoff · 3 checks → Grok Bot decides</p>
     </div>
 
     <section class="panel">
@@ -302,7 +307,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
 
       <div class="tabpane" id="pane-team" role="tabpanel" aria-labelledby="tab-team" hidden>
         <h2>Team · everyone thinks differently</h2>
-        <p class="note">Each bot has its own specialty, skills and angle. These are starting guesses: Max's assignments, not claims about the products. They are written in AGENTS.md, which every real bot reads. “Everyone, go” makes each bot give its angle on your task before the work starts.</p>
+        <p class="note">Each bot has its own specialty, skills and angle. These are starting guesses: Owner's assignments, not claims about the products. They are written in AGENTS.md, which every real bot reads. “Everyone, go” makes each bot give its angle on your task before the work starts.</p>
         <ul class="entries" id="teamList" tabindex="-1"></ul>
       </div>
 
@@ -316,8 +321,8 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
             <li><b>You stay in charge.</b> Open, edit or delete any entry. Your corrections feed forward into the next run.</li>
             <li><b>Memory only.</b> Brain does not take actions or message you.</li>
           </ol>
-          <p class="note"><b>From the article:</b> steps 1 to 5 above, from Perplexity's help article <a href="https://www.perplexity.ai/help-center/en/articles/19700001-what-is-brain" target="_blank" rel="noopener">“What is Brain?”</a>. Checked against the live page on 2026-10-21 (it says it was last modified October 2, 2026). In the article, Brain is a Research Preview for Max and Enterprise Max subscribers using Perplexity Computer. This page does not connect to Perplexity.</p>
-          <p class="note"><b>This page's own ideas (not in the article):</b> the animations, the black-and-white look, the drifting network and packets of light, the graph shapes and layout; tasks run on their own from an automatic queue, and the Dispatch bar (one box and an “Everyone, go” button) lets you send your own task to all nine bots; the nine-bot team, each bot's specialty, skills and angle (Max's starting guesses, not claims about the real products); the brain-shaped layout (an outline Max asked for, traced by hand from one side-view MRI slice; the picture itself is not stored, and the outline is decorative, not medical); Perplexity and Xcode are scripted here and the page does not connect to them; the Plan / Queries / Sources / Answer task with cited answers; the “Report” step of a run; the Skills filter; the incognito switch and “Run Brain now” button; sample connectors; the 30-day stale rule and the “skip ahead” demo clock (the article gives no time rule); the rule that a deleted entry is not learned again; and the optional Live AI mode that lets real models from four companies voice the bots; and the password filter, which is simple pattern matching, not the AI-based filtering the article describes.</p>
+          <p class="note"><b>From the article:</b> steps 1 to 5 above, from Perplexity's help article <a href="https://www.perplexity.ai/help-center/en/articles/19700001-what-is-brain" target="_blank" rel="noopener">“What is Brain?”</a>. Checked against the live page on 2026-10-21 (it says it was last modified October 2, 2026). In the article, Brain is a Research Preview for eligible paid subscribers using Perplexity Computer. This page does not connect to Perplexity.</p>
+          <p class="note"><b>This page's own ideas (not in the article):</b> the animations, the black-and-white look, the drifting network and packets of light, the graph shapes and layout; tasks run on their own from an automatic queue, and the Dispatch bar (one box and an “Everyone, go” button) lets you send your own task to all nine bots; the nine-bot team, each bot's specialty, skills and angle (Owner's starting guesses, not claims about the real products); the inside-facing two-hemisphere schematic scaled using traced dimensions from one MRI slice; only outline numbers are stored; Perplexity and Xcode are scripted here and the page does not connect to them; the Plan / Queries / Sources / Answer task with cited answers; the “Report” step of a run; the Skills filter; the incognito switch and “Run Brain now” button; sample connectors; the 30-day stale rule and the “skip ahead” demo clock (the article gives no time rule); the rule that a deleted entry is not learned again; and the optional Live AI mode that lets real models from four companies voice the bots; and the password filter, which is simple pattern matching, not the AI-based filtering the article describes.</p>
         </details>
 
         <div class="runcard">
@@ -341,7 +346,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
         <form class="addform" id="addForm" autocomplete="off">
           <h2 id="formTitle">Add to memory (a file or note you wrote)</h2>
           <label for="aType">Kind<select id="aType"><option value="skill">Skill (a concept to remember)</option><option value="concept">Concept</option><option value="entity">Entity (a person, tool, document)</option><option value="workstream">Workstream (a project)</option></select></label>
-          <label for="aTitle">Name<input type="text" id="aTitle" maxlength="60" required placeholder="e.g. max-daily-planner"></label>
+          <label for="aTitle">Name<input type="text" id="aTitle" maxlength="60" required placeholder="e.g. owner-daily-planner"></label>
           <label for="aNote">What to remember<input type="text" id="aNote" maxlength="300" required placeholder="e.g. Use it when I need a plan for today"></label>
           <label for="aProg" id="aProgWrap">Which program uses it<select id="aProg"></select></label>
           <div class="row"><button class="primary" type="submit">Add</button></div>
@@ -414,71 +419,71 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   var NS = "http://www.w3.org/2000/svg";
   function svg(tag, attrs) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); return e; }
 
-  /* ================= Max's chart ================= */
-  /* The team. Roles come from Max's chart; Grok Bot, Perplexity and Xcode and every "specialty", "skills" and "angle" are starting guesses that Max can change (they are Max's assignments, not claims about the products).
+  /* ================= Owner's chart ================= */
+  /* The team. Roles come from Owner's chart; Grok Bot, Perplexity and Xcode and every "specialty", "skills" and "angle" are starting guesses that Owner can change (they are Owner's assignments, not claims about the products).
      "angle" is the question each bot asks about a task from its own specialty; {q} is the task. xs = x position on a narrow phone. */
   var NODES = [
-    { id: "grok",       name: "Grok",       sub: "Commands the repo",        kind: "lead",   x: 0.36, xs: 0.27, y: 0.11,
-      specialty: "Challenges the plan and asks what everyone is missing", skills: ["spotting weak assumptions", "contrarian questions", "final sign-off"],
+    { id: "grok",       name: "Grok",       sub: "Strategy · challenges",   kind: "collab", x: 0.36, xs: 0.27, y: 0.11,
+      specialty: "Finds weak assumptions, risks and overlooked options", skills: ["strategic challenge", "contrarian review", "risk spotting"],
       angle: "Challenge: what in “{q}” could be wrong, risky, or missing?" },
-    { id: "grokbot",    name: "Grok Bot",   sub: "Runs Grok's orders",       kind: "lead",   x: 0.64, xs: 0.73, y: 0.11,
-      specialty: "Keeps the order: hands tasks out and logs every hand-off", skills: ["task hand-offs", "logging", "keeping the order"],
-      angle: "Order: I will hand “{q}” to each bot and log every hand-off." },
-    { id: "claude",     name: "Claude",     sub: "UI, frontend, logic",      kind: "hub",    x: 0.5,  y: 0.33,
+    { id: "grokbot",    name: "Grok Bot",   sub: "Team head · final call",   kind: "lead",   x: 0.64, xs: 0.73, y: 0.11,
+      specialty: "Leads the full team across projects and decides after the three review checks", skills: ["sets review order", "collects findings", "final pass or fail"],
+      angle: "I lead the full team. I will decide “{q}” after Gemini, Muse, and the collective review finish their three checks." },
+    { id: "claude",     name: "Claude",     sub: "Reasoning · writing · build", kind: "hub", x: 0.5, y: 0.33,
       specialty: "Careful reasoning, clear writing and code", skills: ["step-by-step plans", "clear writing", "building the page"],
       angle: "Plan: break “{q}” into small steps and build it carefully." },
-    { id: "cursor",     name: "Cursor",     sub: "Integrates & reviews",     kind: "collab", x: 0.2,  y: 0.56,
+    { id: "cursor",     name: "Cursor",     sub: "Code · repo integration", kind: "collab", x: 0.2, y: 0.56,
       specialty: "Edits code in the repo and reviews changes", skills: ["editing files", "merging work", "code review"],
       angle: "Build: which files would change for “{q}”, and what could break?" },
-    { id: "gemini",     name: "Gemini",     sub: "Studies UI together",      kind: "collab", x: 0.5,  y: 0.56,
+    { id: "gemini",     name: "Gemini",     sub: "Multimodal · context",    kind: "collab", x: 0.5, y: 0.56,
       specialty: "Reads lots of material at once and cross-checks it, including pictures and long documents", skills: ["long documents", "images", "cross-checking"],
       angle: "Cross-check: which long documents or images should we study for “{q}”?" },
-    { id: "chatgpt",    name: "ChatGPT",    sub: "Research together",        kind: "collab", x: 0.8,  y: 0.56,
-      specialty: "Brainstorms many options fast and gives a second opinion", skills: ["brainstorming", "second opinions", "explaining"],
-      angle: "Options: three different ways to approach “{q}”." },
-    { id: "perplexity", name: "Perplexity", sub: "Finds and cites sources",  kind: "collab", x: 0.28, y: 0.74,
+    { id: "chatgpt",    name: "Codex",      sub: "OpenAI · tools · synthesis", kind: "collab", x: 0.8, y: 0.56,
+      specialty: "Uses tools to inspect and change code, then synthesizes findings", skills: ["tool use", "coding", "planning", "synthesis"],
+      angle: "Codex review: what evidence, changes and tradeoffs matter for “{q}”?" },
+    { id: "perplexity", name: "Perplexity", sub: "Web research · citations", kind: "collab", x: 0.28, y: 0.74,
       specialty: "Finds sources on the web and cites them", skills: ["web research", "citations", "fact checking"],
       angle: "Sources: what must be looked up and cited for “{q}”?" },
-    { id: "xcode",      name: "Xcode",      sub: "Builds iPhone apps",       kind: "collab", x: 0.72, y: 0.74,
+    { id: "xcode",      name: "Xcode",      sub: "iOS · device builds",      kind: "collab", x: 0.72, y: 0.74,
       specialty: "Builds and tests iPhone apps", skills: ["iOS builds", "device testing", "archives"],
       angle: "iPhone check: does “{q}” touch an iPhone app? If not, I pass." },
-    { id: "muse",       name: "Muse",       sub: "Audits everyone's work",   kind: "audit",  x: 0.5,  y: 0.92,
+    { id: "muse",       name: "Muse",       sub: "Independent audit",        kind: "audit",  x: 0.5, y: 0.92,
       specialty: "Audits everyone's work and finds what is wrong", skills: ["audits", "finding bugs", "honesty checks"],
       angle: "Audit: what could go wrong with “{q}”, and how would we know?" }
   ];
-  var TREE = [["grok", "claude"], ["grok", "grokbot"], ["claude", "cursor"], ["claude", "gemini"], ["claude", "chatgpt"], ["claude", "perplexity"], ["claude", "xcode"]];
+  var TREE = [["grokbot", "claude"], ["claude", "grok"], ["claude", "gemini"], ["gemini", "muse"], ["muse", "chatgpt"], ["muse", "cursor"], ["muse", "perplexity"], ["chatgpt", "grokbot"], ["cursor", "grokbot"], ["perplexity", "chatgpt"], ["claude", "xcode"]];
   var KIND_VAR = { lead: "--lead", hub: "--hub", collab: "--collab", audit: "--audit" };
-  var SPEAKERS = { max: { name: "Max", sub: "owner" }, queue: { name: "Task queue", sub: "automatic" }, brain: { name: "Brain", sub: "orchestrates" } };
+  var SPEAKERS = { owner: { name: "Owner", sub: "owner" }, queue: { name: "Task queue", sub: "automatic" }, brain: { name: "Brain", sub: "orchestrates" } };
   NODES.forEach(function (n) { SPEAKERS[n.id] = { name: n.name, sub: n.sub.toLowerCase() }; });
   function color(id) {
     var n = NODES.filter(function (x) { return x.id === id; })[0];
-    return "var(" + (n ? KIND_VAR[n.kind] : (id === "max" || id === "queue") ? "--c-max" : "--c-brain") + ")";
+    return "var(" + (n ? KIND_VAR[n.kind] : (id === "owner" || id === "queue") ? "--c-owner" : "--c-brain") + ")";
   }
   function isNode(id) { return NODES.some(function (n) { return n.id === id; }); }
 
   /* ================= Sample sources: Brain's own rules and the Perplexity help article ================= */
   var DOC = "Brain AGENTS.md", ART = "Perplexity help article “What is Brain?”";
   var CORPUS = [
-    { id: 1, label: "Lead", src: DOC + " › Who does what", entity: "Grok",
-      lead: "Grok is the lead and commands the repo.",
-      fact: "Grok is the lead. Grok commands the repo, sets the order of work, verifies every change, and calls pass or fail.",
-      tags: "grok lead charge commands command repo order verifies verify pass fail who boss" },
+    { id: 1, label: "Team head", src: DOC + " › Who does what", entity: "Grok Bot",
+      lead: "Grok Bot leads the AI team across projects and makes the final team decision.",
+      fact: "Grok Bot leads the AI team across projects. After the three review checks, Grok Bot makes and records the final team PASS or FAIL. Owner controls repository ownership and Git push and merge.",
+      tags: "grok bot team head leader final decision pass fail projects owner repository push merge" },
     { id: 2, label: "Hub", src: DOC + " › Who does what", entity: "Claude",
       lead: "Claude is the hub for UI, frontend and logic.",
       fact: "Claude is the hub: UI, frontend and logic. Claude writes and changes index.html, and everything flows through Claude.",
       tags: "claude hub ui frontend logic writes builds index.html page flows who" },
     { id: 3, label: "Collaborators", src: DOC + " › Who does what", entity: null,
-      lead: "Cursor integrates and reviews, Gemini studies UI together, and ChatGPT does research together.",
-      fact: "Cursor integrates and reviews. Gemini studies UI together with Claude. ChatGPT does research together with Claude.",
-      tags: "cursor gemini chatgpt collaborators collaborator integrates integrate reviews review studies study research together team" },
+      lead: "Gemini, Muse, Codex, Claude, Cursor, and Perplexity run three ordered review checks.",
+      fact: "Check one: Gemini cross-checks context and multimodal material. Check two: Muse independently audits. Check three: Codex synthesizes, Claude checks reasoning and implementation, Cursor checks repository changes, and Perplexity checks sources and citations. Codex brings the findings to Grok Bot for the final team decision.",
+      tags: "gemini muse codex openai claude cursor perplexity review checks workflow context audit synthesize implementation repo sources citations final" },
     { id: 4, label: "Auditor", src: DOC + " › Who does what", entity: "Muse",
-      lead: "Muse audits everyone's work.",
-      fact: "Muse audits everyone's work. Muse reads the finished change and reports problems, and does not edit.",
+      lead: "Muse independently audits the work in the second review check.",
+      fact: "Muse independently audits the work in the second review check, looking for errors, risks, gaps, and missing evidence.",
       tags: "muse auditor audit audits audited work reports problems edit checks who" },
-    { id: 5, label: "Who decides", src: DOC + " › Working rules", entity: "Max",
-      lead: "Max decides what ships, and nobody merges except Max.",
-      fact: "Max is the source of truth and decides what ships. Pull requests are drafts, and nobody merges except Max.",
-      tags: "max decides decide ships ship merge merges merged pull request drafts owner approve who" },
+    { id: 5, label: "Who decides", src: DOC + " › Working rules", entity: "Grok Bot",
+      lead: "Grok Bot makes the final team decision after three checks.",
+      fact: "Grok Bot makes the final team decision after Gemini, Muse, and the collective Codex, Claude, Cursor, and Perplexity review. Owner remains the repository owner and controls Git push and merge.",
+      tags: "grok bot final decision three checks gemini muse codex claude cursor perplexity owner repository push merge" },
     { id: 6, label: "What Brain learns from", src: ART + " › How does Brain learn?", entity: null,
       lead: "Brain learns from your sessions, connected tools, files and your corrections.",
       fact: "Brain learns from your sessions, your connected tools, files and artifacts you create, and your corrections. Incognito sessions are ignored.",
@@ -531,11 +536,11 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   var storageOk = true, mem = null;
 
   var STARTER = [
-    { name: "max-ai-coach", note: "Use it when I want AI explained in plain words.", prog: "claude" },
-    { name: "max-dev-tutor", note: "Use it when I am learning code and want a short plan, then step by step.", prog: "claude" },
-    { name: "max-research-vetting", note: "Use it when I need to check whether a source can be trusted.", prog: "muse" },
-    { name: "max-daily-planner", note: "Use it when I need a plan for today.", prog: "claude" },
-    { name: "max-learning-tutor", note: "Use it when I want a short study plan and a quiz, one question at a time.", prog: "gemini" }
+    { name: "owner-ai-coach", note: "Use it when I want AI explained in plain words.", prog: "claude" },
+    { name: "owner-dev-tutor", note: "Use it when I am learning code and want a short plan, then step by step.", prog: "claude" },
+    { name: "owner-research-vetting", note: "Use it when I need to check whether a source can be trusted.", prog: "muse" },
+    { name: "owner-daily-planner", note: "Use it when I need a plan for today.", prog: "claude" },
+    { name: "owner-learning-tutor", note: "Use it when I want a short study plan and a quiz, one question at a time.", prog: "gemini" }
   ];
 
   function nowTs() { return Date.now() + (mem ? mem.dayShift : 0) * DAY; }
@@ -558,18 +563,18 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   function seedMem() {
     mem = blankMem();
     NODES.forEach(function (n) {
-      mem.entries.push(mkEntry({ key: "prog:" + n.id, type: "entity", title: n.name, note: n.sub + ". On Max's team chart.", sources: [{ kind: "file", label: "Max's team chart" }] }));
+      mem.entries.push(mkEntry({ key: "prog:" + n.id, type: "entity", title: n.name, note: n.sub + ". On Owner's team chart.", sources: [{ kind: "file", label: "Owner's team chart" }] }));
     });
     STARTER.forEach(function (s) {
       var e = mkEntry({ key: "skill:" + norm(s.name), type: "concept", title: s.name, note: s.note, skill: true, prog: s.prog, manual: true, sources: [{ kind: "file", label: "Starter skills list" }] });
       mem.entries.push(e); link(e, byKey("prog:" + s.prog));
     });
   }
-  /* saved memory from before a bot joined the team gets that bot's entity too (unless Max deleted it) */
+  /* saved memory from before a bot joined the team gets that bot's entity too (unless Owner deleted it) */
   function ensureTeamEntities() {
     NODES.forEach(function (n) {
       if (byKey("prog:" + n.id) || mem.blocked.indexOf("prog:" + n.id) >= 0) return;
-      mem.entries.push(mkEntry({ key: "prog:" + n.id, type: "entity", title: n.name, note: n.sub + ". On Max's team chart.", sources: [{ kind: "file", label: "Max's team chart" }] }));
+      mem.entries.push(mkEntry({ key: "prog:" + n.id, type: "entity", title: n.name, note: n.sub + ". On Owner's team chart.", sources: [{ kind: "file", label: "Owner's team chart" }] }));
     });
   }
   function validEntry(e) {
@@ -648,13 +653,14 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
 
   NODES.forEach(function (n, i) {
     var el = h("div", { class: "node r-" + n.kind, tabindex: "0", role: "group", "aria-label": n.name + ", " + n.sub + ". Drag it, or use the arrow keys.", title: n.name + ": " + n.sub + ". Drag me." }, h("b", { text: n.name }), h("span", { text: n.sub }));
+    el.style.setProperty("--listen-delay", (-i * .46) + "s");
     stage.append(el);
-    var b = T[n.id] = { id: n.id, el: el, x: 0, y: 0, vx: 0, vy: 0, ax: 0, ay: 0, fx: pickX(n), fy: n.y, w: 0, h: 0, init: false, drag: false,
+    var b = T[n.id] = { id: n.id, el: el, x: 0, y: 0, vx: 0, vy: 0, ax: 0, ay: 0, fx: pickX(n), fy: n.y, teamFx: pickX(n), teamFy: n.y, w: 0, h: 0, init: false, drag: false,
       p: [i * 1.7 + 0.3, i * 2.3 + 1.1, 0.35 + (i % 3) * 0.12, 0.28 + (i % 4) * 0.09] };
-    dragify(el, function () { return b; }, null, function (bb) { var c = teamClamp(bb, bb.x, bb.y); bb.fx = c.x / stage.clientWidth; bb.fy = c.y / stage.clientHeight; });
+    dragify(el, function () { return b; }, null, function (bb) { var c = teamClamp(bb, bb.x, bb.y); bb.fx = c.x / stage.clientWidth; bb.fy = c.y / stage.clientHeight; if (mode === "team") { bb.teamFx = bb.fx; bb.teamFy = bb.fy; } });
     el.addEventListener("keydown", function (e) {
       var d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key]; if (!d) return;
-      e.preventDefault(); var c = teamClamp(b, b.fx * stage.clientWidth + d[0] * 14, b.fy * stage.clientHeight + d[1] * 14); b.fx = c.x / stage.clientWidth; b.fy = c.y / stage.clientHeight; ensureLoop();
+      e.preventDefault(); var c = teamClamp(b, b.fx * stage.clientWidth + d[0] * 14, b.fy * stage.clientHeight + d[1] * 14); b.fx = c.x / stage.clientWidth; b.fy = c.y / stage.clientHeight; if (mode === "team") { b.teamFx = b.fx; b.teamFy = b.fy; } ensureLoop();
     });
   });
 
@@ -716,14 +722,18 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     var bs = brainEl.offsetWidth || 96;
     box.brain = { x: f.x * W, y: f.y * H, r: bs / 2 };
     brainEl.style.left = box.brain.x + "px"; brainEl.style.top = box.brain.y + "px";
+    if (mode === "graph" && W && H) {
+      var ring = [[0,-.34],[.22,-.26],[.33,-.06],[.29,.19],[.12,.33],[-.12,.33],[-.29,.19],[-.33,-.06],[-.22,-.26]];
+      NODES.forEach(function (n, i) { var b = T[n.id], p = ring[i]; b.fx = Math.max(.08, Math.min(.92, f.x + p[0])); b.fy = Math.max(.08, Math.min(.92, f.y + p[1])); b.x = b.fx * W; b.y = b.fy * H; b.vx = b.vy = 0; box[n.id] = { x: b.x, y: b.y, w: b.w, h: b.h }; });
+    }
     if (!tEdges.length) buildTeamEdges();
     if (mode === "graph") placeGraph();
     $("#coords").textContent = "brain " + Math.round(f.x * 100) + " / " + Math.round(f.y * 100);
     updateHud(); renderTeam(); ensureLoop();
   }
   function updateHud() {
-    var n = mode === "team" ? NODES.length + " nodes" : mem.entries.length + " entries";
-    hud.textContent = ""; hud.append(mode === "team" ? "Team network · " + n : "Memory graph · " + n, h("br"), currentTask ? clip(currentTask, 46) : "Idle");
+    var n = mode === "team" ? NODES.length + " nodes" : NODES.length + " agents · " + mem.entries.length + " memories";
+    hud.textContent = ""; hud.append(mode === "team" ? "Team network · " + n : "Hive mind · 4D · " + n, h("br"), currentTask ? clip(currentTask, 46) : "Listening");
   }
   function clipLine(from, to, gap) {
     var f = box[from], t = box[to], dx = t.x - f.x, dy = t.y - f.y, len = Math.hypot(dx, dy) || 1;
@@ -789,7 +799,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   });
   $("#center").addEventListener("click", function () {
     fracs.team = { x: HOME.team.x, y: HOME.team.y }; fracs.graph = graphHome();
-    NODES.forEach(function (n) { T[n.id].fx = pickX(n); T[n.id].fy = n.y; });
+    NODES.forEach(function (n) { T[n.id].fx = T[n.id].teamFx = pickX(n); T[n.id].fy = T[n.id].teamFy = n.y; });
     Object.keys(G.nodes).forEach(function (id) { G.nodes[id].ox = 0; G.nodes[id].oy = 0; });
     clampFrac(); layout();
   });
@@ -798,10 +808,11 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   window.addEventListener("resize", function () { clampFrac(); layout(); });
 
   function setMode(m) {
+    if (m === "team") NODES.forEach(function (n) { T[n.id].fx = T[n.id].teamFx; T[n.id].fy = T[n.id].teamFy; });
     mode = m; stage.dataset.mode = m;
     $("#modeTeam").setAttribute("aria-pressed", String(m === "team")); $("#modeGraph").setAttribute("aria-pressed", String(m === "graph"));
     $("#legendTeam").hidden = m !== "team"; $("#legendGraph").hidden = m !== "graph";
-    $("#brainSub").innerHTML = ""; $("#brainSub").append(m === "team" ? "drag me" : mem.entries.length + " entries", h("br"), "or any node");
+    $("#brainSub").innerHTML = ""; $("#brainSub").append(m === "team" ? "drag me" : mem.entries.length + " memories", h("br"), m === "team" ? "" : "agents listening");
     if (m === "graph") { $("#modeHint").textContent = ""; }
     clampFrac(); layout(); if (m === "graph") syncGraph();
     updateBrainState();
@@ -813,12 +824,9 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   var G = { nodes: {}, edges: [], sel: null, edgesDirty: true, lastBrain: "", hotId: null };
   var TYPE_VAR = { concept: "--t-concept", entity: "--t-entity", workstream: "--t-workstream" };
 
-  /* The brain shape. PLACEHOLDER: a generic side view drawn by hand, in a 1000 x 740 box. Max's traced MRI outline will replace BRAIN_OUTLINE and
-     BRAIN_FOLDS (just the numbers); nothing else changes. Regions say where each kind of memory lives: concepts in the large upper part,
-     entities through the middle, workstreams in the lower back part. HUB is where the Brain orb sits. */
-  /* outline and folds traced by hand from a mid-line side-view MRI slice (about 200 numbers; the image itself is not stored here). Decorative, not medical. */
+  /* The MRI-derived contour supplies the scale and proportions. The diagram opens the model into two clean medial surfaces. */
   var BRAIN = {
-    w: 1000, h: 740, hub: { x: 470, y: 235 },
+    w: 1000, h: 740, hub: { x: 500, y: 360 },
     outline: "M548 20 C529 20 511 24 494 26 C476 28 458 30 440 33 C422 36 405 40 387 42 C370 45 352 48 334 50 C316 52 297 52 280 56 C263 60 247 67 231 72 C214 78 197 83 182 91 C167 100 152 112 139 124 C126 136 113 149 105 165 C97 180 94 198 91 215 C89 233 89 251 90 269 C91 287 92 306 98 322 C104 338 115 357 128 366 C142 374 160 373 178 374 C195 375 214 370 232 370 C250 369 269 371 287 372 C305 374 323 376 341 380 C358 384 376 386 392 394 C407 401 424 411 436 423 C448 435 454 452 462 467 C471 482 481 498 489 513 C497 528 507 543 513 559 C519 576 521 594 524 611 C526 629 522 655 528 666 C534 677 548 681 561 678 C574 675 590 656 605 648 C621 641 639 638 655 632 C671 626 689 622 703 612 C718 603 732 590 743 576 C754 562 760 545 771 531 C782 517 793 504 807 493 C820 482 839 476 851 464 C863 451 874 436 879 420 C884 403 882 382 880 364 C879 346 875 329 872 311 C868 294 865 276 860 260 C854 243 847 227 840 211 C833 195 827 179 818 164 C808 149 796 135 784 122 C772 108 761 93 748 82 C734 71 717 65 701 58 C686 50 670 42 654 36 C637 31 620 28 602 25 C584 22 566 20 548 20 Z",
     folds: ["M303 305 C312 298 330 274 356 264 C380 255 422 246 453 246 C484 248 517 256 543 270 C569 284 596 310 610 330 C626 350 629 380 633 390", "M348 268 C370 261 440 232 483 230 C526 228 568 236 603 252 C638 269 678 315 693 328", "M558 462 C576 465 630 472 663 478 C696 483 728 490 753 496 C778 500 803 506 813 508", "M176 252 C184 240 207 199 228 178 C249 156 273 138 303 125 C333 112 390 106 408 102", "M693 80 C700 94 723 136 738 162 C753 189 770 215 783 238 C796 260 808 288 813 298", "M498 58 C503 69 516 105 528 125 C540 145 556 165 573 178 C590 190 623 196 633 200"],
     regions: { concept: { cx: 483, cy: 178, rx: 315, ry: 128, label: "Concepts" }, entity: { cx: 498, cy: 380, rx: 158, ry: 57, label: "Entities" }, workstream: { cx: 678, cy: 552, rx: 63, ry: 45, label: "Workstreams" } }
@@ -826,12 +834,16 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
 
   var shapeTf = svg("g", { class: "gshape" });
   gShape.append(shapeTf);
-  shapeTf.append(svg("path", { class: "outline", d: BRAIN.outline }), svg("path", { class: "folds", d: BRAIN.folds.join(" ") }));
-  TYPES.forEach(function (t) {
-    var r = BRAIN.regions[t];
-    shapeTf.append(svg("ellipse", { class: "region", cx: r.cx, cy: r.cy, rx: r.rx, ry: r.ry, fill: "none" }));
-    var tx = svg("text", { x: r.cx, y: r.cy - r.ry - 10 }); tx.textContent = r.label; shapeTf.append(tx);
-  });
+  /* Clean, inside-facing twin hemispheres. The outlines are separate; the only marks inside are live memory and handoff links. */
+  var hemiLeft = "M500 66 C438 34 362 40 301 75 C224 120 185 199 177 290 C166 408 205 523 282 598 C342 657 421 675 500 644 Z";
+  var hemiRight = "M500 66 C565 32 644 44 706 82 C782 128 817 211 822 302 C829 418 790 531 714 604 C652 663 575 675 500 644 Z";
+  shapeTf.append(
+    svg("path", { class: "hemisphere back", d: hemiLeft, transform: "translate(34 22)" }),
+    svg("path", { class: "hemisphere back", d: hemiRight, transform: "translate(34 22)" }),
+    svg("path", { class: "hemisphere left", d: hemiLeft }),
+    svg("path", { class: "hemisphere right", d: hemiRight }),
+    svg("path", { class: "fissure", d: "M500 66 C494 210 506 470 500 644" })
+  );
   var pSpokes = svg("path", { class: "gspokes" }), pLinks = svg("path", { class: "glinks" }), pHot = svg("path", { class: "ghot" });
   gEdges.append(pSpokes, pLinks, pHot);
   function shapeFit() {
@@ -900,7 +912,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
       var k = e.id < o ? e.id + "|" + o : o + "|" + e.id; if (seen[k] || !G.nodes[o]) return; seen[k] = 1;
       G.edges.push({ a: e.id, b: o, link: true });
     }); });
-    $("#brainSub").innerHTML = ""; $("#brainSub").append(mode === "team" ? "drag me" : mem.entries.length + " entries", h("br"), "or any node");
+    $("#brainSub").innerHTML = ""; $("#brainSub").append(mode === "team" ? "drag me" : mem.entries.length + " memories", h("br"), mode === "team" ? "" : "agents listening");
     gempty.textContent = mem.entries.length ? "" : "Memory is empty. Tasks will fill it.";
     updateHud(); placeGraph(); hotEdges(G.sel); ensureLoop();
   }
@@ -933,7 +945,8 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   function frame(ts) {
     loopId = 0;
     var dt = lastTs ? Math.min(0.033, (ts - lastTs) / 1000) : 0.016; lastTs = ts; TIME += dt;
-    var W = stage.clientWidth, H = stage.clientHeight, moving = mode === "team" ? stepTeam(dt, W, H) : stepGraph(dt, W, H);
+    var W = stage.clientWidth, H = stage.clientHeight, moving = stepTeam(dt, W, H);
+    if (mode !== "team") moving = stepGraph(dt, W, H) || moving;
     stepHands(ts);
     var resting = mode === "graph" && Object.keys(G.nodes).length > 150;
     if ((drift && !resting) || moving || hands.length) loopId = requestAnimationFrame(frame); else lastTs = 0;
@@ -1242,7 +1255,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
         link(c, en);
       }
     });
-    NODES.forEach(function (n) { var pe = upsert({ key: "prog:" + n.id, type: "entity", title: n.name, note: n.sub + ". On Max's team chart.", sources: [src] }, t); if (n.id === "claude") link(ws, pe); });
+    NODES.forEach(function (n) { var pe = upsert({ key: "prog:" + n.id, type: "entity", title: n.name, note: n.sub + ". On Owner's team chart.", sources: [src] }, t); if (n.id === "claude") link(ws, pe); });
   }
   function learnTools(t) {
     var st = mem.settings, n = 0;
@@ -1251,8 +1264,8 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
       var doc = upsert({ key: "doc:agents", type: "entity", title: "Brain AGENTS.md", note: "The team roles and working rules for the Brain repo. Most sample sources come from it.", sources: [{ kind: "tool", label: "Docs connector (sample)" }] }, t); n++;
     }
     if (st.tracker) {
-      var pr = upsert({ key: "pr:brain1", type: "entity", title: "Brain pull request", note: "Draft pull request “Add Orchestration Brain page, team rules and skills memory”. This sample note was written while it waited for Max to review and merge.", sources: [{ kind: "tool", label: "Issue tracker (sample): Roooted1776/Brain#1" }] }, t); n++;
-      var ws = upsert({ key: "ws:orchestration-brain-page", type: "workstream", title: "Orchestration Brain page", note: "A single-file page in the Brain repo: team chart, simulated sessions, memory graph. Open loop: Max reviews the draft pull request.", sources: [{ kind: "tool", label: "Issue tracker (sample): Roooted1776/Brain#1" }], kws: ["orchestration", "brain", "page"] }, t);
+      var pr = upsert({ key: "pr:brain1", type: "entity", title: "Brain pull request", note: "Draft pull request “Add Orchestration Brain page, team rules and skills memory”. This sample note was written while it waited for Owner to review and merge.", sources: [{ kind: "tool", label: "Issue tracker (sample): Roooted1776/Brain#1" }] }, t); n++;
+      var ws = upsert({ key: "ws:orchestration-brain-page", type: "workstream", title: "Orchestration Brain page", note: "A single-file page in the Brain repo: team chart, simulated sessions, memory graph. Open loop: Owner reviews the draft pull request.", sources: [{ kind: "tool", label: "Issue tracker (sample): Roooted1776/Brain#1" }], kws: ["orchestration", "brain", "page"] }, t);
       link(ws, pr); link(ws, byKey("prog:claude"));
     }
     return n;
@@ -1298,7 +1311,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
       Array.prototype.forEach.call(document.querySelectorAll("#steps li"), function (li) { li.classList.remove("active"); li.classList.add("done"); });
       var gained = t.fresh + t.updated + t.stale;
       if (gained && $("#pane-mem").hidden) { $("#memBadge").hidden = false; $("#memBadge").textContent = "+" + gained; }
-      if (gained && mode === "team") $("#modeHint").textContent = "Brain learned " + gained + " thing(s). See the Memory graph.";
+      if (gained && mode === "team") $("#modeHint").textContent = "Brain learned " + gained + " thing(s). See the Hive mind view.";
     } catch (err) {
       mem.inbox = inbox.concat(mem.inbox); $("#runReport").textContent = "The run stopped early. It will try again next time.";
     } finally {
@@ -1408,7 +1421,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
 
   function systemFor(bot) {
     var sp = SPEAKERS[bot], nd = NODES.filter(function (n) { return n.id === bot; })[0];
-    return "You are " + sp.name + " (" + sp.sub + "), one of nine bots on Max's team in a visualization. " + (nd ? "Your specialty: " + nd.specialty + ". Think from that angle. " : "") + "Speak as that bot in at most two short plain sentences. Use only the task and the lines you are given. Do not invent facts, names, numbers or dates. Never write keys or passwords.";
+    return "You are " + sp.name + " (" + sp.sub + "), one of nine bots on Owner's team in a visualization. " + (nd ? "Your specialty: " + nd.specialty + ". Think from that angle. " : "") + "Speak as that bot in at most two short plain sentences. Use only the task and the lines you are given. Do not invent facts, names, numbers or dates. Never write keys or passwords.";
   }
   /* returns the bot's words: from a real model when this bot is mapped and live is on, otherwise the scripted text */
   async function voice(bot, scripted, brief) {
@@ -1462,8 +1475,8 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
         h("div", { class: "mapgrid" }, maps),
         h("p", { class: "note", text: "Cursor, Muse, Grok Bot and Xcode have no public chat API that I know of (unverified), and Perplexity is not wired to its own API yet, so they stay scripted unless you map them to one of the four companies above." }),
         h("div", { class: "row" },
-          h("label", { class: "check", for: "liveTokens" }, "Max tokens per reply ", h("input", { type: "number", id: "liveTokens", min: "20", max: "1000", value: String(LIVE.maxTokens), style: "width:80px", onchange: function () { LIVE.maxTokens = Math.max(20, Math.min(1000, Math.round(+this.value || 300))); this.value = LIVE.maxTokens; saveLive(); } })),
-          h("label", { class: "check", for: "liveCap" }, "Max calls per page load ", h("input", { type: "number", id: "liveCap", min: "1", max: "500", value: String(LIVE.callCap), style: "width:80px", onchange: function () { LIVE.callCap = Math.max(1, Math.min(500, Math.round(+this.value || 60))); this.value = LIVE.callCap; saveLive(); refreshBadge(); } }))),
+          h("label", { class: "check", for: "liveTokens" }, "Token limit per reply ", h("input", { type: "number", id: "liveTokens", min: "20", max: "1000", value: String(LIVE.maxTokens), style: "width:80px", onchange: function () { LIVE.maxTokens = Math.max(20, Math.min(1000, Math.round(+this.value || 300))); this.value = LIVE.maxTokens; saveLive(); } })),
+          h("label", { class: "check", for: "liveCap" }, "Call limit per page load ", h("input", { type: "number", id: "liveCap", min: "1", max: "500", value: String(LIVE.callCap), style: "width:80px", onchange: function () { LIVE.callCap = Math.max(1, Math.min(500, Math.round(+this.value || 60))); this.value = LIVE.callCap; saveLive(); refreshBadge(); } }))),
         h("div", { class: "row" },
           h("label", { class: "check", for: "liveRemember" }, h("input", { type: "checkbox", id: "liveRemember", onchange: function () { LIVE.remember = this.checked; saveLive(); } }), " Remember keys on this device (anyone using this browser could use them)"),
           h("button", { class: "small danger", type: "button", id: "liveForget", text: "Forget keys now", onclick: function () { LIVE.keys = {}; LIVE.dead = {}; Object.keys(PROV).forEach(function (p) { $("#key-" + p).value = ""; }); try { localStorage.removeItem(LKEYS); } catch (e) {} refreshBadge(); } }),
@@ -1502,7 +1515,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     }
     await sleep(500);
   }
-  var LINE_TAIL = " \u2014 Read AGENTS.md in Roooted1776/Brain first and find your own row under Specialties; think from YOUR angle (3 short points plus one idea nobody else would suggest). Grok commands and signs off, Claude builds, Muse audits last, Max merges; draft PR only, never touch RedMed, never put a key in chat, report pass/fail plainly.";
+  var LINE_TAIL = " \u2014 Read AGENTS.md first and use your actual strength. Review in this order: (1) Gemini context check, (2) Muse independent audit, (3) collective review by Codex, Claude, Cursor and Perplexity. Codex brings all three checks to Grok Bot, who leads the full team across projects and makes the final PASS or FAIL. Owner controls Git push and merge. Never touch RedMed or put a key in chat.";
   function updateLine() {
     var r = redact($("#dispatchText").value.trim());
     $("#dispatchLine").textContent = "TEAM TASK: " + (r.text || "<TASK>") + LINE_TAIL;
@@ -1539,12 +1552,12 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
       light("brain"); await sleep(800);
       say("brain", "Task received. Four phases: Plan, Queries, Sources, Answer. I answer only from retrieved sources."
         + (incog ? " Incognito: I will not learn from this session." : !mem.settings.brain ? " Brain is off, so I will not write new memory." : ""));
-      handoff("brain", "grok"); await sleep(1000);
+      handoff("brain", "grokbot"); await sleep(700);
       if (prior) { say("brain", "I remember this. You asked about it on " + fmtDate(prior.seen) + ". " + clip(prior.note, 200)); await sleep(900); }
-      await sayLive("grok", "I command this repo. Claude is the hub and runs the work. Muse audits everyone. I sign off last with pass or fail.", "Say that you lead this team, you are handing the task to Claude, and you will sign off last with pass or fail.");
-      handoff("grok", "grokbot"); await sleep(500);
-      say("grokbot", "Order logged. I hand the task out and count every hand-off.");
-      handoff("grok", "claude"); await sleep(1100);
+      say("grokbot", "I lead this team across projects. I set the review order and make the final team decision after all three checks.");
+      handoff("grokbot", "grok"); await sleep(500);
+      await sayLive("grok", "Independent strategy check: challenge the plan, surface risks, and name an overlooked option.", "Use your strength in strategy and contrarian review. Identify one risky assumption or overlooked option in the task. Do not claim team-lead authority.");
+      handoff("grokbot", "claude"); await sleep(700);
       var plan = ["Keywords: " + (an.kws.join(", ") || "none found") + "."];
       plan.push(an.temporal.length ? "Time words: " + an.temporal.join(", ") + ". The sample lines have no dates, so I will warn that recency cannot be confirmed." : "No time words, so no recency check is needed.");
       plan.push(an.clauses.length > 1 ? "Hidden sub-questions: " + an.clauses.map(function (c, i) { return (i + 1) + ") " + c; }).join("  ") : "One question, no hidden sub-questions.");
@@ -1588,17 +1601,30 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
       setPhase(3);
       var built = buildAnswer(ev, an);
       await sayLive("claude", "Draft ready. Fact lines carry citations, and unanswered points use the fixed boundary sentence.", "Say the draft answer is ready: it has " + ev.accepted.length + " cited fact line(s) and " + ev.uncovered.length + " unanswered point(s). Do not state any facts from the lines."); await sleep(900);
-      handoff("claude", "grok"); await sleep(600);
       var v = verify(ev, built);
-      var gchk = "Checks run on the draft: " + v.facts + " fact line(s), " + v.uncited + " without a citation; citation numbers valid: " + (v.bad ? "NO" : "yes") + "; a citation reused: " + (v.reused ? "YES" : "no")
+      handoff("claude", "gemini"); await sleep(450);
+      say("gemini", "Check 1/3 · Context: " + Math.max(0, an.clauses.length - ev.uncovered.length) + " of " + an.clauses.length + " question point(s) have supporting material. " + ev.uncovered.length + " remain open.", null, null, null, "check 1/3");
+      handoff("gemini", "muse"); await sleep(450);
+      say("muse", "Check 2/3 · Independent audit: " + v.facts + " cited fact line(s); " + v.uncited + " uncited; citation numbers " + (v.bad ? "invalid" : "valid") + "; repeated citations " + (v.reused ? "found" : "none") + ".", null, null, null, "check 2/3");
+      handoff("muse", "chatgpt"); await sleep(450);
+      say("chatgpt", "Check 3/3 · Codex synthesis: " + (v.pass ? "the answer follows the checked evidence and preserves the open gaps" : "the answer needs correction before it can pass" ) + ".", null, null, null, "check 3/3");
+      handoff("chatgpt", "claude"); await sleep(300);
+      say("claude", "Third-check reasoning review: the draft uses the cited lines and keeps unanswered points explicit.");
+      handoff("claude", "cursor"); await sleep(300);
+      say("cursor", "Third-check integration review: the answer structure is consistent; no repository edits are part of this task.");
+      handoff("cursor", "perplexity"); await sleep(300);
+      say("perplexity", "Third-check source review: citations point to the included sample lines. No live web search was run.");
+      handoff("perplexity", "chatgpt"); await sleep(350);
+      say("chatgpt", "Codex has combined the findings from all three checks. Sending the review report to Grok Bot for the final team decision.");
+      var gchk = "Three-check report received. " + v.facts + " fact line(s), " + v.uncited + " without a citation; citation numbers valid: " + (v.bad ? "NO" : "yes") + "; a citation reused: " + (v.reused ? "YES" : "no")
         + "; " + ev.uncovered.length + " gap(s) use the exact boundary sentence: " + (v.gapsOk ? "yes" : "NO") + ". Sign-off: " + (v.pass ? "PASS" : "FAIL")
         + (ev.accepted.length ? "" : " (the answer states no facts, only that the sources do not cover it)") + ".";
-      var gv = await voice("grok", gchk, "Restate these check results in one or two plain sentences. Do not change any number or any PASS or FAIL: " + gchk);
-      if (gv.live) { say("grok", gv.text, null, null, null, gv.tag); say("grok", gchk, null, null, null, "page checks"); } else say("grok", gchk, null, null, null, gv.tag);
+      handoff("chatgpt", "grokbot"); await sleep(500);
+      say("grokbot", "FINAL TEAM DECISION: " + (v.pass ? "PASS" : "FAIL") + ". " + gchk, null, null, null, "team head");
       await sleep(900);
-      handoff("grok", "brain"); await sleep(500);
+      handoff("grokbot", "brain"); await sleep(500);
       say("grokbot", "Hand-offs logged this task: " + (HAND_N - hand0) + ".");
-      say("brain", "Final answer for Max:", built.node, built.plain);
+      say("brain", "Final answer for Owner:", built.node, built.plain);
       setPhase(4);
       if (incog) say("brain", "Incognito: this session is not saved and Brain will not learn from it.", null, null, "warn");
       else if (mem.settings.brain) {
@@ -1608,7 +1634,8 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
         mem.inbox.push({ kind: "session", ref: sess.id });
         persist(); render();
       } else say("brain", "Brain is off, so nothing from this session was written to memory.", null, null, "warn");
-      ok = true;
+      ok = v.pass;
+      if (!v.pass) say("brain", "Grok Bot returned FAIL. Brain will not learn from this answer until the review passes.", null, null, "warn");
     } finally {
       running = false; updateBrainState(); persist();
     }

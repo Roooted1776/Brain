@@ -83,11 +83,11 @@ const msgFor = (p, name) => p.locator('.msg').filter({ has: p.locator('.who', { 
   let clip = ''; try { clip = await p.evaluate(() => navigator.clipboard.readText()); } catch (e) { clip = 'CLIPBOARD-BLOCKED'; }
   ok('transcript header says LIVE (not simulation) and has no key', /^LIVE:/.test(clip) && /live · Anthropic/.test(clip) && !/TESTKEY/.test(clip), clip.slice(0, 40));
   ok('at most 8 calls for one task', reqs.length > 0 && reqs.length <= 8, String(reqs.length));
-  ok('exactly 6 calls: Grok 2, Claude 2, ChatGPT 1, Gemini 1 (Cursor and Muse make none)', by('xai').length === 2 && by('anthropic').length === 2 && by('openai').length === 1 && by('google').length === 1 && reqs.length === 6, JSON.stringify(reqs.map(r => r.prov)));
-  const claudeMsg = await msgFor(p, 'Claude').first().innerText(), grokMsgs = await msgFor(p, 'Grok').allInnerTexts(), chatMsg = await msgFor(p, 'ChatGPT').last().innerText(), gemMsg = await msgFor(p, 'Gemini').first().innerText();
+  ok('exactly 5 calls: Grok 1, Claude 2, Codex 1, Gemini 1 (review checks stay scripted)', by('xai').length === 1 && by('anthropic').length === 2 && by('openai').length === 1 && by('google').length === 1 && reqs.length === 5, JSON.stringify(reqs.map(r => r.prov)));
+  const claudeMsg = await msgFor(p, 'Claude').first().innerText(), grokMsgs = await msgFor(p, 'Grok').allInnerTexts(), chatMsg = await msgFor(p, 'Codex').last().innerText(), gemMsg = await msgFor(p, 'Gemini').first().innerText();
   ok('Claude speaks through Anthropic and says so', /LIVE-anthropic/.test(claudeMsg) && /live · Anthropic · claude-haiku-5-5/i.test(claudeMsg));
-  ok('Grok speaks through xAI, and the page-computed sign-off is still there', grokMsgs.some(t => /LIVE-xai/.test(t)) && grokMsgs.some(t => /Sign-off: PASS/.test(t)));
-  ok('ChatGPT speaks through OpenAI', /LIVE-openai/.test(chatMsg) && /live · OpenAI/i.test(chatMsg));
+  ok('Grok gives the strategy review; Grok Bot makes the final team decision', grokMsgs.some(t => /LIVE-xai/.test(t)) && /FINAL TEAM DECISION: PASS/.test(await msgFor(p, 'Grok Bot').last().innerText()));
+  ok('Codex speaks through OpenAI', /LIVE-openai/.test(chatMsg) && /live · OpenAI/i.test(chatMsg));
   ok('Gemini speaks through Google', /LIVE-google/.test(gemMsg) && /live · Google/i.test(gemMsg));
   const cursorMsg = await msgFor(p, 'Cursor').first().innerText(), museMsg = await msgFor(p, 'Muse').first().innerText();
   ok('Cursor and Muse stay scripted and say so', /scripted/i.test(cursorMsg) && /scripted/i.test(museMsg) && !/LIVE-/.test(cursorMsg + museMsg));
@@ -152,7 +152,7 @@ const msgFor = (p, name) => p.locator('.msg').filter({ has: p.locator('.who', { 
   await runTask(p, Q);
   const n1 = reqs.filter(r => r.prov === 'openai').length;
   ok('a rejected key is reported in plain words', /key rejected/i.test(await p.locator('#log').innerText()));
-  ok('ChatGPT falls back to scripted text', /scripted/i.test(await msgFor(p, 'ChatGPT').last().innerText()));
+  ok('Codex falls back to scripted text', /scripted/i.test(await msgFor(p, 'Codex').last().innerText()));
   await p.getByRole('button', { name: 'What does a Brain run do?', exact: true }).click(); await p.waitForFunction(() => /Task 2 done/.test(document.querySelector('#taskStatus').textContent), null, { timeout: 60000 });
   ok('no more calls go to a provider whose key was rejected', reqs.filter(r => r.prov === 'openai').length === n1, n1 + ' -> ' + reqs.filter(r => r.prov === 'openai').length);
   await ctx.close();
