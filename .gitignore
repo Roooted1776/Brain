@@ -3,3 +3,4 @@
 DICOMDIR
 S0*/
 node_modules/
+.DS_Store

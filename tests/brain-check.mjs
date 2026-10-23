@@ -228,7 +228,7 @@ await n.check('#driftToggle'); await n.click('#center'); await n.waitForTimeout(
 // memory dot drag
 await n.click('#modeGraph'); await n.waitForTimeout(1200);
 const dot = n.locator('#gNodes .gn').first();
-const g0 = await cx(dot.locator('.hit'));
+await dot.scrollIntoViewIfNeeded(); await n.evaluate(()=>window.scrollBy(0,150)); const g0 = await cx(dot.locator('.hit'));
 await n.mouse.move(g0.x, g0.y); await n.mouse.down(); await n.mouse.move(g0.x + 60, g0.y + 40, { steps: 6 }); await n.mouse.up();
 await n.waitForTimeout(1500);
 const g1 = await cx(dot.locator('.hit'));
