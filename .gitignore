@@ -1,0 +1,5 @@
+# Never commit scan files or other private data
+*.dcm
+DICOMDIR
+S0*/
+node_modules/
