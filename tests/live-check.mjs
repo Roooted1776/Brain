@@ -59,7 +59,7 @@ async function setup(behavior = {}) {
       status: 400, headers: { ...CORS, 'content-type': 'application/json' },
       body: JSON.stringify({ error: { code: 400, message: 'API key not valid. Please pass a valid API key.', status: 'INVALID_ARGUMENT', details: [{ reason: 'API_KEY_INVALID' }] } })
     });
-    if (mode === 'slow') await new Promise(resolve => setTimeout(resolve, 2500));
+    if (mode === 'slow' || (mode === 'first-slow' && counts[provider] === 1)) await new Promise(resolve => setTimeout(resolve, 2500));
     const response = provider === 'anthropic'
       ? { content: [{ type: 'text', text }], usage: { input_tokens: 10, output_tokens: 5 } }
       : provider === 'google'
@@ -106,6 +106,14 @@ const msgFor = (page, name) => page.locator('.msg').filter({
   ok('page opens with Live AI off and no simulation wording',
     /live ai off/i.test(await page.locator('#modeBadge').innerText()) &&
     !/simulation/i.test(await page.locator('body').innerText()));
+  const modelBadge = await page.locator('#modelBadge').evaluate(el => ({
+    text: el.textContent,
+    color: getComputedStyle(el).color,
+    selectedColor: getComputedStyle(el).getPropertyValue('--model-color').trim()
+  }));
+  ok('the selected model is named and tinted without implying a live connection',
+    /OpenAI · gpt-4o-mini/.test(modelBadge.text) && modelBadge.color === 'rgb(121, 203, 178)' && modelBadge.selectedColor === '#79cbb2',
+    JSON.stringify(modelBadge));
   await page.fill('#promptText', 'What does Brain learn from?');
   await page.click('#sendPrompt');
   ok('Live AI off sends no request and explains why',
@@ -120,12 +128,24 @@ const msgFor = (page, name) => page.locator('.msg').filter({
 
 // One provider key powers all role prompts and one non-iOS task cannot repeat on the same page.
 {
-  const { context, page, requests } = await setup();
+  const { context, page, requests } = await setup({ openai: 'first-slow' });
   await connect(page, 'openai');
   ok('only one selected provider key is kept in memory by default',
     !/TESTKEY/.test(await page.evaluate(() => JSON.stringify(Object.assign({}, localStorage)))));
   await page.fill('#promptText', 'Review the Brain handoff and prepare a concise plan.');
   await page.click('#sendPrompt');
+  await page.waitForFunction(() => document.querySelector('.node.model-active'), null, { timeout: 10000 });
+  const activeSignal = await page.locator('.node.model-active').evaluate(el => ({
+    label: el.querySelector('.model-label').textContent,
+    color: getComputedStyle(el.querySelector('.model-label')).color,
+    animation: getComputedStyle(el).animationName,
+    aria: el.getAttribute('aria-label'),
+    haloActive: document.querySelector('#brain').classList.contains('model-active')
+  }));
+  ok('a live fake-server request produces a matching colored neuron and halo signal',
+    /OpenAI · gpt-4o-mini/.test(activeSignal.label) && activeSignal.color === 'rgb(121, 203, 178)' &&
+    activeSignal.animation === 'neuronFire' && /responding with OpenAI gpt-4o-mini/.test(activeSignal.aria) && activeSignal.haloActive,
+    JSON.stringify(activeSignal));
   await page.waitForFunction(() => !document.querySelector('#sendPrompt').disabled, null, { timeout: 60000 });
 
   const log = await page.locator('#log').innerText();
@@ -141,6 +161,26 @@ const msgFor = (page, name) => page.locator('.msg').filter({
     /LIVE-openai/.test(await msgFor(page, 'Cursor').first().innerText()) &&
     /LIVE-openai/.test(await msgFor(page, 'Perplexity').first().innerText()) &&
     /LIVE-openai/.test(await msgFor(page, 'Grok Bot').last().innerText()));
+  const actualModelLabel = await msgFor(page, 'Muse').locator('.model-tag').evaluate(el => ({
+    text: el.textContent,
+    color: getComputedStyle(el).color
+  }));
+  ok('saved live-model labels retain their provider color',
+    /live · OpenAI · gpt-4o-mini/.test(actualModelLabel.text) && actualModelLabel.color === 'rgb(121, 203, 178)',
+    JSON.stringify(actualModelLabel));
+  ok('live model signals stop when the fake request chain completes',
+    await page.locator('.node.model-active, #brain.model-active').count() === 0);
+  await page.locator('#gNodes .gn[aria-label^="Review the Brain handoff"]').click();
+  const savedResponses = await page.locator('#memoryFocus').innerText();
+  const savedResponseLabels = await page.locator('#memoryFocus .focus-model-label').evaluateAll(els => els.map(el => ({
+    text: el.textContent,
+    color: getComputedStyle(el).color
+  })));
+  ok('expanded prompt memory reveals only linked saved model outputs and their source',
+    /Linked saved model responses/.test(savedResponses) && /LIVE-openai-1/.test(savedResponses) &&
+    /session: Prompt: Review the Brain handoff/i.test(savedResponses) && savedResponseLabels.length === 8 &&
+    savedResponseLabels.every(label => /OpenAI · gpt-4o-mini/.test(label.text) && label.color === 'rgb(121, 203, 178)'),
+    JSON.stringify({ count: savedResponseLabels.length, sample: savedResponseLabels[0] }));
   ok('non-iOS task leaves Xcode out and the final report is real model text',
     await msgFor(page, 'Xcode').count() === 0 &&
     /LIVE-openai-8/.test(await msgFor(page, 'Grok Bot').last().innerText()) &&

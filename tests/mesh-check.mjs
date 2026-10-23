@@ -19,6 +19,19 @@ const ok = (name, pass, detail = '') => {
 };
 
 await page.goto(PAGE);
+const idleActivity = await page.evaluate(() => {
+  const brain = document.querySelector('#brain');
+  const halo = getComputedStyle(brain, '::after');
+  return {
+    hubVisible: brain.getClientRects().length > 0 && getComputedStyle(brain).pointerEvents !== 'none',
+    halo: halo.borderStyle === 'solid' && halo.inset === '-17px' && halo.boxShadow !== 'none',
+    noLivePulse: !brain.classList.contains('model-active') &&
+      document.querySelectorAll('.node.model-active, #hand path, #hand circle').length === 0
+  };
+});
+ok('the brain starts with a visible anchored halo and no simulated firing',
+  idleActivity.hubVisible && idleActivity.halo && idleActivity.noLivePulse, JSON.stringify(idleActivity));
+
 const initial = await page.locator('#brainObject').evaluate(canvas => {
   const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
   const pixels = new Uint8Array(canvas.width * canvas.height * 4);
@@ -77,6 +90,20 @@ ok('wheel zoom reaches the 25% lower range', /zoom 25%/i.test(await page.locator
 await page.waitForTimeout(180);
 ok('motion blur clears after movement stops', !await page.locator('#stage').evaluate(el => el.classList.contains('zooming')));
 await page.click('#resetView');
+const brainBeforeDrag = await page.locator('#brain').boundingBox();
+await page.mouse.move(brainBeforeDrag.x + brainBeforeDrag.width / 2, brainBeforeDrag.y + brainBeforeDrag.height / 2);
+await page.mouse.down();
+await page.mouse.move(brainBeforeDrag.x + brainBeforeDrag.width / 2 + 70, brainBeforeDrag.y + brainBeforeDrag.height / 2 + 42, { steps: 6 });
+await page.mouse.up();
+const brainAfterDrag = await page.locator('#brain').boundingBox();
+const movedWithHalo = await page.locator('#brain').evaluate(brain => {
+  const halo = getComputedStyle(brain, '::after');
+  return halo.borderStyle === 'solid' && halo.inset === '-17px' && !brain.classList.contains('model-active');
+});
+ok('dragging the brain moves its halo with the hub without a false model pulse',
+  movedWithHalo && Math.abs(brainAfterDrag.x - brainBeforeDrag.x) > 40 && Math.abs(brainAfterDrag.y - brainBeforeDrag.y) > 20,
+  JSON.stringify({ before: brainBeforeDrag, after: brainAfterDrag, movedWithHalo }));
+await page.click('#center');
 
 await page.setViewportSize({ width: 400, height: 850 });
 await page.waitForTimeout(80);
