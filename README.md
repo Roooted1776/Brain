@@ -1,50 +1,50 @@
 # Brain
 
-Owner's **Orchestration Brain**. Open `index.html` in any browser (double-click it). No install, free by default. The optional Live AI mode needs your own keys and costs money.
+Owner's **Orchestration Brain**. Open `index.html` in a browser (double-click it). No install is needed. Live AI is off until you configure a provider, enable it in Settings, and send a prompt.
 
 ## What it does
 
-A free-floating black-and-white hive mind. Two separately outlined hemispheres frame the agents and linked memories; pulse rings show agents listening, and moving light shows handoffs. Motion over time supplies the fourth dimension. **Tasks run on their own** (Play / Pause / Next task controls, and a task queue you can click to run one now).
+A free-floating black-and-white hive mind. In the default view, a hollow, procedural 3D wire mesh is built from vertices and rendered by WebGL; orbiting rotates that geometry, not a picture. Traced folds guide the surface and memory-node placement. The irregular folds and paired hemispheres are anatomy cues from [OpenStax Anatomy & Physiology](https://openstax.org/books/anatomy-and-physiology-2e/pages/13-2-the-central-nervous-system). This remains a stylized schematic, not a full anatomical model or MRI reconstruction.
 
-- **Living network.** Each bot is a node that drifts gently and is pulled by springs along its connections. **Drag any node** and the rest stretch with it; it stays where you drop it. "Reset layout" puts everything back. A "Drift" switch turns the floating off.
+- **Living network.** Each bot is a node that drifts gently and is pulled by springs along its connections. **Drag any node** and the rest stretch with it; it stays where you drop it. Drag the brain mesh or empty stage to orbit freely through 720° and beyond; the brain gets a slight motion blur while moving. Use the wheel or +/− controls to zoom from 25% to 450%.
   - **Team network** (nine programs): Grok Bot leads across projects; Claude builds; Grok challenges assumptions; Gemini checks context; Muse audits; Codex, Claude, Cursor and Perplexity perform the third review together. The final report goes to Grok Bot for the decision. Each program is labeled by its strength (Team tab).
-  - **Hive mind · 4D** (the default view): a free-floating, inside-facing pair of hemisphere outlines, with agents listening around linked memory nodes. Pulse rings show listening; moving light shows handoffs; the outlines phase over time. Drag the brain to move the whole hive, or drag any memory dot.
-- **Dispatch bar.** Type a task, press **Everyone, go**: the programs bring their own strengths, then the normal task runs through the three-check review. Grok Bot makes the final team decision. The box also shows one paste-ready line with a Copy button. Grok, Codex, Gemini and Perplexity are separate apps, so this page cannot push the task into them; you paste the line into each, and each reads `AGENTS.md` and follows the review order.
-- **Tasks** move through four phases as a conversation between the programs (plan, 3–5 searches, source check, cited answer), shown in the Activity tab.
+  - **Hive mind · 4D** (the default view): agents listen around a hollow, generated WebGL mesh, with linked memory nodes projected onto traced folds when memories exist. Drag empty space to orbit, drag a memory dot to move it, or use the wheel and zoom buttons.
+- **Prompts** move through a sequential review-and-handoff chain, shown in Activity. Each connected role reviews its incoming handoff, contributes text, and passes it on.
 - **Brain learns afterwards**, in the background, in four steps shown on the Memory tab: review recent activity, write what it learns, reinforce / update / mark stale (these three follow the article), then a report (this page's own step).
-- **Memory tab**: browse Concepts, Entities, Workstreams and Skills. Open an entry's source (a saved task replays), edit it, delete it, or confirm it is still true. Corrections change later answers.
-- **Settings**: Brain on/off, incognito tasks, sample connected sources, instructions, privacy notes, and optional **Live AI** (below).
+- **Memory tab and graph**: browse Concepts, Entities, Workstreams and Skills. Each memory has a persistent category color and a visible title label; related saved session entries connect as a web. Select a memory to zoom to it and expand its note, type, status, source, and related memories. Open its full entry to edit, delete, or confirm it is still true. Corrections change later answers.
+- **Settings**: Brain on/off, incognito tasks, instructions, privacy notes, and optional **Live AI** (below). No external sources are connected.
 - **Skip ahead 30 days (demo)** shows how stale marking works.
 - **Backup and restore** for memory; **Copy transcript** for a task.
 
-The learning steps follow Perplexity's help article [“What is Brain?”](https://www.perplexity.ai/help-center/en/articles/19700001-what-is-brain). Wording was checked against the live article on 2026-10-21 (last modified October 2, 2026 per the article). In the article, Brain is a Research Preview for eligible paid subscribers using Perplexity Computer. **This page's own ideas, not in the article:** the animations, the black-and-white look, the drifting network and packets of light, the graph shapes and layout; the Plan / Queries / Sources / Answer session and cited answers; the "Report" step; the Skills filter; the incognito switch and "Run Brain now" button; the automatic task queue; sample connectors; the 30-day stale rule and "skip ahead" clock (the article gives no time rule); the rule that a deleted entry is not learned again; the optional Live AI mode; and the password filter (simple pattern matching, not the article's AI-based filtering).
+The learning steps follow Perplexity's help article [“What is Brain?”](https://www.perplexity.ai/help-center/en/articles/19700001-what-is-brain). Wording was checked against the live article on 2026-10-21 (last modified October 2, 2026 per the article). In the article, Brain is a Research Preview for eligible paid subscribers using Perplexity Computer. **This page's own ideas, not in the article:** the animations, the black-and-white look, the drifting network and packets of light, the graph shapes and layout; the Plan / Queries / Sources / Answer session and cited answers; the "Report" step; the Skills filter; the incognito switch and "Run Brain now" button; sample connectors; the 30-day stale rule and "skip ahead" clock (the article gives no time rule); the rule that a deleted entry is not learned again; the optional Live AI mode; and the password filter (simple pattern matching, not the article's AI-based filtering).
 
-## Live AI (optional, off by default, you pay the providers)
+## Live AI (off until you connect it; provider charges may apply)
 
-By default every program is scripted. In Settings you can switch on **Use real AI** and let selected programs be voiced by models: Grok by xAI, Claude by Anthropic, Codex by OpenAI, and Gemini by Google. Cursor, Muse, Grok Bot and Xcode remain scripted here; Perplexity is not wired to its API, so its source check is simulated unless you map it to an available provider.
+Choose one of the supported API providers—Anthropic, OpenAI, Google, or xAI—and enter one key and model ID in Settings. The same selected model powers all nine distinct role prompts; this connects model APIs, not separate apps such as Cursor, Muse, or Xcode. Perplexity's role is text-only and does not use Perplexity's service or browse. Each model response is labeled with the provider and model.
 
-- **You create the keys yourself** on each provider's website and paste them into Settings. Never paste a key into a chat. Keys stay in the browser tab only. Tick "Remember keys on this device" to keep them (anyone using this browser could use them). Keys are never written to memory, backups, transcripts, or this repo.
-- **It only works when you open `index.html` from your computer.** The preview link blocks calls to other websites.
-- **It turns itself off on every reload.** Live tasks never repeat on their own: autopilot waits for you to press Next task.
-- **Spending limits:** up to 9 short calls for a normal task and up to 16 for an “Everyone, go” task, a token limit per reply (default 300), a call limit per page load (default 60), and a "Stop live now" button. Prices differ by model, so check each provider's price page.
-- **Stop live now** also cancels any call still in flight. A Google key goes in the web address (that is how Google's docs show it), so it can appear in your browser's network tab. OpenAI is asked not to store prompts; xAI may keep them (unverified), so check each company's data settings.
-- **What the models do:** each bot's short message is written by its model and labeled with the company and model. The sample lines, the cited answer, and Grok's pass/fail checks are still produced by this page's own code, so a model cannot put an invented fact into an answer. The task text and the built-in sample lines (never your memory notes) are sent to the companies you map, even for incognito tasks.
-- **Model names** (`claude-haiku-5-5`, `gpt-6-luna`, `gemini-3.5-flash-lite`, `grok-4.20-0309-non-reasoning`) came from each provider's docs on 2026-10-21 through a page summary. They change often, so edit them in Settings if a call says "model not found".
-- **Not tested against the real services.** `node tests/live-check.mjs` uses fake servers that answer in each company's reply format, which checks how the page builds requests, labels messages, counts calls, protects keys, and stops. It cannot prove the real services accept the requests. A first real try with a small token limit is the real test.
+The provider generates each role's text plan, review, and handoff. Each role receives the task and the immediately preceding handoff; Grok Bot receives the full prior chain. It does not get repository, app, or build tools. Model text is unverified, and Grok Bot's report is a recommendation; Owner controls changes, Git push, and merge.
+
+- **You create the key yourself** on the selected provider's website and enter it in Settings. Never paste a key into chat. Only one key is configured at a time; it stays in the browser tab unless you tick "Remember this key on this device." Switching providers clears the previous key. Keys are never written to memory backups, transcripts, or this repo.
+- **It only works when you open `index.html` from your computer.** A browser preview may block calls to other websites.
+- **Live AI turns off after every reload.** No provider calls happen until you enable it and send a prompt.
+- **Spending limits:** one API key, up to 9 calls for a full team handoff, a default output limit of 120 tokens per call (maximum 150), and a default page budget of 9 calls. Testing the connection costs a call from the same budget. "Stop live now" cancels calls in progress. Actual charges depend on the selected provider/model and its current pricing.
+- **Privacy and retention:** the task and incoming handoff go to the selected provider, including for incognito prompts; Grok Bot receives the full prior chain, and saved memory is not sent. Google includes the key in the request URL, which may appear in browser network tools. Check the provider's current data settings before sending.
+- **Model IDs** are editable because providers change their catalogs. The example IDs are starting values, not confirmed against live services; use a currently supported ID from the selected provider.
+- **Not tested against live services.** The browser checks use fake servers only. They verify request structure, labeling, call limits, key handling, and stop behavior; they cannot prove a provider accepts the request.
 
 ## How to test (optional, for developers)
 
 The page itself needs nothing installed. To re-run the browser checks:
 
 1. `npm install --no-save playwright` (once), then `npx playwright install chromium` if you have no browser for it. (Opening `index.html?autoplay=0` starts the page paused, which the tests use.)
-2. `node tests/brain-check.mjs` (the page) and `node tests/live-check.mjs` (live mode, with fake provider servers)
+2. `node tests/mesh-check.mjs` (generated WebGL mesh, free orbit, zoom limits, memory focus, labels/colors, and links), `node tests/handoff-check.mjs` (all nine role handoffs with one fake provider), and `node tests/brain-check.mjs` / `node tests/live-check.mjs` (page, memory, privacy, key, spending-limit, and provider-adapter checks; all provider traffic is intercepted by fake servers)
 3. Read the output. Lines starting with PASS are good. At the end you should see `ERRORS []` and `ALL CHECKS PASSED`. If any line starts with FAIL, the script says how many failed and exits with an error code.
 
-The checks cover autopilot starting by itself (and not starting under reduced motion), dragging a bot, a dot and the Brain, a bot dropped outside the stage, arrow-key moves, packets of light, tasks never overlapping, learning, reinforcing, correcting, deleting, going stale, incognito, secret filtering, hostile backup files, and reload.
+The checks cover the generated mesh, free orbit beyond 720°, zoom range and motion blur, focusing and expanding a memory, all nine handoff roles on one provider, fake request shapes for each supported provider, key privacy, spending caps, stop behavior, memory correction/deletion, responsive layout, and reload.
 
 ## Honest limits
 
-- By default it is a **simulation**: the programs are scripted, no real AI or web search runs, and nothing connects to Perplexity. Live AI (above) is optional and off.
+- With Live AI off, the page makes no provider calls. When enabled, one selected provider model powers the role prompts; the page does not connect to separate AI apps or Perplexity's service, and it does not use web search.
 - Sample sources are lines written for this demo from the repo's own rules and the article. A question they do not cover gets the fixed sentence "The provided source documentation does not contain enough verified information to confidently answer …".
 - "Connected sources" are samples, not real accounts.
 - Memory is stored in this browser only. Back it up.
