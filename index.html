@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap">
 <style>
-/* Look: black and white only, one sans family, thin lines, small uppercase labels (an analyst-console feel). Roles are told apart by line style, not colour: filled = lead, double line = hub, thin line = collaborator, dashed = auditor. Layout: a console bar, a command bar, then a large living network beside a Conversation / Memory / Settings panel. */
+/* Look: monochrome team roles with thin lines and small uppercase labels. Memory categories use color so their web is easy to scan. */
 :root {
   --bg: #000000; --surface: #0a0a0a; --surface-2: #151515; --line: #2a2a2a; --line-2: #4d4d4d;
   --fg: #f4f4f4; --muted: #9a9a9a; --accent: #ffffff; --accent-fg: #000000;
@@ -18,7 +18,9 @@
   --hub: #ffffff; --hub-bg: #060606; --hub-tx: #ffffff;
   --collab: #c4c4c4; --collab-bg: #000000; --collab-tx: #f4f4f4;
   --audit: #8f8f8f; --audit-bg: #080808; --audit-tx: #c4c4c4;
-  --t-concept: #ffffff; --t-entity: #d0d0d0; --t-workstream: #9a9a9a;
+  --t-concept: #81b8ff; --t-entity: #73dfbd; --t-workstream: #ffbd70;
+  --radius-control: 7px; --radius-surface: 12px;
+  --surface-shadow: 0 18px 48px rgba(0,0,0,.28);
   --c-owner: #ffffff; --c-brain: #ffffff;
   --font-display: "Hanken Grotesk", "Helvetica Neue", Arial, system-ui, sans-serif;
   --font-body: "Hanken Grotesk", "Helvetica Neue", Arial, system-ui, sans-serif;
@@ -34,14 +36,16 @@ h1::before { content: ""; width: 14px; height: 14px; border: 1.5px solid var(--f
 h2 { font: 600 11px/1.2 var(--font-display); letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin: 0; }
 .top { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
 .top p { margin: 0; color: var(--muted); font-size: 13px; max-width: 72ch; min-width: 0; flex: 1 1 320px; }
-.badge { font: 600 10.5px var(--font-mono); letter-spacing: .14em; text-transform: uppercase; border: 1px solid var(--line-2); border-radius: 2px; padding: 3px 8px; color: var(--muted); white-space: nowrap; }
-.ask { display: grid; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 2px; padding: 12px; }
+.badge { font: 600 10.5px var(--font-mono); letter-spacing: .14em; text-transform: uppercase; border: 1px solid var(--line-2); border-radius: 999px; padding: 4px 10px; color: var(--muted); white-space: nowrap; }
+.ask { display: grid; gap: 10px; background: linear-gradient(145deg, #101010, var(--surface) 62%); border: 1px solid var(--line); border-radius: var(--radius-surface); padding: 14px; box-shadow: var(--surface-shadow); }
+.ask:focus-within { border-color: var(--line-2); }
 .ask-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .ask-row input[type=text] { flex: 1 1 260px; min-width: 0; }
-input[type=text], select, textarea { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line-2); border-radius: 2px; padding: 9px 11px; }
+input[type=text], select, textarea { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line-2); border-radius: var(--radius-control); padding: 9px 11px; }
 textarea { width: 100%; font: 12.5px/1.45 var(--font-mono); min-height: 90px; resize: vertical; }
-button { font: 600 12px var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: var(--fg); background: transparent; border: 1px solid var(--line-2); border-radius: 2px; padding: 9px 14px; cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
+button { font: 600 12px var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: var(--fg); background: transparent; border: 1px solid var(--line-2); border-radius: var(--radius-control); padding: 9px 14px; cursor: pointer; transition: background .15s, color .15s, border-color .15s, transform .15s; }
 button:hover:not(:disabled) { border-color: var(--fg); }
+button:active:not(:disabled) { transform: translateY(1px); }
 button.primary { background: var(--fg); color: var(--bg); border-color: var(--fg); }
 button.primary:hover:not(:disabled) { background: var(--bg); color: var(--fg); }
 button.small { padding: 4px 9px; font-size: 10.5px; }
@@ -52,9 +56,9 @@ button:disabled { opacity: .4; cursor: default; }
 input[type=checkbox] { accent-color: #fff; }
 .chips { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
 .chips span.lbl { font: 600 10.5px var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
-.chip { font: 400 12.5px var(--font-body); letter-spacing: 0; text-transform: none; padding: 4px 10px; border-radius: 2px; text-align: left; }
+.chip { font: 400 12.5px var(--font-body); letter-spacing: 0; text-transform: none; padding: 4px 10px; border-radius: 999px; text-align: left; }
 .chip[aria-pressed=true] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
-.phases { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; border: 1px solid var(--line); border-radius: 2px; }
+.phases { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; border: 1px solid var(--line); border-radius: var(--radius-control); overflow: hidden; }
 .phase { border-left: 1px solid var(--line); padding: 7px 10px; font: 500 11.5px var(--font-mono); color: var(--muted); background: var(--surface); min-width: 0; }
 .phase:first-child { border-left: 0; }
 .phase b { display: block; font: 600 11px var(--font-display); letter-spacing: .16em; text-transform: uppercase; color: var(--fg); }
@@ -66,9 +70,17 @@ input[type=checkbox] { accent-color: #fff; }
 .modes button[aria-pressed=true] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
 .modes .hintbadge { font: 600 10.5px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg); }
 .modes .spacer { flex: 1; }
-.stage { position: relative; height: clamp(560px, 78vh, 880px); background: transparent; border: 0; overflow: hidden; touch-action: pan-y; }
+.stage { position: relative; height: clamp(560px, 78vh, 880px); background: radial-gradient(ellipse at 50% 48%, #111 0%, #050505 38%, #000 76%); border: 0; overflow: hidden; touch-action: none; perspective: 1100px; perspective-origin: 50% 48%; }
 .stage::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 65%, rgba(0,0,0,.18) 100%); }
-.stage svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+.world { position: absolute; inset: 0; transform-style: preserve-3d; transform-origin: 50% 50%; }
+.brain-mesh { position: absolute; inset: 0; transform-style: preserve-3d; pointer-events: none; z-index: 0; }
+.brain-object { position: absolute; inset: 0; display: block; width: 100%; height: 100%; pointer-events: none; }
+.stage.orbiting #brainObject, .stage.zooming #brainObject { filter: blur(.65px); }
+.brain-object { transition: filter .12s ease-out; }
+.world svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: visible; }
+.world #links { z-index: 1; transform: translateZ(36px); }
+.stage.orbiting .world { transition: none; }
+.stage svg { pointer-events: none; }
 .hud { position: absolute; top: 10px; right: 12px; z-index: 4; font: 600 10.5px var(--font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); text-align: right; pointer-events: none; }
 .edge { fill: none; stroke: var(--arrow); stroke-width: 1.25; }
 .edge.audit { stroke-dasharray: 5 5; }
@@ -77,7 +89,7 @@ input[type=checkbox] { accent-color: #fff; }
 .hand { fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-dasharray: 6 7; animation: flow .6s linear infinite; opacity: .9; }
 .pkt { fill: #fff; filter: drop-shadow(0 0 5px #fff); }
 @keyframes flow { to { stroke-dashoffset: -26; } }
-.stage[data-mode="graph"] #edges { display: block; opacity: .24; }
+.stage[data-mode="graph"] #edges { display: none; }
 .stage[data-mode="graph"] .node { width: 82px !important; height: 28px !important; padding: 2px 5px; border-radius: 20px; background: rgba(0,0,0,.88); }
 .stage[data-mode="graph"] .node b { font-size: 9px; letter-spacing: .08em; }
 .stage[data-mode="graph"] .node span { display: none; }
@@ -85,7 +97,7 @@ input[type=checkbox] { accent-color: #fff; }
 @keyframes listenPulse { 0% { transform: scale(.84); opacity: .38; } 80%,100% { transform: scale(1.48); opacity: 0; } }
 .stage[data-mode="team"] #gEdges, .stage[data-mode="team"] #gNodes, .stage[data-mode="team"] #gShape, .stage[data-mode="team"] .gempty { display: none; }
 .node { position: absolute; transform: translate(-50%, -50%); z-index: 2; display: grid; align-content: center; justify-items: center; text-align: center; gap: 2px; padding: 4px 8px; cursor: grab; touch-action: none; user-select: none;
-  border: 1px solid var(--c); border-radius: 2px; background: var(--nbg); color: var(--ntx); transition: background .2s, color .2s, box-shadow .2s; }
+  border: 1px solid var(--c); border-radius: var(--radius-control); background: var(--nbg); color: var(--ntx); transition: background .2s, color .2s, box-shadow .2s; }
 .node:active { cursor: grabbing; }
 .node b { font: 700 13px/1.15 var(--font-display); letter-spacing: .16em; text-transform: uppercase; }
 .node span { font: 400 11.5px/1.25 var(--font-body); opacity: .75; }
@@ -103,7 +115,7 @@ input[type=checkbox] { accent-color: #fff; }
 .gn.pop .dot { animation: pop .7s cubic-bezier(.2, 1.6, .4, 1); }
 .gn.flash .dot { animation: flash .9s ease-out; }
 .gn .ring { fill: none; stroke: #fff; stroke-width: 1.5; transform-box: fill-box; transform-origin: center; animation: ringout 1s ease-out forwards; }
-.gn .lbl { font: 600 10.5px var(--font-body); letter-spacing: .06em; text-transform: uppercase; fill: var(--fg); paint-order: stroke; stroke: #000; stroke-width: 3px; pointer-events: none; }
+.gn .lbl { font: 600 10.5px var(--font-body); letter-spacing: .06em; text-transform: uppercase; fill: var(--k); paint-order: stroke; stroke: #000; stroke-width: 3px; pointer-events: none; }
 .gn:focus-visible .dot { stroke-width: 3; }
 .gn:focus-visible .hit { stroke: #fff; stroke-width: 1.5; stroke-dasharray: 2 3; }
 @keyframes pop { from { transform: scale(0); opacity: 0; } 60% { opacity: 1; } }
@@ -113,14 +125,22 @@ input[type=checkbox] { accent-color: #fff; }
 .gspokes { stroke: #fff; stroke-width: 1; opacity: .09; }
 .glinks { stroke: #fff; stroke-width: 1.2; opacity: .42; }
 .ghot { stroke: #fff; stroke-width: 2; opacity: 1; }
-.gshape .hemisphere { fill: none; stroke: #f4f4f4; stroke-width: 2; opacity: .82; filter: drop-shadow(0 0 8px rgba(255,255,255,.18)); vector-effect: non-scaling-stroke; }
-.gshape .hemisphere.back { stroke: #777; stroke-width: 1.4; opacity: .48; filter: none; }
-.gshape .hemisphere.right { opacity: .55; stroke-dasharray: 9 4; animation: phaseShift 14s linear infinite; }
-.gshape .fissure { fill: none; stroke: #777; stroke-width: 1; stroke-dasharray: 2 7; opacity: .7; vector-effect: non-scaling-stroke; }
+.gshape .outline { stroke: #aaa; stroke-width: 1.5; opacity: .22; }
+.gshape .volume { fill: #050505; stroke: #777; stroke-width: 1; opacity: .42; }
+.gshape .sulcus { fill: none; stroke: #aaa; stroke-width: 1.2; opacity: .16; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.stage[data-mode="graph"] .gshape .outline, .stage[data-mode="graph"] .gshape .sulcus { opacity: 0; }
+.stage[data-mode="graph"] #brain { opacity: 0; pointer-events: none; }
 @keyframes phaseShift { to { stroke-dashoffset: -52; } }
-.tip { position: absolute; z-index: 6; pointer-events: none; background: #fff; color: #000; font: 600 10.5px var(--font-body); letter-spacing: .08em; text-transform: uppercase; padding: 4px 8px; border-radius: 1px; max-width: 240px; transform: translate(-50%, -150%); }
+.tip { position: absolute; z-index: 6; pointer-events: none; background: #fff; color: #000; font: 600 10.5px var(--font-body); letter-spacing: .08em; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; max-width: 240px; transform: translate(-50%, -150%); }
+.memory-focus { position: absolute; z-index: 7; right: 12px; bottom: 60px; width: min(340px, calc(100% - 24px)); max-height: min(48vh, 360px); overflow: auto; border: 1px solid var(--line-2); border-left: 3px solid var(--memory-color, #fff); border-radius: var(--radius-control); background: rgba(0,0,0,.94); padding: 12px; display: grid; gap: 8px; box-shadow: 0 8px 28px rgba(0,0,0,.65); }
+.memory-focus[hidden] { display: none; }
+.memory-focus .focus-title { margin: 0; font: 700 13px var(--font-display); letter-spacing: .1em; text-transform: uppercase; overflow-wrap: anywhere; }
+.memory-focus .focus-note { margin: 0; font-size: 13px; line-height: 1.45; overflow-wrap: anywhere; }
+.memory-focus .focus-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.memory-focus .focus-links { display: flex; gap: 6px; flex-wrap: wrap; }
+.memory-focus .focus-links button { max-width: 100%; overflow-wrap: anywhere; }
 .gempty { position: absolute; left: 50%; bottom: 52px; transform: translateX(-50%); font: 12px var(--font-mono); color: var(--muted); text-align: center; max-width: 80%; z-index: 3; }
-.brain { touch-action: none; position: absolute; transform: translate(-50%, -50%); z-index: 5; width: 96px; height: 96px; border-radius: 50%; cursor: grab; display: grid; place-items: center; align-content: center; text-align: center;
+.brain { touch-action: none; position: absolute; transform: translate(-50%, -50%) translateZ(22px); z-index: 5; width: 96px; height: 96px; border-radius: 50%; cursor: grab; display: grid; place-items: center; align-content: center; text-align: center;
   background: radial-gradient(circle at 50% 50%, #1b1b1b 0%, #000 70%); border: 1px solid #fff; box-shadow: 0 0 0 5px #000, 0 0 0 6px var(--line-2), 0 0 34px var(--glow);
   font: 700 12px var(--font-display); letter-spacing: .24em; color: var(--fg); user-select: none; transition: filter .3s, opacity .3s; }
 .brain > * { position: relative; z-index: 1; }
@@ -135,22 +155,17 @@ input[type=checkbox] { accent-color: #fff; }
 .stage-tools button { background: #000; }
 .legend { font: 500 11px var(--font-mono); letter-spacing: .06em; color: var(--muted); text-align: center; margin: 0; text-transform: uppercase; }
 .legend i { font-style: normal; color: var(--fg); }
-.dispatch { display: flex; gap: 8px; flex-wrap: wrap; }
-.dispatch input { flex: 1 1 280px; min-width: 0; }
-.dispatchline { display: grid; gap: 6px; }
-.dispatchline .lbl { font: 600 10.5px var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
-.dispatchline code { display: block; border: 1px solid var(--line-2); border-radius: 2px; padding: 8px 10px; font: 400 12.5px/1.5 var(--font-body); color: var(--fg); background: #000; overflow-wrap: anywhere; user-select: all; }
+.panel { background: linear-gradient(155deg, #101010, var(--surface) 40%); border: 1px solid var(--line); border-radius: var(--radius-surface); box-shadow: var(--surface-shadow); display: grid; grid-template-rows: auto 1fr; min-width: 0; overflow: hidden; }
 .node.jump { animation: jump .85s cubic-bezier(.3, 1.4, .5, 1); }
 @keyframes jump { 0% { transform: translate(-50%, -50%); } 35% { transform: translate(-50%, calc(-50% - 18px)) scale(1.07); box-shadow: 0 0 0 3px #fff, 0 0 30px rgba(255,255,255,.6); } 100% { transform: translate(-50%, -50%); } }
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 2px; display: grid; grid-template-rows: auto 1fr; min-width: 0; }
 .tabs { display: flex; border-bottom: 1px solid var(--line); }
 .tabs button { flex: 1; border: 0; border-radius: 0; background: transparent; padding: 12px 6px; font: 600 11px var(--font-display); letter-spacing: .16em; color: var(--muted); border-bottom: 2px solid transparent; }
 .tabs button[aria-selected=true] { color: var(--fg); border-bottom-color: var(--fg); }
-.tabs .pill { font: 700 10px var(--font-mono); background: var(--fg); color: var(--bg); border-radius: 2px; padding: 0 5px; margin-left: 5px; letter-spacing: 0; }
+.tabs .pill { font: 700 10px var(--font-mono); background: var(--fg); color: var(--bg); border-radius: 999px; padding: 0 6px; margin-left: 5px; letter-spacing: 0; }
 .tabpane { padding: 14px; min-width: 0; display: grid; gap: 12px; align-content: start; }
 .log { display: grid; gap: 12px; max-height: 620px; overflow-y: auto; align-content: start; }
-.empty { color: var(--muted); border: 1px dashed var(--line-2); border-radius: 2px; padding: 14px; font-size: 13.5px; }
-.savedbar { background: var(--surface-2); border: 1px solid var(--line); padding: 8px 10px; font: 500 11.5px var(--font-mono); display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.empty { color: var(--muted); border: 1px dashed var(--line-2); border-radius: var(--radius-control); padding: 14px; font-size: 13.5px; }
+.savedbar { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 8px 10px; font: 500 11.5px var(--font-mono); display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
 .msg { display: grid; grid-template-columns: 3px minmax(0, 1fr); gap: 10px; animation: rise .3s ease-out; }
 @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
 .msg .bar { background: var(--c); }
@@ -160,7 +175,7 @@ input[type=checkbox] { accent-color: #fff; }
 .msg p.pre { white-space: pre-wrap; }
 .msg p.warn { border-left: 2px solid var(--fg); padding-left: 8px; }
 .msg ul.q { margin: 4px 0 0; padding-left: 18px; font: 12.5px var(--font-mono); }
-.answer { border: 1px solid var(--fg); border-radius: 2px; padding: 12px 14px; background: #000; overflow-wrap: anywhere; margin-top: 6px; }
+.answer { border: 1px solid var(--fg); border-radius: var(--radius-control); padding: 12px 14px; background: #000; overflow-wrap: anywhere; margin-top: 6px; }
 .answer .lead { font-weight: 700; margin: 0 0 8px; }
 .answer h3 { font: 700 10.5px var(--font-display); letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin: 12px 0 4px; }
 .answer ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
@@ -174,7 +189,7 @@ td:first-child { font-family: var(--font-mono); white-space: nowrap; }
 .note { font: 400 12px/1.5 var(--font-body); color: var(--muted); margin: 0; overflow-wrap: anywhere; }
 .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .spread { justify-content: space-between; }
-.runcard { border: 1px solid var(--line); border-radius: 2px; padding: 12px; display: grid; gap: 10px; }
+.runcard { border: 1px solid var(--line); border-radius: var(--radius-surface); padding: 14px; display: grid; gap: 10px; background: rgba(255,255,255,.015); }
 ol.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
 ol.steps li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 8px; align-items: start; color: var(--muted); font-size: 13.5px; }
 ol.steps li .n { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line-2); display: grid; place-items: center; font: 700 11px var(--font-mono); }
@@ -183,11 +198,11 @@ ol.steps li.done { color: var(--fg); } ol.steps li.done .n { background: #fff; b
 @keyframes pulseb { 50% { box-shadow: 0 0 0 5px rgba(255,255,255,.25); } }
 .report { font: 600 12.5px var(--font-mono); color: var(--fg); margin: 0; overflow-wrap: anywhere; }
 .entries { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; max-height: 460px; overflow-y: auto; }
-.entry { border: 1px solid var(--line); border-left: 2px solid var(--k); border-radius: 2px; padding: 9px 11px; display: grid; gap: 5px; min-width: 0; }
+.entry { border: 1px solid var(--line); border-left: 2px solid var(--k); border-radius: var(--radius-control); padding: 10px 12px; display: grid; gap: 5px; min-width: 0; background: rgba(255,255,255,.015); }
 .entry.sel { border-color: #fff; box-shadow: 0 0 0 1px #fff; }
 .entry .hd { display: flex; gap: 8px; flex-wrap: wrap; align-items: baseline; }
 .entry .ttl { font: 700 13px var(--font-display); letter-spacing: .06em; text-transform: uppercase; overflow-wrap: anywhere; }
-.tag { font: 600 10px var(--font-mono); letter-spacing: .1em; text-transform: uppercase; border: 1px solid var(--line-2); border-radius: 2px; padding: 0 6px; color: var(--muted); }
+.tag { font: 600 10px var(--font-mono); letter-spacing: .1em; text-transform: uppercase; border: 1px solid var(--line-2); border-radius: 999px; padding: 1px 7px; color: var(--muted); }
 .tag.t { color: var(--fg); border-color: var(--fg); }
 .tag.stale { border-style: dashed; color: var(--warn); }
 .entry .body { color: var(--fg); font-size: 13.5px; overflow-wrap: anywhere; }
@@ -198,12 +213,12 @@ ol.steps li.done { color: var(--fg); } ol.steps li.done .n { background: #fff; b
 form.addform { display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
 form.addform label { display: grid; gap: 3px; font: 700 10.5px var(--font-display); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
 form.addform input, form.addform select, form.addform textarea { font-weight: 400; letter-spacing: 0; text-transform: none; font-family: var(--font-body); font-size: 14px; }
-.switch { display: flex; gap: 10px; align-items: center; justify-content: space-between; border: 1px solid var(--line); border-radius: 2px; padding: 10px 12px; }
+.switch { display: flex; gap: 10px; align-items: center; justify-content: space-between; border: 1px solid var(--line); border-radius: var(--radius-control); padding: 10px 12px; background: rgba(255,255,255,.015); }
 .switch b { font: 700 12px var(--font-display); letter-spacing: .14em; text-transform: uppercase; } .switch span { display: block; font-size: 12.5px; color: var(--muted); }
 .switch input { width: 20px; height: 20px; flex: none; }
 .conns { display: grid; gap: 6px; margin: 0; padding: 0 0 0 4px; list-style: none; }
 details { border-top: 1px solid var(--line); padding-top: 10px; }
-details.guide { border: 1px solid var(--line); border-radius: 2px; padding: 10px 12px; }
+details.guide { border: 1px solid var(--line); border-radius: var(--radius-control); padding: 10px 12px; background: rgba(255,255,255,.015); }
 summary { cursor: pointer; font: 700 10.5px var(--font-display); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
 details > * + * { margin-top: 8px; }
 details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 13.5px; }
@@ -214,6 +229,10 @@ a { color: var(--fg); }
 .liverow b { font: 700 11px var(--font-display); letter-spacing: .12em; text-transform: uppercase; }
 .liverow .note { grid-column: 2 / -1; }
 .liverow input { min-width: 0; padding: 7px 9px; font-size: 13px; }
+.live-connect { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; align-items: end; }
+.live-field { display: grid; gap: 4px; min-width: 0; font: 700 10.5px var(--font-display); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.live-field input, .live-field select { min-width: 0; width: 100%; font: 400 13px var(--font-body); letter-spacing: 0; text-transform: none; }
+.live-connect .note { grid-column: 1 / -1; }
 .mapgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
 .mapcell { display: grid; gap: 3px; font: 700 10.5px var(--font-display); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
 .mapcell select { font: 400 13px var(--font-body); letter-spacing: 0; text-transform: none; padding: 6px 8px; }
@@ -227,6 +246,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   .brain { width: 78px; height: 78px; font-size: 10.5px; }
   .brain small { font-size: 8.5px; }
 }
+@media (max-width: 480px) { .live-connect { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 380px) { .node { padding: 3px 3px; } .node b { font-size: 10.5px; letter-spacing: .06em; } .node span { font-size: 9.5px; } .tabs button { font-size: 10px; letter-spacing: .06em; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
 </style>
@@ -235,36 +255,24 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
 <div class="wrap">
   <header class="top">
     <h1>Orchestration Brain</h1>
-    <p>A live view of the team at work. Gemini checks context, Muse audits, then Codex, Claude, Cursor and Perplexity review together. Grok Bot leads every project and makes the final call. The Brain learns from each task.</p>
-    <span class="badge" id="modeBadge">simulation · no real AI calls</span>
+    <p>Connected models work through an ordered review-and-handoff chain. Their text deliverables appear as they finish; Brain stores only those sessions and notes you add.</p>
+    <span class="badge" id="modeBadge">live AI off</span>
   </header>
 
-  <section class="ask" id="controls" aria-label="Playback">
+  <section class="ask" id="controls" aria-label="Live prompt">
     <div class="ask-row">
-      <button class="primary" id="playBtn" type="button" aria-pressed="true">Pause</button>
-      <button id="nextBtn" type="button">Next task</button>
-      <label class="sr" for="speed">Speed</label>
-      <select id="speed"><option value="1">Normal speed</option><option value="0.35">Fast</option><option value="0">Instant</option></select>
-      <span class="badge" id="taskStatus" role="status">Starting</span>
+      <label class="sr" for="promptText">Send a prompt to the connected team</label>
+      <input type="text" id="promptText" maxlength="500" autocomplete="off" placeholder="Write a prompt for the connected team">
+      <button class="primary" id="sendPrompt" type="button">Send prompt</button>
     </div>
-    <div class="dispatch" id="dispatch">
-      <label class="sr" for="dispatchText">One line for everyone</label>
-      <input type="text" id="dispatchText" maxlength="200" autocomplete="off" placeholder="One line: what should everyone jump on?">
-      <button class="primary" id="dispatchGo" type="button">Everyone, go</button>
-    </div>
-    <div class="dispatchline">
-      <span class="lbl">The one line to paste into each of your real AI apps</span>
-      <code id="dispatchLine"></code>
-      <div class="row"><button class="small" id="dispatchCopy" type="button">Copy line</button><span class="note" id="dispatchMsg" role="status"></span></div>
-    </div>
-    <div class="chips" id="samples"><span class="lbl">Task queue · click one to run it now</span></div>
+    <p class="note" id="promptStatus" role="status" aria-live="polite">Only connected models respond. Each reviews the incoming handoff, completes its text-only task, and hands it on. Responses are AI-generated and not independently verified.</p>
   </section>
 
   <div class="phases" id="phases" role="group" aria-label="Progress through the four phases of a session">
-    <div class="phase"><b>1 Plan</b>Grok → Claude</div>
-    <div class="phase"><b>2 Queries</b>Codex + Gemini</div>
-    <div class="phase"><b>3 Sources</b>Cursor + Muse</div>
-    <div class="phase"><b>4 Answer</b>Claude → Grok</div>
+    <div class="phase"><b>1 Context</b>Gemini</div>
+    <div class="phase"><b>2 Audit</b>Muse</div>
+    <div class="phase"><b>3 Collective</b>Codex · Claude · Cursor · Perplexity</div>
+    <div class="phase"><b>4 Decision</b>Grok Bot</div>
   </div>
 
   <div class="main">
@@ -275,20 +283,27 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
         <label class="check" for="driftToggle"><input type="checkbox" id="driftToggle" checked> Drift</label>
         <span class="hintbadge" id="modeHint" role="status"></span>
       </div>
-      <section class="stage" id="stage" data-mode="graph" aria-label="Floating four-dimensional hive mind with two outlined hemispheres, listening agents, live handoffs and memory connections">
-        <svg id="links" aria-hidden="false">
-          <defs><marker id="ahm" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path class="ah" d="M1.5 1.5 L8.5 5 L1.5 8.5"/></marker></defs>
-          <g id="gShape"></g><g id="edges"></g><g id="gEdges"></g><g id="gNodes"></g><g id="hand"></g>
-        </svg>
-        <div class="brain" id="brain" tabindex="0" role="group" aria-roledescription="draggable" aria-label="Hive mind. Drag it, or press the arrow keys, to move it."><span id="brainTitle">HIVE MIND</span><small id="brainSub">drag me<br>agents listening</small></div>
+      <section class="stage" id="stage" data-mode="graph" aria-label="Interactive three-dimensional team and memory graph. Drag the background or brain mesh to orbit freely, use the mouse wheel or zoom buttons to zoom, and select a memory to focus and expand its details.">
+        <div class="world" id="world">
+          <div class="brain-mesh" id="brainMesh" aria-hidden="true"><canvas class="brain-object" id="brainObject"></canvas></div>
+          <svg id="links" aria-hidden="false">
+            <defs><marker id="ahm" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path class="ah" d="M1.5 1.5 L8.5 5 L1.5 8.5"/></marker></defs>
+            <g id="gShape"></g><g id="edges"></g><g id="gEdges"></g><g id="gNodes"></g><g id="hand"></g>
+          </svg>
+          <div class="brain" id="brain" tabindex="0" role="group" aria-roledescription="draggable" aria-label="Hive mind. Drag it, or press the arrow keys, to move it."><span id="brainTitle">HIVE MIND</span><small id="brainSub">drag me<br>agents listening</small></div>
+        </div>
         <div class="tip" id="tip" hidden></div>
+        <aside class="memory-focus" id="memoryFocus" aria-live="polite" aria-label="Focused memory details" hidden></aside>
         <div class="stage-tools">
           <button class="small" type="button" id="center">Reset layout</button>
+          <button class="small" type="button" id="zoomOut" aria-label="Zoom out">−</button>
+          <button class="small" type="button" id="zoomIn" aria-label="Zoom in">+</button>
+          <button class="small" type="button" id="resetView">Reset view</button>
           <span id="coords"></span>
         </div>
       </section>
       <p class="legend" id="legendTeam" hidden><i>filled</i> = lead · <i>double line</i> = hub · <i>thin line</i> = collaborator · <i>dashed</i> = auditor · drag any node</p>
-      <p class="legend" id="legendGraph"><i>solid / dashed</i> = left / right hemisphere · <i>pulse</i> = listening · <i>moving light</i> = handoff · 3 checks → Grok Bot decides</p>
+      <p class="legend" id="legendGraph"><i>Drag the brain mesh or empty space</i> to orbit freely (720°+) · <i>wheel / + −</i> to zoom · select a memory to focus and expand it · <i>moving light</i> = handoff<br><span style="color:var(--t-concept)">● Concepts</span> · <span style="color:var(--t-entity)">● Entities</span> · <span style="color:var(--t-workstream)">● Workstreams</span></p>
     </div>
 
     <section class="panel">
@@ -302,27 +317,20 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
       <div class="tabpane" id="pane-chat" role="tabpanel" aria-labelledby="tab-chat">
         <div class="row spread"><h2>Live activity</h2><button class="small" type="button" id="copyLog">Copy transcript</button></div>
         <div class="savedbar" id="savedBar" hidden><span id="savedLbl"></span><button class="small" type="button" id="backLive">Back to live</button></div>
-        <div class="log" id="log" aria-live="off"><div class="empty">Waiting for the first task. Tasks start on their own. Each program speaks in turn, a packet of light travels along the line when work is handed over, and when a task ends the Brain learns from it in the background.</div></div>
+        <div class="log" id="log" aria-live="off"><div class="empty">No prompt has been sent. Connect a real model in Settings, switch Live AI on, then submit a prompt to see its response and handoff.</div></div>
       </div>
 
       <div class="tabpane" id="pane-team" role="tabpanel" aria-labelledby="tab-team" hidden>
         <h2>Team · everyone thinks differently</h2>
-        <p class="note">Each bot has its own specialty, skills and angle. These are starting guesses: Owner's assignments, not claims about the products. They are written in AGENTS.md, which every real bot reads. “Everyone, go” makes each bot give its angle on your task before the work starts.</p>
+        <p class="note">Each role has its own specialty and skills. These are Owner's assignments, not claims about the products. They are written in AGENTS.md; the selected model only receives the task and handoffs supplied here.</p>
         <ul class="entries" id="teamList" tabindex="-1"></ul>
       </div>
 
       <div class="tabpane" id="pane-mem" role="tabpanel" aria-labelledby="tab-mem" hidden>
         <details class="guide" id="guide" open>
-          <summary>How Brain works (step by step)</summary>
-          <ol>
-            <li><b>Watch.</b> Brain reviews recent activity in the background: your <b>sessions</b>, <b>connected tools</b>, <b>files</b> you create, and your <b>corrections</b>. Incognito sessions are ignored.</li>
-            <li><b>Write.</b> It writes what it learns as linked entries, each pointing to its source: <b>Concepts</b>, <b>Entities</b> and <b>Workstreams</b>.</li>
-            <li><b>Maintain.</b> Every run <b>reinforces</b> what is still true, <b>updates</b> what changed, and <b>marks stale</b> what is not.</li>
-            <li><b>You stay in charge.</b> Open, edit or delete any entry. Your corrections feed forward into the next run.</li>
-            <li><b>Memory only.</b> Brain does not take actions or message you.</li>
-          </ol>
-          <p class="note"><b>From the article:</b> steps 1 to 5 above, from Perplexity's help article <a href="https://www.perplexity.ai/help-center/en/articles/19700001-what-is-brain" target="_blank" rel="noopener">“What is Brain?”</a>. Checked against the live page on 2026-10-21 (it says it was last modified October 2, 2026). In the article, Brain is a Research Preview for eligible paid subscribers using Perplexity Computer. This page does not connect to Perplexity.</p>
-          <p class="note"><b>This page's own ideas (not in the article):</b> the animations, the black-and-white look, the drifting network and packets of light, the graph shapes and layout; tasks run on their own from an automatic queue, and the Dispatch bar (one box and an “Everyone, go” button) lets you send your own task to all nine bots; the nine-bot team, each bot's specialty, skills and angle (Owner's starting guesses, not claims about the real products); the inside-facing two-hemisphere schematic scaled using traced dimensions from one MRI slice; only outline numbers are stored; Perplexity and Xcode are scripted here and the page does not connect to them; the Plan / Queries / Sources / Answer task with cited answers; the “Report” step of a run; the Skills filter; the incognito switch and “Run Brain now” button; sample connectors; the 30-day stale rule and the “skip ahead” demo clock (the article gives no time rule); the rule that a deleted entry is not learned again; and the optional Live AI mode that lets real models from four companies voice the bots; and the password filter, which is simple pattern matching, not the AI-based filtering the article describes.</p>
+          <summary>How this page handles data</summary>
+          <p class="note">Brain does not watch other apps or connect to external data sources. It saves prompts sent through this page, replies received from enabled real models, and notes you add yourself. Replies are labeled with their provider and model, but are not independently verified. Unconnected bots stay silent; failed calls never become scripted replies. Incognito prompts are not saved.</p>
+          <p class="note">The brain is an extrusion of the traced side-profile outline. Only that 2D contour is measured; the displayed depth is illustrative, not a 3D scan reconstruction. The page uses no bundled demo facts or sample sources. Memory nodes are labeled and colored by type; linked session memories form a web.</p>
         </details>
 
         <div class="runcard">
@@ -365,14 +373,9 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
 
       <div class="tabpane" id="pane-set" role="tabpanel" aria-labelledby="tab-set" hidden>
         <h2>Brain settings</h2>
-        <label class="switch" for="setBrain"><span><b>Brain</b><span>When off, Brain stops writing new memory from your activity. Existing memory stays.</span></span><input type="checkbox" id="setBrain" checked></label>
+        <label class="switch" for="setBrain"><span><b>Brain memory</b><span>When off, new prompt sessions are not saved. Existing memory stays.</span></span><input type="checkbox" id="setBrain" checked></label>
         <label class="switch" for="incog"><span><b>Incognito tasks</b><span>When on, Brain ignores the tasks that run. Nothing from them is saved or learned.</span></span><input type="checkbox" id="incog"></label>
-        <label class="switch" for="setSources"><span><b>Connected sources</b><span>Let Brain learn from linked tools. These are sample connectors, not live accounts. The article shows this toggle only in a screenshot and does not explain it.</span></span><input type="checkbox" id="setSources" checked></label>
-        <ul class="conns" id="conns">
-          <li><label class="check" for="cnDocs"><input type="checkbox" id="cnDocs" checked> Docs · Brain AGENTS.md (sample)</label></li>
-          <li><label class="check" for="cnMsgs"><input type="checkbox" id="cnMsgs"> Messages · no sample items</label></li>
-          <li><label class="check" for="cnTrk"><input type="checkbox" id="cnTrk" checked> Issue tracker · Brain pull request (sample)</label></li>
-        </ul>
+        <p class="note">No external data sources are connected. Only prompts sent here, real replies received, and notes you add are stored.</p>
         <label class="sr" for="instr">Instructions</label>
         <div><h2 style="margin-bottom:6px">Instructions</h2><textarea id="instr" maxlength="400" placeholder="Tell Brain what to pay attention to"></textarea>
           <div class="row" style="margin-top:6px"><button class="small" type="button" id="saveInstr">Save instructions</button><span class="note" id="instrMsg" role="status"></span></div>
@@ -380,11 +383,11 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
         <div id="liveSec" class="livesec"></div>
         <h2>Privacy</h2>
         <ul class="note" style="padding-left:18px;display:grid;gap:4px">
-          <li>Brain learns only from your own activity, in this browser.</li>
+          <li>Brain stores only prompts sent here, real model replies received, and notes you add.</li>
           <li>Incognito sessions are skipped completely.</li>
           <li>Common password and key patterns are filtered out before saving. This is a best-effort filter, not a guarantee, so do not paste real secrets.</li>
-          <li>Brain only maintains memory. It does not take actions or message you.</li>
-          <li>This page is a simulation unless you switch on Live AI below. Even then, web search is never used, and nothing connects to Perplexity.</li>
+          <li>No model calls happen until Live AI is enabled and you submit a prompt.</li>
+          <li>No web search or Perplexity connection is implemented.</li>
         </ul>
         <p class="note" id="sensCount"></p>
         <div class="row"><button class="small danger" type="button" id="resetMem">Erase all memory and start over</button><span class="note" id="resetMsg" role="status"></span></div>
@@ -420,40 +423,30 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   function svg(tag, attrs) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); return e; }
 
   /* ================= Owner's chart ================= */
-  /* The team. Roles come from Owner's chart; Grok Bot, Perplexity and Xcode and every "specialty", "skills" and "angle" are starting guesses that Owner can change (they are Owner's assignments, not claims about the products).
-     "angle" is the question each bot asks about a task from its own specialty; {q} is the task. xs = x position on a narrow phone. */
+  /* The team. Roles come from Owner's chart; Grok Bot, Perplexity, Xcode and every "specialty" and "skills" value are starting guesses that Owner can change (they are Owner's assignments, not claims about the products). xs = x position on a narrow phone. */
   var NODES = [
     { id: "grok",       name: "Grok",       sub: "Strategy · challenges",   kind: "collab", x: 0.36, xs: 0.27, y: 0.11,
-      specialty: "Finds weak assumptions, risks and overlooked options", skills: ["strategic challenge", "contrarian review", "risk spotting"],
-      angle: "Challenge: what in “{q}” could be wrong, risky, or missing?" },
+      specialty: "Finds weak assumptions, risks and overlooked options", skills: ["strategic challenge", "contrarian review", "risk spotting"] },
     { id: "grokbot",    name: "Grok Bot",   sub: "Team head · final call",   kind: "lead",   x: 0.64, xs: 0.73, y: 0.11,
-      specialty: "Leads the full team across projects and decides after the three review checks", skills: ["sets review order", "collects findings", "final pass or fail"],
-      angle: "I lead the full team. I will decide “{q}” after Gemini, Muse, and the collective review finish their three checks." },
+      specialty: "Leads the full team across projects and decides after the three review checks", skills: ["sets review order", "collects findings", "final pass or fail"] },
     { id: "claude",     name: "Claude",     sub: "Reasoning · writing · build", kind: "hub", x: 0.5, y: 0.33,
-      specialty: "Careful reasoning, clear writing and code", skills: ["step-by-step plans", "clear writing", "building the page"],
-      angle: "Plan: break “{q}” into small steps and build it carefully." },
+      specialty: "Careful reasoning, clear writing and code", skills: ["step-by-step plans", "clear writing", "building the page"] },
     { id: "cursor",     name: "Cursor",     sub: "Code · repo integration", kind: "collab", x: 0.2, y: 0.56,
-      specialty: "Edits code in the repo and reviews changes", skills: ["editing files", "merging work", "code review"],
-      angle: "Build: which files would change for “{q}”, and what could break?" },
+      specialty: "Edits code in the repo and reviews changes", skills: ["editing files", "merging work", "code review"] },
     { id: "gemini",     name: "Gemini",     sub: "Multimodal · context",    kind: "collab", x: 0.5, y: 0.56,
-      specialty: "Reads lots of material at once and cross-checks it, including pictures and long documents", skills: ["long documents", "images", "cross-checking"],
-      angle: "Cross-check: which long documents or images should we study for “{q}”?" },
+      specialty: "Reads lots of material at once and cross-checks it, including pictures and long documents", skills: ["long documents", "images", "cross-checking"] },
     { id: "chatgpt",    name: "Codex",      sub: "OpenAI · tools · synthesis", kind: "collab", x: 0.8, y: 0.56,
-      specialty: "Uses tools to inspect and change code, then synthesizes findings", skills: ["tool use", "coding", "planning", "synthesis"],
-      angle: "Codex review: what evidence, changes and tradeoffs matter for “{q}”?" },
+      specialty: "Uses tools to inspect and change code, then synthesizes findings", skills: ["tool use", "coding", "planning", "synthesis"] },
     { id: "perplexity", name: "Perplexity", sub: "Web research · citations", kind: "collab", x: 0.28, y: 0.74,
-      specialty: "Finds sources on the web and cites them", skills: ["web research", "citations", "fact checking"],
-      angle: "Sources: what must be looked up and cited for “{q}”?" },
+      specialty: "Finds sources on the web and cites them", skills: ["web research", "citations", "fact checking"] },
     { id: "xcode",      name: "Xcode",      sub: "iOS · device builds",      kind: "collab", x: 0.72, y: 0.74,
-      specialty: "Builds and tests iPhone apps", skills: ["iOS builds", "device testing", "archives"],
-      angle: "iPhone check: does “{q}” touch an iPhone app? If not, I pass." },
+      specialty: "Builds and tests iPhone apps", skills: ["iOS builds", "device testing", "archives"] },
     { id: "muse",       name: "Muse",       sub: "Independent audit",        kind: "audit",  x: 0.5, y: 0.92,
-      specialty: "Audits everyone's work and finds what is wrong", skills: ["audits", "finding bugs", "honesty checks"],
-      angle: "Audit: what could go wrong with “{q}”, and how would we know?" }
+      specialty: "Audits everyone's work and finds what is wrong", skills: ["audits", "finding bugs", "honesty checks"] }
   ];
   var TREE = [["grokbot", "claude"], ["claude", "grok"], ["claude", "gemini"], ["gemini", "muse"], ["muse", "chatgpt"], ["muse", "cursor"], ["muse", "perplexity"], ["chatgpt", "grokbot"], ["cursor", "grokbot"], ["perplexity", "chatgpt"], ["claude", "xcode"]];
   var KIND_VAR = { lead: "--lead", hub: "--hub", collab: "--collab", audit: "--audit" };
-  var SPEAKERS = { owner: { name: "Owner", sub: "owner" }, queue: { name: "Task queue", sub: "automatic" }, brain: { name: "Brain", sub: "orchestrates" } };
+  var SPEAKERS = { owner: { name: "Owner", sub: "owner" }, queue: { name: "Scheduler", sub: "automatic" }, brain: { name: "Brain", sub: "orchestrates" } };
   NODES.forEach(function (n) { SPEAKERS[n.id] = { name: n.name, sub: n.sub.toLowerCase() }; });
   function color(id) {
     var n = NODES.filter(function (x) { return x.id === id; })[0];
@@ -461,50 +454,8 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   }
   function isNode(id) { return NODES.some(function (n) { return n.id === id; }); }
 
-  /* ================= Sample sources: Brain's own rules and the Perplexity help article ================= */
-  var DOC = "Brain AGENTS.md", ART = "Perplexity help article “What is Brain?”";
-  var CORPUS = [
-    { id: 1, label: "Team head", src: DOC + " › Who does what", entity: "Grok Bot",
-      lead: "Grok Bot leads the AI team across projects and makes the final team decision.",
-      fact: "Grok Bot leads the AI team across projects. After the three review checks, Grok Bot makes and records the final team PASS or FAIL. Owner controls repository ownership and Git push and merge.",
-      tags: "grok bot team head leader final decision pass fail projects owner repository push merge" },
-    { id: 2, label: "Hub", src: DOC + " › Who does what", entity: "Claude",
-      lead: "Claude is the hub for UI, frontend and logic.",
-      fact: "Claude is the hub: UI, frontend and logic. Claude writes and changes index.html, and everything flows through Claude.",
-      tags: "claude hub ui frontend logic writes builds index.html page flows who" },
-    { id: 3, label: "Collaborators", src: DOC + " › Who does what", entity: null,
-      lead: "Gemini, Muse, Codex, Claude, Cursor, and Perplexity run three ordered review checks.",
-      fact: "Check one: Gemini cross-checks context and multimodal material. Check two: Muse independently audits. Check three: Codex synthesizes, Claude checks reasoning and implementation, Cursor checks repository changes, and Perplexity checks sources and citations. Codex brings the findings to Grok Bot for the final team decision.",
-      tags: "gemini muse codex openai claude cursor perplexity review checks workflow context audit synthesize implementation repo sources citations final" },
-    { id: 4, label: "Auditor", src: DOC + " › Who does what", entity: "Muse",
-      lead: "Muse independently audits the work in the second review check.",
-      fact: "Muse independently audits the work in the second review check, looking for errors, risks, gaps, and missing evidence.",
-      tags: "muse auditor audit audits audited work reports problems edit checks who" },
-    { id: 5, label: "Who decides", src: DOC + " › Working rules", entity: "Grok Bot",
-      lead: "Grok Bot makes the final team decision after three checks.",
-      fact: "Grok Bot makes the final team decision after Gemini, Muse, and the collective Codex, Claude, Cursor, and Perplexity review. Owner remains the repository owner and controls Git push and merge.",
-      tags: "grok bot final decision three checks gemini muse codex claude cursor perplexity owner repository push merge" },
-    { id: 6, label: "What Brain learns from", src: ART + " › How does Brain learn?", entity: null,
-      lead: "Brain learns from your sessions, connected tools, files and your corrections.",
-      fact: "Brain learns from your sessions, your connected tools, files and artifacts you create, and your corrections. Incognito sessions are ignored.",
-      tags: "brain learn learns learning sessions session tools connected files artifacts corrections incognito ignored sources" },
-    { id: 7, label: "What a run does", src: ART + " › How does Brain learn? and When does Brain run?", entity: null,
-      lead: "Each Brain run reinforces what is true, updates what changed, and marks what is stale.",
-      fact: "Each run reinforces what is still true, updates what has changed, and marks what is stale. Brain runs in the background, not during active tasks.",
-      tags: "brain run runs reinforces reinforce updates update stale entries old background still true changed" },
-    { id: 8, label: "Memory only", src: ART + " › When does Brain run?", entity: null,
-      lead: "Brain only maintains memory. It does not take actions or message you.",
-      fact: "Brain only maintains memory. It does not take actions or message you.",
-      tags: "brain actions action messages message send sends take takes memory only maintains act" },
-    { id: 9, label: "Brain vs Memory", src: ART + " › What’s the difference between Brain and Memory?", entity: null,
-      lead: "Memory helps Computer know you, and Brain provides working context.",
-      fact: "Memory stores preferences and things you have shared. Brain organizes projects, people, documents, decisions and open loops into a connected graph, grounded in their sources.",
-      tags: "brain memory difference graph projects people documents decisions loops preferences context connected" },
-    { id: 10, label: "Viewing and editing", src: ART + " › Where do I see what Brain has learned, and how do I edit it?", entity: null,
-      lead: "You can open, edit or delete any entry Brain wrote.",
-      fact: "Entries are organized into Concepts, Entities and Workstreams. You can edit or delete any entry, and corrections feed Brain's next run.",
-      tags: "edit delete entry entries concepts entities workstreams view open corrections correct wiki graph" }
-  ];
+  /* The page has no bundled facts or sample sources. */
+  var DOC = "Brain AGENTS.md", ART = "Perplexity help article “What is Brain?”", CORPUS = [];
 
   /* ================= Privacy: filter secrets before anything is saved ================= */
   var SECRET_RES = [
@@ -535,14 +486,6 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   var TYPES = ["concept", "entity", "workstream"], TYPE_LABEL = { concept: "Concept", entity: "Entity", workstream: "Workstream" };
   var storageOk = true, mem = null;
 
-  var STARTER = [
-    { name: "owner-ai-coach", note: "Use it when I want AI explained in plain words.", prog: "claude" },
-    { name: "owner-dev-tutor", note: "Use it when I am learning code and want a short plan, then step by step.", prog: "claude" },
-    { name: "owner-research-vetting", note: "Use it when I need to check whether a source can be trusted.", prog: "muse" },
-    { name: "owner-daily-planner", note: "Use it when I need a plan for today.", prog: "claude" },
-    { name: "owner-learning-tutor", note: "Use it when I want a short study plan and a quiz, one question at a time.", prog: "gemini" }
-  ];
-
   function nowTs() { return Date.now() + (mem ? mem.dayShift : 0) * DAY; }
   function fmtDate(ts) { try { return new Date(ts).toISOString().slice(0, 10); } catch (e) { return "unknown date"; } }
   function okTs(v) { v = +v; return isFinite(v) ? Math.max(0, Math.min(8.64e15, v)) : 0; }
@@ -562,20 +505,13 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
 
   function seedMem() {
     mem = blankMem();
-    NODES.forEach(function (n) {
-      mem.entries.push(mkEntry({ key: "prog:" + n.id, type: "entity", title: n.name, note: n.sub + ". On Owner's team chart.", sources: [{ kind: "file", label: "Owner's team chart" }] }));
-    });
-    STARTER.forEach(function (s) {
-      var e = mkEntry({ key: "skill:" + norm(s.name), type: "concept", title: s.name, note: s.note, skill: true, prog: s.prog, manual: true, sources: [{ kind: "file", label: "Starter skills list" }] });
-      mem.entries.push(e); link(e, byKey("prog:" + s.prog));
-    });
   }
-  /* saved memory from before a bot joined the team gets that bot's entity too (unless Owner deleted it) */
-  function ensureTeamEntities() {
-    NODES.forEach(function (n) {
-      if (byKey("prog:" + n.id) || mem.blocked.indexOf("prog:" + n.id) >= 0) return;
-      mem.entries.push(mkEntry({ key: "prog:" + n.id, type: "entity", title: n.name, note: n.sub + ". On Owner's team chart.", sources: [{ kind: "file", label: "Owner's team chart" }] }));
-    });
+  function isLiveSession(s) { return !!(s && Array.isArray(s.msgs) && s.msgs.some(function (x) { return x && typeof x.tag === "string" && /^live · (Anthropic|OpenAI|Google|xAI) · /.test(x.tag); })); }
+  function isBundledDemoEntry(e, realSessions) {
+    if (e.corpusId || /^prog:/.test(e.key) || e.sources.some(function (s) {
+      return s && typeof s.label === "string" && /Owner's team chart|Starter skills list|Docs connector \(sample\)|Issue tracker \(sample\)/i.test(s.label);
+    })) return true;
+    return e.sources.some(function (s) { return s.kind === "session"; }) && !e.sources.some(function (s) { return s.kind === "correction" || (s.kind === "session" && realSessions[s.ref]); });
   }
   function validEntry(e) {
     return !!e && typeof e.id === "string" && /^e\d{1,9}$/.test(e.id) && typeof e.key === "string" && TYPES.indexOf(e.type) >= 0 && typeof e.title === "string" && e.title.trim() && e.title.length <= 80
@@ -584,27 +520,29 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   }
   function scrub(t) { return redact(String(t)).text; }
   /* labels like "live · Anthropic · model" are kept for your own saved data, in a strict format; a pasted backup never keeps them */
-  var TAG_RE = /^(live · (Anthropic|OpenAI|Google|xAI) · [A-Za-z0-9._:\-]{1,80}|scripted(?: · [A-Za-z0-9 .\-]{1,40})?|page|page checks)$/;
+  var TAG_RE = /^(live · (Anthropic|OpenAI|Google|xAI) · [A-Za-z0-9._:\-]{1,80}(?: · unverified)?|scripted(?: · [A-Za-z0-9 .\-]{1,40})?|page|page checks)$/;
   function sanitizeMem(d, fromBackup) {
-    var m = blankMem(), ids = Object.create(null);
+    var m = blankMem(), ids = Object.create(null), realSessions = Object.create(null);
     if (!d || typeof d !== "object" || !Array.isArray(d.entries)) return null;
-    d.entries.filter(validEntry).slice(0, MAX_ENTRIES).forEach(function (e) {
+    (Array.isArray(d.sessions) ? d.sessions : []).filter(isLiveSession).forEach(function (s) { realSessions[s.id] = 1; });
+    d.entries.filter(validEntry).filter(function (e) { return !isBundledDemoEntry(e, realSessions) || e.corrected; }).slice(0, MAX_ENTRIES).forEach(function (e) {
       if (ids[e.id]) return; ids[e.id] = 1;
       m.entries.push({ id: e.id, key: String(e.key).slice(0, 120), type: e.type, title: scrub(e.title.trim()), note: scrub(e.note), status: e.status, strength: Math.max(1, Math.min(9, Math.round(e.strength))),
         created: okTs(e.created), seen: okTs(e.seen), corrected: !!e.corrected, skill: !!e.skill, prog: e.prog || null,
         corpusId: (e.key === "c:corpus:" + e.corpusId && CORPUS.some(function (c) { return c.id === +e.corpusId; })) ? +e.corpusId : null, manual: !!e.manual,
         kws: Array.isArray(e.kws) ? e.kws.filter(function (k) { return typeof k === "string"; }).slice(0, 9).map(function (k) { return scrub(k.slice(0, 30)); }) : null,
-        sources: e.sources.filter(function (s) { return s && typeof s.label === "string" && ["session", "tool", "file", "correction"].indexOf(s.kind) >= 0; }).slice(0, 6)
+        sources: e.sources.filter(function (s) { return s && typeof s.label === "string" && ["session", "tool", "file", "correction"].indexOf(s.kind) >= 0
+          && (!e.corrected || !/Owner's team chart|Starter skills list|Docs connector \(sample\)|Issue tracker \(sample\)/i.test(s.label)); }).slice(0, 6)
           .map(function (s) { return { kind: s.kind, label: scrub(s.label.slice(0, 120)), ref: typeof s.ref === "string" && /^[se]\d{1,9}$/.test(s.ref) ? s.ref : null }; }), links: [] });
     });
     d.entries.forEach(function (e) { if (!e || typeof e.id !== "string") return; var t = m.entries.filter(function (x) { return x.id === e.id; })[0]; if (t && Array.isArray(e.links)) t.links = e.links.slice(0, 60).filter(function (l) { return typeof l === "string" && ids[l] === 1 && l !== e.id; }); });
-    m.sessions = (Array.isArray(d.sessions) ? d.sessions : []).filter(function (s) { return s && typeof s.id === "string" && /^s\d{1,9}$/.test(s.id) && typeof s.q === "string" && Array.isArray(s.msgs); }).slice(-MAX_SESSIONS)
+    m.sessions = (Array.isArray(d.sessions) ? d.sessions : []).filter(function (s) { return s && typeof s.id === "string" && /^s\d{1,9}$/.test(s.id) && typeof s.q === "string" && isLiveSession(s); }).slice(-MAX_SESSIONS)
       .map(function (s) { return { id: s.id, ts: okTs(s.ts), q: scrub(s.q.slice(0, 300)), kws: Array.isArray(s.kws) ? s.kws.filter(function (k) { return typeof k === "string"; }).slice(0, 9).map(function (k) { return scrub(k.slice(0, 30)); }) : [],
         accepted: Array.isArray(s.accepted) ? s.accepted.slice(0, 10).filter(function (a) { return a && typeof a.label === "string" && isFinite(a.id); }).map(function (a) { return { id: +a.id, label: scrub(a.label.slice(0, 60)), fact: scrub(String(a.fact || "").slice(0, 400)), entity: typeof a.entity === "string" ? scrub(a.entity.slice(0, 40)) : null, src: typeof a.src === "string" ? scrub(a.src.slice(0, 120)) : "" }; }) : [], uncovered: Array.isArray(s.uncovered) ? s.uncovered.filter(function (u) { return typeof u === "string"; }).slice(0, 6).map(function (u) { return scrub(u.slice(0, 200)); }) : [],
-        msgs: s.msgs.filter(function (x) { return x && Object.prototype.hasOwnProperty.call(SPEAKERS, x.from) && typeof x.text === "string"; }).slice(0, 40).map(function (x) { return { from: x.from, text: scrub(x.text.slice(0, 4000)), tag: (!fromBackup && typeof x.tag === "string" && TAG_RE.test(x.tag)) ? x.tag : "" }; }) }; });
+        msgs: s.msgs.filter(function (x) { return x && Object.prototype.hasOwnProperty.call(SPEAKERS, x.from) && typeof x.text === "string"; }).slice(0, 40).map(function (x) { return { from: x.from, text: scrub(x.text.slice(0, 4000)), tag: typeof x.tag === "string" && TAG_RE.test(x.tag) && (!fromBackup || !/^live · /.test(x.tag)) ? x.tag : "" }; }) }; });
     m.blocked = (Array.isArray(d.blocked) ? d.blocked : []).filter(function (b) { return typeof b === "string"; }).slice(0, 2000).map(function (b) { return b.slice(0, 120); });
     m.inbox = [];
-    m.runs = Math.max(0, +d.runs || 0); m.dayShift = Math.max(0, Math.min(3650, +d.dayShift || 0));
+    m.runs = 0; m.dayShift = 0;
     m.filtered = Math.max(0, +d.filtered || 0);
     var n = 0; m.entries.forEach(function (e) { var k = parseInt(e.id.slice(1), 10); if (k > n) n = k; }); m.nextId = Math.max(n + 1, +d.nextId || 1);
     var sn = 0; m.sessions.forEach(function (s) { var k = parseInt(s.id.slice(1), 10); if (k > sn) sn = k; }); m.nextSession = Math.max(sn + 1, +d.nextSession || 1);
@@ -635,7 +573,53 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   function persist() { try { localStorage.setItem(KEY, JSON.stringify(mem)); storageOk = true; } catch (e) { storageOk = false; } }
 
   /* ================= Stage: a living network. Bots drift, springs link them, every node can be dragged ================= */
-  var stage = $("#stage"), brainEl = $("#brain"), edgesG = $("#edges"), hand = $("#hand"), gEdges = $("#gEdges"), gNodes = $("#gNodes"), gShape = $("#gShape"), tip = $("#tip");
+  var stage = $("#stage"), world = $("#world"), brainMesh = $("#brainMesh"), brainEl = $("#brain"), edgesG = $("#edges"), hand = $("#hand"), gEdges = $("#gEdges"), gNodes = $("#gNodes"), gShape = $("#gShape"), tip = $("#tip");
+  var camera = { x: -22, y: -28, zoom: 1 }, orbit = null, focusId = null, zoomTimer = 0;
+  var MIN_ZOOM = 0.25, MAX_ZOOM = 4.5;
+  function updateWorldTransform() {
+    var graphView = stage.dataset.mode === "graph";
+    var focused = typeof G !== "undefined" && focusId && G.nodes[focusId];
+    if (graphView && focused) {
+      world.style.transformOrigin = "0 0";
+      world.style.transform = "translate(" + (stage.clientWidth / 2 - focused.x * camera.zoom) + "px," +
+        (stage.clientHeight / 2 - focused.y * camera.zoom) + "px) scale(" + camera.zoom + ")";
+    } else {
+      world.style.transformOrigin = "50% 50%";
+      world.style.transform = graphView ? "scale(" + camera.zoom + ")" : "rotateX(" + camera.x + "deg) rotateY(" + camera.y + "deg) scale(" + camera.zoom + ")";
+    }
+  }
+  function applyCamera() {
+    var graphView = stage.dataset.mode === "graph";
+    if (graphView && typeof brainBoundary !== "undefined") { drawShape(); placeGraph(); }
+    updateWorldTransform();
+    $("#coords").textContent = "tilt " + Math.round(camera.x) + "° · spin " + Math.round(camera.y) + "° · zoom " + Math.round(camera.zoom * 100) + "%";
+  }
+  function markZooming() {
+    stage.classList.add("zooming"); clearTimeout(zoomTimer);
+    zoomTimer = setTimeout(function () { stage.classList.remove("zooming"); }, 140);
+  }
+  stage.addEventListener("pointerdown", function (e) {
+    if (e.button > 0 || e.target.closest(".node, .gn, #brain, .stage-tools, .tip")) return;
+    orbit = { x: e.clientX, y: e.clientY, rx: camera.x, ry: camera.y, id: e.pointerId };
+    stage.classList.add("orbiting");
+    try { stage.setPointerCapture(e.pointerId); } catch (err) {}
+    e.preventDefault();
+  });
+  stage.addEventListener("pointermove", function (e) {
+    if (!orbit || orbit.id !== e.pointerId) return;
+    camera.y = orbit.ry + (e.clientX - orbit.x) * .45;
+    camera.x = orbit.rx - (e.clientY - orbit.y) * .4;
+    applyCamera();
+  });
+  function stopOrbit(e) { if (orbit && (!e || orbit.id === e.pointerId)) { orbit = null; stage.classList.remove("orbiting"); } }
+  stage.addEventListener("pointerup", stopOrbit); stage.addEventListener("pointercancel", stopOrbit);
+  stage.addEventListener("wheel", function (e) {
+    e.preventDefault(); camera.zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, camera.zoom * (e.deltaY < 0 ? 1.08 : .92))); markZooming(); applyCamera();
+  }, { passive: false });
+  $("#zoomIn").addEventListener("click", function () { camera.zoom = Math.min(MAX_ZOOM, camera.zoom * 1.15); markZooming(); applyCamera(); });
+  $("#zoomOut").addEventListener("click", function () { camera.zoom = Math.max(MIN_ZOOM, camera.zoom / 1.15); markZooming(); applyCamera(); });
+  $("#resetView").addEventListener("click", function () { camera = { x: -22, y: -28, zoom: 1 }; focusId = null; if (typeof memoryFocus !== "undefined") memoryFocus.hidden = true; applyCamera(); });
+  applyCamera();
   var mode = "graph", REDUCED = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   var drift = !REDUCED;
   var fracs = { team: { x: 0.12, y: 0.14 }, graph: { x: 0.5, y: 0.5 } }, HOME = { team: { x: 0.12, y: 0.14 }, graph: { x: 0.5, y: 0.5 } };
@@ -654,7 +638,8 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   NODES.forEach(function (n, i) {
     var el = h("div", { class: "node r-" + n.kind, tabindex: "0", role: "group", "aria-label": n.name + ", " + n.sub + ". Drag it, or use the arrow keys.", title: n.name + ": " + n.sub + ". Drag me." }, h("b", { text: n.name }), h("span", { text: n.sub }));
     el.style.setProperty("--listen-delay", (-i * .46) + "s");
-    stage.append(el);
+    world.append(el);
+    el.style.translate = "0 0 " + (18 + (i % 4) * 7) + "px";
     var b = T[n.id] = { id: n.id, el: el, x: 0, y: 0, vx: 0, vy: 0, ax: 0, ay: 0, fx: pickX(n), fy: n.y, teamFx: pickX(n), teamFy: n.y, w: 0, h: 0, init: false, drag: false,
       p: [i * 1.7 + 0.3, i * 2.3 + 1.1, 0.35 + (i % 3) * 0.12, 0.28 + (i % 4) * 0.09] };
     dragify(el, function () { return b; }, null, function (bb) { var c = teamClamp(bb, bb.x, bb.y); bb.fx = c.x / stage.clientWidth; bb.fy = c.y / stage.clientHeight; if (mode === "team") { bb.teamFx = bb.fx; bb.teamFy = bb.fy; } });
@@ -810,6 +795,8 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   function setMode(m) {
     if (m === "team") NODES.forEach(function (n) { T[n.id].fx = T[n.id].teamFx; T[n.id].fy = T[n.id].teamFy; });
     mode = m; stage.dataset.mode = m;
+    if (m !== "graph" && typeof memoryFocus !== "undefined") memoryFocus.hidden = true;
+    applyCamera();
     $("#modeTeam").setAttribute("aria-pressed", String(m === "team")); $("#modeGraph").setAttribute("aria-pressed", String(m === "graph"));
     $("#legendTeam").hidden = m !== "team"; $("#legendGraph").hidden = m !== "graph";
     $("#brainSub").innerHTML = ""; $("#brainSub").append(m === "team" ? "drag me" : mem.entries.length + " memories", h("br"), m === "team" ? "" : "agents listening");
@@ -822,40 +809,162 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
 
   /* ---------- the memory graph: shapes tell the types apart (circle = concept, square = entity, triangle = workstream) ---------- */
   var G = { nodes: {}, edges: [], sel: null, edgesDirty: true, lastBrain: "", hotId: null };
+  var memoryFocus = $("#memoryFocus");
   var TYPE_VAR = { concept: "--t-concept", entity: "--t-entity", workstream: "--t-workstream" };
 
-  /* The MRI-derived contour supplies the scale and proportions. The diagram opens the model into two clean medial surfaces. */
+  /* The traced MRI contour is a side-view guide; shell depth is illustrative, not a 3D MRI measurement. */
   var BRAIN = {
     w: 1000, h: 740, hub: { x: 500, y: 360 },
     outline: "M548 20 C529 20 511 24 494 26 C476 28 458 30 440 33 C422 36 405 40 387 42 C370 45 352 48 334 50 C316 52 297 52 280 56 C263 60 247 67 231 72 C214 78 197 83 182 91 C167 100 152 112 139 124 C126 136 113 149 105 165 C97 180 94 198 91 215 C89 233 89 251 90 269 C91 287 92 306 98 322 C104 338 115 357 128 366 C142 374 160 373 178 374 C195 375 214 370 232 370 C250 369 269 371 287 372 C305 374 323 376 341 380 C358 384 376 386 392 394 C407 401 424 411 436 423 C448 435 454 452 462 467 C471 482 481 498 489 513 C497 528 507 543 513 559 C519 576 521 594 524 611 C526 629 522 655 528 666 C534 677 548 681 561 678 C574 675 590 656 605 648 C621 641 639 638 655 632 C671 626 689 622 703 612 C718 603 732 590 743 576 C754 562 760 545 771 531 C782 517 793 504 807 493 C820 482 839 476 851 464 C863 451 874 436 879 420 C884 403 882 382 880 364 C879 346 875 329 872 311 C868 294 865 276 860 260 C854 243 847 227 840 211 C833 195 827 179 818 164 C808 149 796 135 784 122 C772 108 761 93 748 82 C734 71 717 65 701 58 C686 50 670 42 654 36 C637 31 620 28 602 25 C584 22 566 20 548 20 Z",
     folds: ["M303 305 C312 298 330 274 356 264 C380 255 422 246 453 246 C484 248 517 256 543 270 C569 284 596 310 610 330 C626 350 629 380 633 390", "M348 268 C370 261 440 232 483 230 C526 228 568 236 603 252 C638 269 678 315 693 328", "M558 462 C576 465 630 472 663 478 C696 483 728 490 753 496 C778 500 803 506 813 508", "M176 252 C184 240 207 199 228 178 C249 156 273 138 303 125 C333 112 390 106 408 102", "M693 80 C700 94 723 136 738 162 C753 189 770 215 783 238 C796 260 808 288 813 298", "M498 58 C503 69 516 105 528 125 C540 145 556 165 573 178 C590 190 623 196 633 200"],
     regions: { concept: { cx: 483, cy: 178, rx: 315, ry: 128, label: "Concepts" }, entity: { cx: 498, cy: 380, rx: 158, ry: 57, label: "Entities" }, workstream: { cx: 678, cy: 552, rx: 63, ry: 45, label: "Workstreams" } }
   };
+  var BRAIN_DEPTH = 720;
 
-  var shapeTf = svg("g", { class: "gshape" });
+  var shapeTf = svg("g", { class: "gshape" }), outlinePath = svg("path", { class: "outline", d: BRAIN.outline });
   gShape.append(shapeTf);
-  /* Clean, inside-facing twin hemispheres. The outlines are separate; the only marks inside are live memory and handoff links. */
-  var hemiLeft = "M500 66 C438 34 362 40 301 75 C224 120 185 199 177 290 C166 408 205 523 282 598 C342 657 421 675 500 644 Z";
-  var hemiRight = "M500 66 C565 32 644 44 706 82 C782 128 817 211 822 302 C829 418 790 531 714 604 C652 663 575 675 500 644 Z";
-  shapeTf.append(
-    svg("path", { class: "hemisphere back", d: hemiLeft, transform: "translate(34 22)" }),
-    svg("path", { class: "hemisphere back", d: hemiRight, transform: "translate(34 22)" }),
-    svg("path", { class: "hemisphere left", d: hemiLeft }),
-    svg("path", { class: "hemisphere right", d: hemiRight }),
-    svg("path", { class: "fissure", d: "M500 66 C494 210 506 470 500 644" })
-  );
+  var brainCanvas = $("#brainObject"), brainGl = brainCanvas.getContext("webgl2", { alpha: true, antialias: true, preserveDrawingBuffer: true }) || brainCanvas.getContext("webgl", { alpha: true, antialias: true, preserveDrawingBuffer: true }), brainBoundary = null;
+  shapeTf.append(outlinePath);
+  var foldPaths = [];
+  BRAIN.folds.forEach(function (fold) {
+    var path = svg("path", { class: "sulcus", d: fold });
+    foldPaths.push(path); shapeTf.append(path);
+  });
   var pSpokes = svg("path", { class: "gspokes" }), pLinks = svg("path", { class: "glinks" }), pHot = svg("path", { class: "ghot" });
   gEdges.append(pSpokes, pLinks, pHot);
   function shapeFit() {
-    var W = stage.clientWidth, H = stage.clientHeight, sc = Math.max(0.2, Math.min(W * 0.92 / BRAIN.w, H * 0.84 / BRAIN.h)), b = box.brain || { x: W / 2, y: H / 2 };
+    var W = stage.clientWidth, H = stage.clientHeight;
+    var projectedW = BRAIN.w + BRAIN_DEPTH * Math.sin(28 * Math.PI / 180);
+    var projectedH = BRAIN.h + BRAIN_DEPTH * Math.sin(22 * Math.PI / 180);
+    var sc = Math.max(0.2, Math.min(W * 0.84 / projectedW, H * 0.82 / projectedH)), b = box.brain || { x: W / 2, y: H / 2 };
     return { s: sc, tx: b.x - sc * BRAIN.hub.x, ty: b.y - sc * BRAIN.hub.y };
   }
   /* where the hub orb should sit so the whole shape is centred in the stage */
   function graphHome() {
-    var W = stage.clientWidth || 800, H = stage.clientHeight || 600, sc = Math.max(0.2, Math.min(W * 0.92 / BRAIN.w, H * 0.84 / BRAIN.h));
+    var W = stage.clientWidth || 800, H = stage.clientHeight || 600;
+    var projectedW = BRAIN.w + BRAIN_DEPTH * Math.sin(28 * Math.PI / 180);
+    var projectedH = BRAIN.h + BRAIN_DEPTH * Math.sin(22 * Math.PI / 180);
+    var sc = Math.max(0.2, Math.min(W * 0.84 / projectedW, H * 0.82 / projectedH));
     return { x: Math.min(0.95, Math.max(0.05, (W / 2 + sc * (BRAIN.hub.x - BRAIN.w / 2)) / W)), y: Math.min(0.95, Math.max(0.05, (H / 2 + sc * (BRAIN.hub.y - BRAIN.h / 2)) / H)) };
   }
-  function drawShape() { var f = shapeFit(); shapeTf.setAttribute("transform", "translate(" + f.tx.toFixed(1) + "," + f.ty.toFixed(1) + ") scale(" + f.s.toFixed(4) + ")"); }
+  var BRAIN_ARC_STEPS = 112, BRAIN_RADIAL_STEPS = 18, brainFoldPoints = null;
+  function ensureBrainBoundary() {
+    if (brainBoundary) return;
+    var length = outlinePath.getTotalLength();
+    brainBoundary = [];
+    for (var i = 0; i < BRAIN_ARC_STEPS; i++) brainBoundary.push(outlinePath.getPointAtLength(length * i / BRAIN_ARC_STEPS));
+    brainFoldPoints = foldPaths.map(function (path) {
+      var foldLength = path.getTotalLength(), steps = Math.max(24, Math.ceil(foldLength / 5)), points = [];
+      for (var j = 0; j <= steps; j++) points.push(path.getPointAtLength(foldLength * j / steps));
+      return points;
+    });
+  }
+  function brainSurfaceDepth(x, y, side) {
+    ensureBrainBoundary();
+    var dx = x - BRAIN.hub.x, dy = y - BRAIN.hub.y, angle = Math.atan2(dy, dx), best = null, score = Infinity;
+    brainBoundary.forEach(function (p) {
+      var a = Math.atan2(p.y - BRAIN.hub.y, p.x - BRAIN.hub.x), d = Math.abs(Math.atan2(Math.sin(a - angle), Math.cos(a - angle)));
+      if (d < score) { score = d; best = p; }
+    });
+    var edge = Math.hypot(best.x - BRAIN.hub.x, best.y - BRAIN.hub.y) || 1;
+    var t = Math.min(1, Math.hypot(dx, dy) / edge), ripple = 1 + .035 * Math.sin(angle * 11 + t * 19) + .018 * Math.cos(angle * 23 - t * 31), foldDistance = Infinity;
+    brainFoldPoints.forEach(function (points) {
+      points.forEach(function (point) { foldDistance = Math.min(foldDistance, Math.hypot(x - point.x, y - point.y)); });
+    });
+    var groove = Math.exp(-(foldDistance * foldDistance) / 128);
+    return side * BRAIN_DEPTH * .48 * Math.sqrt(Math.max(0, 1 - t * t)) * ripple * (1 - .1 * groove);
+  }
+  function projectBrainPoint(x, y, z, f, cx, cy) {
+    var px = (x - BRAIN.hub.x) * f.s, py = (y - BRAIN.hub.y) * f.s, pz = z * f.s;
+    var rx = camera.x * Math.PI / 180, ry = camera.y * Math.PI / 180;
+    var cyaw = Math.cos(ry), syaw = Math.sin(ry), cp = Math.cos(rx), sp = Math.sin(rx);
+    var x1 = px * cyaw + pz * syaw, z1 = -px * syaw + pz * cyaw;
+    var y1 = py * cp - z1 * sp, z2 = py * sp + z1 * cp;
+    var perspective = 1250 / Math.max(520, 1250 - z2);
+    return { x: cx + x1 * perspective, y: cy + y1 * perspective };
+  }
+  var brainGpuProgram = null, brainVertexCount = 0;
+  function compileBrainShader(type, source) {
+    var shader = brainGl.createShader(type);
+    brainGl.shaderSource(shader, source); brainGl.compileShader(shader);
+    if (!brainGl.getShaderParameter(shader, brainGl.COMPILE_STATUS)) throw new Error("Brain mesh shader compilation failed: " + brainGl.getShaderInfoLog(shader));
+    return shader;
+  }
+  function initBrainMesh() {
+    if (!brainGl) throw new Error("WebGL is unavailable; the 3D brain mesh could not be created.");
+    ensureBrainBoundary();
+    var vertex = compileBrainShader(brainGl.VERTEX_SHADER, [
+      "attribute vec3 aPosition;",
+      "uniform vec2 uViewport; uniform vec2 uCenter; uniform vec2 uHub; uniform vec2 uAngles; uniform float uScale;",
+      "varying float vShade;",
+      "void main(){",
+      " vec3 p=vec3((aPosition.x-uHub.x)*uScale,(aPosition.y-uHub.y)*uScale,aPosition.z*uScale);",
+      " float cy=cos(uAngles.y),sy=sin(uAngles.y),cp=cos(uAngles.x),sp=sin(uAngles.x);",
+      " float x1=p.x*cy+p.z*sy,z1=-p.x*sy+p.z*cy,y1=p.y*cp-z1*sp,z2=p.y*sp+z1*cp;",
+      " float perspective=1250.0/max(520.0,1250.0-z2);",
+      " vec2 screen=uCenter+vec2(x1,y1)*perspective;",
+      " vec2 ndc=vec2(screen.x/uViewport.x*2.0-1.0,1.0-screen.y/uViewport.y*2.0);",
+      " float depth=clamp(0.5-z2/1800.0,0.0,1.0);",
+      " gl_Position=vec4(ndc,depth*2.0-1.0,1.0);",
+      " vShade=clamp(0.48+z2/2200.0,0.28,0.70);",
+      "}"
+    ].join("\n"));
+    var fragment = compileBrainShader(brainGl.FRAGMENT_SHADER, [
+      "precision mediump float; varying float vShade;",
+      "void main(){ gl_FragColor=vec4(vec3(vShade),0.72); }"
+    ].join("\n"));
+    brainGpuProgram = brainGl.createProgram();
+    brainGl.attachShader(brainGpuProgram, vertex); brainGl.attachShader(brainGpuProgram, fragment); brainGl.linkProgram(brainGpuProgram);
+    if (!brainGl.getProgramParameter(brainGpuProgram, brainGl.LINK_STATUS)) throw new Error("Brain mesh shader linking failed: " + brainGl.getProgramInfoLog(brainGpuProgram));
+    var vertices = [], rows = [], n = BRAIN_RADIAL_STEPS, a = BRAIN_ARC_STEPS;
+    function pointAt(r, i, side) {
+      var t = r / n, edge = brainBoundary[i % a], x = BRAIN.hub.x + (edge.x - BRAIN.hub.x) * t, y = BRAIN.hub.y + (edge.y - BRAIN.hub.y) * t;
+      return [x, y, brainSurfaceDepth(x, y, side)];
+    }
+    function segment(p, q) { vertices.push(p[0], p[1], p[2], q[0], q[1], q[2]); }
+    [-1, 1].forEach(function (side) {
+      rows = [];
+      for (var r = 0; r <= n; r++) {
+        rows[r] = [];
+        for (var i = 0; i < a; i++) rows[r][i] = pointAt(r, i, side);
+      }
+      for (var r = 2; r <= n; r += 4) for (var i = 0; i < a; i++) segment(rows[r][i], rows[r][(i + 1) % a]);
+      for (var i = 0; i < a; i += 12) for (var r = 2; r < n; r++) segment(rows[r][i], rows[r + 1][i]);
+      foldPaths.forEach(function (path) {
+        var length = path.getTotalLength(), steps = Math.max(18, Math.ceil(length / 7)), previous = null;
+        for (var j = 0; j <= steps; j++) {
+          var p = path.getPointAtLength(length * j / steps), current = [p.x, p.y, brainSurfaceDepth(p.x, p.y, side)];
+          if (previous) segment(previous, current);
+          previous = current;
+        }
+      });
+    });
+    var buffer = brainGl.createBuffer();
+    brainGl.bindBuffer(brainGl.ARRAY_BUFFER, buffer);
+    brainGl.bufferData(brainGl.ARRAY_BUFFER, new Float32Array(vertices), brainGl.STATIC_DRAW);
+    brainVertexCount = vertices.length / 3;
+    brainGl.useProgram(brainGpuProgram);
+    var position = brainGl.getAttribLocation(brainGpuProgram, "aPosition");
+    brainGl.enableVertexAttribArray(position); brainGl.vertexAttribPointer(position, 3, brainGl.FLOAT, false, 0, 0);
+    brainGl.enable(brainGl.DEPTH_TEST); brainGl.depthFunc(brainGl.LEQUAL);
+    brainGl.enable(brainGl.BLEND); brainGl.blendFunc(brainGl.SRC_ALPHA, brainGl.ONE_MINUS_SRC_ALPHA);
+  }
+  function drawShape() {
+    var f = shapeFit(), W = stage.clientWidth, H = stage.clientHeight, dpr = Math.min(2, window.devicePixelRatio || 1);
+    if (!W || !H) return;
+    if (!brainGpuProgram) initBrainMesh();
+    if (brainCanvas.width !== Math.round(W * dpr) || brainCanvas.height !== Math.round(H * dpr)) { brainCanvas.width = Math.round(W * dpr); brainCanvas.height = Math.round(H * dpr); }
+    brainGl.viewport(0, 0, brainCanvas.width, brainCanvas.height);
+    brainGl.clearColor(0, 0, 0, 0); brainGl.clear(brainGl.COLOR_BUFFER_BIT | brainGl.DEPTH_BUFFER_BIT);
+    brainGl.useProgram(brainGpuProgram);
+    brainGl.uniform2f(brainGl.getUniformLocation(brainGpuProgram, "uViewport"), brainCanvas.width, brainCanvas.height);
+    brainGl.uniform2f(brainGl.getUniformLocation(brainGpuProgram, "uCenter"), (f.tx + BRAIN.hub.x * f.s) * dpr, (f.ty + BRAIN.hub.y * f.s) * dpr);
+    brainGl.uniform2f(brainGl.getUniformLocation(brainGpuProgram, "uHub"), BRAIN.hub.x, BRAIN.hub.y);
+    brainGl.uniform2f(brainGl.getUniformLocation(brainGpuProgram, "uAngles"), camera.x * Math.PI / 180, camera.y * Math.PI / 180);
+    brainGl.uniform1f(brainGl.getUniformLocation(brainGpuProgram, "uScale"), f.s * dpr);
+    brainGl.drawArrays(brainGl.LINES, 0, brainVertexCount);
+    shapeTf.setAttribute("transform", "translate(" + f.tx.toFixed(1) + "," + f.ty.toFixed(1) + ") scale(" + f.s.toFixed(4) + ")");
+  }
   function radiusFor(e) { return 6 + Math.min(9, e.strength * 1.3); }
   function shapeEl(type) { return svg(type === "concept" ? "circle" : type === "entity" ? "rect" : "polygon", { class: "dot" }); }
   function setShape(n, e) {
@@ -901,11 +1010,12 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
       }
       n.r = radiusFor(e); setShape(n, e);
       n.g.classList.toggle("stale", e.status === "stale");
-      n.lbl.textContent = (e.strength >= 5 || G.sel === e.id) ? clip(e.title, 18) : "";
+      n.lbl.textContent = clip(e.title, 18);
       n.lbl.setAttribute("y", -n.r - 6);
       n.g.classList.toggle("sel", G.sel === e.id);
     });
     Object.keys(G.nodes).forEach(function (id) { if (!live[id]) { G.nodes[id].g.remove(); delete G.nodes[id]; } });
+    if (focusId && !live[focusId]) { focusId = null; memoryFocus.hidden = true; }
     G.edges = []; G.edgesDirty = true;
     var seen = {};
     mem.entries.forEach(function (e) { e.links.forEach(function (o) {
@@ -913,25 +1023,29 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
       G.edges.push({ a: e.id, b: o, link: true });
     }); });
     $("#brainSub").innerHTML = ""; $("#brainSub").append(mode === "team" ? "drag me" : mem.entries.length + " memories", h("br"), mode === "team" ? "" : "agents listening");
-    gempty.textContent = mem.entries.length ? "" : "Memory is empty. Tasks will fill it.";
-    updateHud(); placeGraph(); hotEdges(G.sel); ensureLoop();
+    gempty.textContent = mem.entries.length ? "" : "Memory is empty. A real prompt and its replies appear here after Live AI is enabled.";
+    updateHud(); placeGraph(); hotEdges(G.sel);
+    if (focusId && !memoryFocus.hidden) showMemoryFocus(focusId);
+    ensureLoop();
   }
   function placeGraph() {
     if (!box.brain) return;
-    var W = stage.clientWidth, H = stage.clientHeight, f = shapeFit(), orbR = (box.brain.r || 48) + 20;
-    TYPES.forEach(function (t) {
-      var list = mem.entries.filter(function (e) { return e.type === t; }).sort(function (a, b) { return a.created - b.created || (a.id < b.id ? -1 : 1); });
-      var R = BRAIN.regions[t], n = list.length;
-      list.forEach(function (e, i) {
-        var nd = G.nodes[e.id]; if (!nd) return;
-        var r = Math.sqrt((i + 0.5) / n), th = i * 2.39996323;
-        var x = f.tx + f.s * (R.cx + R.rx * r * Math.cos(th)), y = f.ty + f.s * (R.cy + R.ry * r * Math.sin(th));
-        var dx = x - box.brain.x, dy = y - box.brain.y, d = Math.hypot(dx, dy);
-        if (d < orbR) { var ux = d > 0.01 ? dx / d : 1, uy = d > 0.01 ? dy / d : 0; x = box.brain.x + ux * orbR; y = box.brain.y + uy * orbR; }
-        nd.sx = Math.min(W - 18, Math.max(18, x)); nd.sy = Math.min(H - 40, Math.max(22, y));
-      });
+    var W = stage.clientWidth, H = stage.clientHeight, f = shapeFit();
+    var entries = mem.entries.slice().sort(function (a, b) { return a.created - b.created || (a.id < b.id ? -1 : 1); });
+    var perFold = Math.max(1, Math.ceil(entries.length / foldPaths.length));
+    entries.forEach(function (e, i) {
+      var nd = G.nodes[e.id], path = foldPaths[i % foldPaths.length]; if (!nd || !path) return;
+      var length = path.getTotalLength(), slot = Math.floor(i / foldPaths.length);
+      var along = length * (slot + 1) / (perFold + 1), a = path.getPointAtLength(Math.max(0, along - 3));
+      var p = path.getPointAtLength(along), b = path.getPointAtLength(Math.min(length, along + 3));
+      var dx = b.x - a.x, dy = b.y - a.y, mag = Math.hypot(dx, dy) || 1;
+      var offset = (slot % 2 ? 1 : -1) * (10 + Math.floor(slot / 2) * 8);
+      var mx = p.x - dy / mag * offset, my = p.y + dx / mag * offset;
+      var projected = projectBrainPoint(mx, my, brainSurfaceDepth(mx, my, 1), f, f.tx + BRAIN.hub.x * f.s, f.ty + BRAIN.hub.y * f.s);
+      nd.sx = Math.min(W - 18, Math.max(18, projected.x)); nd.sy = Math.min(H - 40, Math.max(22, projected.y));
     });
     drawShape();
+    updateWorldTransform();
   }
   function showTip(id) {
     var e = byId(id), n = G.nodes[id]; if (!e || !n) return;
@@ -946,7 +1060,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     loopId = 0;
     var dt = lastTs ? Math.min(0.033, (ts - lastTs) / 1000) : 0.016; lastTs = ts; TIME += dt;
     var W = stage.clientWidth, H = stage.clientHeight, moving = stepTeam(dt, W, H);
-    if (mode !== "team") moving = stepGraph(dt, W, H) || moving;
+    if (mode !== "team") { moving = stepGraph(dt, W, H) || moving; if (focusId) updateWorldTransform(); }
     stepHands(ts);
     var resting = mode === "graph" && Object.keys(G.nodes).length > 150;
     if ((drift && !resting) || moving || hands.length) loopId = requestAnimationFrame(frame); else lastTs = 0;
@@ -1200,8 +1314,6 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     $("#brainTitle").textContent = mem.settings.brain ? "BRAIN" : "BRAIN OFF";
     $("#runNow").disabled = !mem.settings.brain || brainRunning || running || busy;
     $("#skip30").disabled = brainRunning || running || busy;
-    $("#nextBtn").disabled = brainRunning || running || busy;
-    $("#dispatchGo").disabled = brainRunning || running || busy;
   }
   function findWorkstream(kws) {
     var best = null;
@@ -1238,37 +1350,15 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     return e;
   }
   function learnSession(s, t) {
-    var d = fmtDate(s.ts), src = { kind: "session", label: "Session " + d + ": " + clip(s.q, 40), ref: s.id }, docSrc = { kind: "file", label: "Brain AGENTS.md" };
-    var existing = findWorkstream(s.kws), title = clip(s.kws.slice(0, 3).join(" ") || "question", 40);
-    var covered = s.accepted.map(function (a) { return a.label; });
-    var wnote = "Asked on " + d + ": “" + clip(s.q, 110) + "”. " + (covered.length ? "Covered: " + covered.join(", ") + ". " : "") + (s.uncovered.length ? "Open loop: " + clip(s.uncovered.join("; "), 140) + "." : "No open loops.");
-    var ws = existing ? upsert({ key: existing.key, type: "workstream", title: existing.title, note: wnote, sources: [src], kws: s.kws }, t)
-                      : upsert({ key: "ws:" + s.kws.slice(0, 3).slice().sort().join("-"), type: "workstream", title: title.charAt(0).toUpperCase() + title.slice(1), note: wnote, sources: [src], kws: s.kws }, t);
-    var doc = upsert({ key: "doc:agents", type: "entity", title: "Brain AGENTS.md", note: "The team roles and working rules for the Brain repo. Most sample sources come from it.", sources: [src, docSrc] }, t);
-    link(ws, doc);
-    s.accepted.forEach(function (a) {
-      var c = upsert({ key: "c:corpus:" + a.id, type: "concept", title: a.label, note: a.fact, corpusId: a.id, sources: [src, { kind: "file", label: a.src || docSrc.label }] }, t);
-      if (!c) return; link(ws, c); link(c, doc);
-      if (a.entity) {
-        var pn = NODES.filter(function (n) { return norm(n.name) === norm(a.entity); })[0];
-        var en = pn ? byKey("prog:" + pn.id) : upsert({ key: "ent:" + norm(a.entity), type: "entity", title: a.entity, note: "Named in the line “" + a.label + "”.", sources: [src] }, t);
-        link(c, en);
-      }
+    var src = { kind: "session", label: "Prompt: " + clip(s.q, 50), ref: s.id };
+    var prompt = upsert({ key: "session:" + s.id, type: "workstream", title: clip(s.q, 80),
+      note: "Prompt submitted " + fmtDate(s.ts) + ": " + clip(s.q, 400), sources: [src] }, t);
+    s.msgs.forEach(function (m) {
+      if (!isNode(m.from) || !/^live · (Anthropic|OpenAI|Google|xAI) · /.test(m.tag || "")) return;
+      var reply = upsert({ key: "reply:" + s.id + ":" + m.from, type: "concept", title: clip(SPEAKERS[m.from].name + " response", 80),
+        note: clip(m.tag + ": " + m.text, 600), sources: [src] }, t);
+      link(prompt, reply);
     });
-    NODES.forEach(function (n) { var pe = upsert({ key: "prog:" + n.id, type: "entity", title: n.name, note: n.sub + ". On Owner's team chart.", sources: [src] }, t); if (n.id === "claude") link(ws, pe); });
-  }
-  function learnTools(t) {
-    var st = mem.settings, n = 0;
-    if (!st.sources) return 0;
-    if (st.docs) {
-      var doc = upsert({ key: "doc:agents", type: "entity", title: "Brain AGENTS.md", note: "The team roles and working rules for the Brain repo. Most sample sources come from it.", sources: [{ kind: "tool", label: "Docs connector (sample)" }] }, t); n++;
-    }
-    if (st.tracker) {
-      var pr = upsert({ key: "pr:brain1", type: "entity", title: "Brain pull request", note: "Draft pull request “Add Orchestration Brain page, team rules and skills memory”. This sample note was written while it waited for Owner to review and merge.", sources: [{ kind: "tool", label: "Issue tracker (sample): Roooted1776/Brain#1" }] }, t); n++;
-      var ws = upsert({ key: "ws:orchestration-brain-page", type: "workstream", title: "Orchestration Brain page", note: "A single-file page in the Brain repo: team chart, simulated sessions, memory graph. Open loop: Owner reviews the draft pull request.", sources: [{ kind: "tool", label: "Issue tracker (sample): Roooted1776/Brain#1" }], kws: ["orchestration", "brain", "page"] }, t);
-      link(ws, pr); link(ws, byKey("prog:claude"));
-    }
-    return n;
   }
   async function brainRun() {
     if (brainRunning || running || !mem.settings.brain) return;
@@ -1276,20 +1366,19 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     var t = { fresh: 0, reinforced: 0, updated: 0, stale: 0, blocked: 0, fx: [], touched: {} };
     var inbox = mem.inbox.slice(); mem.inbox = [];
     var nSess = inbox.filter(function (i) { return i.kind === "session"; }).length, nFile = inbox.filter(function (i) { return i.kind === "file"; }).length, nCorr = inbox.filter(function (i) { return i.kind === "correction"; }).length;
-    var toolsOn = mem.settings.sources && (mem.settings.docs || mem.settings.tracker);
+    var toolsOn = false;
     function step(i, text) {
       Array.prototype.forEach.call(document.querySelectorAll("#steps li"), function (li, n) { li.classList.toggle("active", n === i); li.classList.toggle("done", n < i); });
       if (text != null) $("#s" + i + "t").textContent = text;
     }
     ["s1t", "s2t", "s3t"].forEach(function (id) { $("#" + id).textContent = ""; }); $("#runReport").textContent = "";
     try {
-      step(0, "Looking at: " + nSess + " session(s), " + (toolsOn ? "connected tools on" : "connected tools off") + ", " + nFile + " file(s) or note(s), " + nCorr + " correction(s)."
+      step(0, "Looking at: " + nSess + " saved session(s), no connected external sources, " + nFile + " note(s), " + nCorr + " correction(s)."
         + (mem.settings.instructions ? " Instructions on file: “" + clip(mem.settings.instructions, 80) + "”." : ""));
       await sleep(1100);
       step(1, "Writing entries, each linked to its source…");
       await sleep(500);
       inbox.filter(function (i) { return i.kind === "session"; }).forEach(function (i) { var s = mem.sessions.filter(function (x) { return x.id === i.ref; })[0]; if (s) learnSession(s, t); });
-      learnTools(t);
       syncGraph(); render();
       t.fx.forEach(function (f, i) { setTimeout(function () { nodeFx(f[0], f[1]); }, i * 90 * speed); });
       $("#s1t").textContent = t.fresh + " new entr" + (t.fresh === 1 ? "y" : "ies") + (t.blocked ? ", " + t.blocked + " skipped because you deleted them before" : "") + ".";
@@ -1319,20 +1408,17 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     }
   }
 
-  /* ================= Live AI (optional, off by default, you pay the providers) =================
-     Each bot can be voiced by a real model from a different company. The page's own code still finds the
-     sample lines, writes the cited answer and checks it. A model only writes the short commentary of the bot,
-     so it cannot put an invented fact into the answer. Keys stay in this browser tab (or this device if you tick
-     "remember"). They are never written to memory, backups, transcripts or the repo. */
+  /* ================= Live AI (optional, off by default, you pay the provider) =================
+     User-submitted prompts are sent only to the single provider explicitly selected in Settings.
+     Their replies are model output, not independently verified facts or live web research. */
   var PROV = {
-    anthropic: { label: "Anthropic", model: "claude-haiku-5-5", hint: "key starts with sk-ant-" },
-    openai:    { label: "OpenAI",    model: "gpt-6-luna",       hint: "key starts with sk-" },
-    google:    { label: "Google",    model: "gemini-3.5-flash-lite", hint: "key starts with AIza" },
-    xai:       { label: "xAI",       model: "grok-4.20-0309-non-reasoning", hint: "key starts with xai-" }
+    anthropic: { label: "Anthropic", model: "claude-3-5-haiku-latest", hint: "key starts with sk-ant-" },
+    openai:    { label: "OpenAI",    model: "gpt-4o-mini", hint: "key starts with sk-" },
+    google:    { label: "Google",    model: "gemini-2.0-flash-lite", hint: "key starts with AIza" },
+    xai:       { label: "xAI",       model: "grok-3-mini", hint: "key starts with xai-" }
   };
-  var LIVE_BOTS = ["grok", "claude", "chatgpt", "gemini", "perplexity", "cursor", "muse"];
-  var LIVE = { on: false, stopped: false, ctls: new Set(), remember: false, keys: {}, models: {}, dead: {}, calls: 0, tin: 0, tout: 0, maxTokens: 300, callCap: 60, ctx: "", notices: {},
-    map: { grok: "xai", claude: "anthropic", chatgpt: "openai", gemini: "google", perplexity: "sim", cursor: "sim", muse: "sim" } };
+  var LIVE_BOTS = ["gemini", "muse", "chatgpt", "claude", "cursor", "perplexity", "grok", "xcode", "grokbot"];
+  var LIVE = { on: false, stopped: false, ctls: new Set(), remember: false, provider: "openai", keys: {}, models: {}, dead: {}, calls: 0, tasks: 0, tin: 0, tout: 0, maxTokens: 120, callCap: 9, ctx: "", notices: {} };
   Object.keys(PROV).forEach(function (p) { LIVE.models[p] = PROV[p].model; });
   var LKEY = "brain.live.v1", LKEYS = "brain.livekeys.v1";
 
@@ -1341,29 +1427,33 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
       var d = JSON.parse(localStorage.getItem(LKEY) || "null");
       if (d && typeof d === "object") {
         LIVE.remember = !!d.remember;
-        if (isFinite(d.maxTokens)) LIVE.maxTokens = Math.max(20, Math.min(1000, Math.round(d.maxTokens)));
-        if (isFinite(d.callCap)) LIVE.callCap = Math.max(1, Math.min(500, Math.round(d.callCap)));
+        if (PROV[d.provider]) LIVE.provider = d.provider;
+        else if (d.map && PROV[d.map.chatgpt]) LIVE.provider = d.map.chatgpt;
+        if (isFinite(d.maxTokens)) LIVE.maxTokens = Math.max(20, Math.min(150, Math.round(d.maxTokens)));
+        if (isFinite(d.callCap)) LIVE.callCap = Math.max(1, Math.min(9, Math.round(d.callCap)));
         Object.keys(PROV).forEach(function (p) { if (d.models && typeof d.models[p] === "string" && /^[A-Za-z0-9._:\-]{1,80}$/.test(d.models[p])) LIVE.models[p] = d.models[p]; });
-        LIVE_BOTS.forEach(function (b) { if (d.map && (d.map[b] === "sim" || PROV[d.map[b]])) LIVE.map[b] = d.map[b]; });
       }
       if (LIVE.remember) {
         var k = JSON.parse(localStorage.getItem(LKEYS) || "null");
-        if (k && typeof k === "object") Object.keys(PROV).forEach(function (p) { if (typeof k[p] === "string") LIVE.keys[p] = k[p].slice(0, 300); });
+        if (k && typeof k === "object") {
+          var restoreProvider = PROV[LIVE.provider] && typeof k[LIVE.provider] === "string" ? LIVE.provider : Object.keys(PROV).filter(function (p) { return typeof k[p] === "string" && k[p]; })[0];
+          if (restoreProvider) { LIVE.provider = restoreProvider; LIVE.keys[restoreProvider] = k[restoreProvider].slice(0, 300); }
+        }
       }
     } catch (e) {}
   }
   function saveLive() {
     try {
-      localStorage.setItem(LKEY, JSON.stringify({ remember: LIVE.remember, maxTokens: LIVE.maxTokens, callCap: LIVE.callCap, models: LIVE.models, map: LIVE.map }));
-      if (LIVE.remember) localStorage.setItem(LKEYS, JSON.stringify(LIVE.keys)); else localStorage.removeItem(LKEYS);
+      localStorage.setItem(LKEY, JSON.stringify({ remember: LIVE.remember, provider: LIVE.provider, maxTokens: LIVE.maxTokens, callCap: LIVE.callCap, models: LIVE.models }));
+      if (LIVE.remember && LIVE.keys[LIVE.provider]) localStorage.setItem(LKEYS, JSON.stringify({ [LIVE.provider]: LIVE.keys[LIVE.provider] }));
+      else localStorage.removeItem(LKEYS);
     } catch (e) {}
   }
   function liveActive() {
-    return LIVE.on && !LIVE.stopped && LIVE_BOTS.some(function (b) { var p = LIVE.map[b]; return p !== "sim" && LIVE.keys[p] && !LIVE.dead[p]; });
+    return LIVE.on && !LIVE.stopped && !!LIVE.keys[LIVE.provider] && !LIVE.dead[LIVE.provider];
   }
   function refreshBadge() {
-    var n = liveActive() ? LIVE_BOTS.filter(function (b) { var p = LIVE.map[b]; return p !== "sim" && LIVE.keys[p] && !LIVE.dead[p]; }).length : 0;
-    $("#modeBadge").textContent = n ? "live · " + n + " real AI bot" + (n > 1 ? "s" : "") + " · you pay" : "simulation · no real AI calls";
+    $("#modeBadge").textContent = liveActive() ? "live · " + PROV[LIVE.provider].label + " powers 9 roles · you pay" : "live AI off";
     if ($("#liveCounters")) $("#liveCounters").textContent = "Calls this page load: " + LIVE.calls + " of " + LIVE.callCap + " · tokens in " + LIVE.tin + " / out " + LIVE.tout + (LIVE.stopped ? " · STOPPED" : "");
   }
 
@@ -1421,12 +1511,24 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
 
   function systemFor(bot) {
     var sp = SPEAKERS[bot], nd = NODES.filter(function (n) { return n.id === bot; })[0];
-    return "You are " + sp.name + " (" + sp.sub + "), one of nine bots on Owner's team in a visualization. " + (nd ? "Your specialty: " + nd.specialty + ". Think from that angle. " : "") + "Speak as that bot in at most two short plain sentences. Use only the task and the lines you are given. Do not invent facts, names, numbers or dates. Never write keys or passwords.";
+    var stages = {
+      gemini: "FIRST CHECK — inspect the request and supplied context. List the concrete requirements, constraints, and any ambiguity that blocks the work. Hand that context check to the next available agent.",
+      muse: "SECOND CHECK — independently audit the incoming context and work handoff. Identify omissions, contradictions, risks, and what evidence is missing.",
+      chatgpt: "COLLECTIVE CHECK — review the incoming handoff first, then synthesize a concrete, ordered work plan and textual deliverable for this task.",
+      claude: "BUILDER — review the incoming handoff first, then produce the task's careful reasoning, writing, design, or code proposal as text. Do not claim to have edited files.",
+      cursor: "INTEGRATION REVIEW — review the incoming handoff first, then check the proposed work for repository fit, integration risks, and missing checks using only the supplied context. Do not claim to have inspected files.",
+      perplexity: "SOURCE CHECK — review the incoming handoff first, then assess source quality and citation needs from supplied material only. Do not browse or invent citations; mark unsupported claims.",
+      grok: "STRATEGY REVIEW — review the incoming handoff first, challenge assumptions, identify risks, and name an overlooked option.",
+      xcode: "PLATFORM CHECK — review the incoming handoff first. For an iOS-related task, give a concrete build and device-test plan; otherwise say this stage is not applicable. Do not claim to run builds or devices.",
+      grokbot: "TEAM LEAD — review the complete chain of prior handoffs, reconcile conflicts, identify incomplete or unavailable stages, and run the situation by producing the final integrated report and recommendation. Owner controls repository changes, Git push, and merge."
+    };
+    return "You are " + sp.name + " (" + sp.sub + "), one of nine bots on Owner's team. " + (nd ? "Your specialty: " + nd.specialty + ". " : "") + (stages[bot] || "Perform your assigned stage.") +
+      " First review the incoming handoff before your own work. Complete only your assigned task as a textual work product and a clear handoff for the next bot. You have no tools or repository access here: never claim to read files, make changes, browse, or execute tests unless supplied evidence proves it. State blockers and uncertainty; do not invent sources, results, keys, or passwords.";
   }
-  /* returns the bot's words: from a real model when this bot is mapped and live is on, otherwise the scripted text */
+  /* returns the role's words from the selected model when live is on, otherwise its scripted text */
   async function voice(bot, scripted, brief) {
-    var pv = LIVE.on && !LIVE.stopped ? LIVE.map[bot] : "sim";
-    if (!pv || pv === "sim" || !LIVE.keys[pv]) return { text: scripted, tag: LIVE.on ? "scripted" : "", live: false };
+    var pv = LIVE.on && !LIVE.stopped ? LIVE.provider : "sim";
+    if (!LIVE.keys[pv]) return { text: scripted, tag: LIVE.on ? "scripted" : "", live: false };
     if (LIVE.dead[pv]) return { text: scripted, tag: "scripted · " + PROV[pv].label + " off", live: false };
     try {
       var r = await callModel(pv, systemFor(bot), brief + "\n\n" + LIVE.ctx, LIVE.maxTokens);
@@ -1441,104 +1543,173 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   }
   async function sayLive(bot, scripted, brief) { var v = await voice(bot, scripted, brief); say(bot, v.text, null, null, null, v.tag); return v; }
 
+  /* A submitted prompt is a real, sequential model conversation. Unconnected bots stay silent. */
+  var LIVE_ORDER = ["gemini", "muse", "chatgpt", "claude", "cursor", "perplexity", "grok", "xcode", "grokbot"];
+  function liveStageTask(bot, q, prior, incoming, next) {
+    var stage = {
+      gemini: "Extract task requirements, supplied context, and ambiguities. Deliver a context check.",
+      muse: "Independently audit the incoming context and handoff for omissions, risks, contradictions, and unsupported assumptions.",
+      chatgpt: "Synthesize an actionable task plan and textual work product from the reviewed incoming handoff.",
+      claude: "Produce the requested reasoning, writing, design, or code proposal as text.",
+      cursor: "Check repository integration risks using only the material provided.",
+      perplexity: "Check citations and source quality using supplied material only.",
+      grok: "Challenge assumptions and surface risks or alternatives.",
+      xcode: "Give an iOS build/test plan if relevant; do not claim to run builds.",
+      grokbot: "Review every prior handoff. Run the situation: integrate the work, list unresolved issues or unavailable checks, and provide the final team report and recommendation."
+    };
+    return "OWNER TASK:\n" + q + "\n\nINCOMING HANDOFF FROM " + incoming + " — REVIEW THIS FIRST:\n" + prior +
+      "\n\nYOUR ASSIGNED WORK:\n" + stage[bot] +
+      "\n\nReturn these labeled sections: REVIEW OF INCOMING HANDOFF; YOUR WORK; HANDOFF TO " + (next ? SPEAKERS[next].name : bot === "grokbot" ? "OWNER" : "GROK BOT (UNAVAILABLE IF NOT CONNECTED)") +
+      (bot === "grokbot" ? " (FINAL SITUATION REPORT)" : "") + "; OPEN BLOCKERS. Be specific and concise. Text-only work; no repository edits, tools, or web search.";
+  }
+  async function liveConversation(q) {
+    var bots = LIVE_ORDER.filter(function (bot) {
+      if (bot === "xcode" && !/\b(ios|iphone|ipad|xcode|swift|app store)\b/i.test(q)) return false;
+      return LIVE.keys[LIVE.provider] && !LIVE.dead[LIVE.provider];
+    }).slice(0, 9);
+    if (!LIVE.on || LIVE.stopped) { $("#promptStatus").textContent = "Live AI is off. Turn it on in Settings; no prompt was sent and no reply was generated."; return; }
+    if (!bots.length) { $("#promptStatus").textContent = "No connected model is ready. Choose one provider and add its API key in Settings; nothing was sent."; return; }
+    if (LIVE.tasks >= 1) { $("#promptStatus").textContent = "This page allows one live task. Reload to reset the task and call budgets."; return; }
+    if (LIVE.calls >= LIVE.callCap) { $("#promptStatus").textContent = "This page has used its model-call budget. Reload to reset the budget before another task."; return; }
+    if (busy || running || brainRunning) { $("#promptStatus").textContent = "The team is finishing another task. Wait before sending another prompt."; return; }
+
+    busy = true; running = true; currentTask = q; LIVE.tasks++; LIVE.taskCalls = 0;
+    $("#sendPrompt").disabled = true; $("#promptText").disabled = true;
+    ["#liveProvider", "#liveModel", "#liveKey", "#test-liveProvider", "#liveTokens", "#liveCap", "#liveRemember", "#liveForget"].forEach(function (selector) {
+      var control = $(selector); if (control) control.disabled = true;
+    });
+    tab("chat"); logEl.textContent = ""; msgs = []; transcript = ["LIVE MODEL CONVERSATION · Every response is generated by the labeled provider model. Responses are not independently verified, and no web search or sample source was used."];
+    setPhase(0); updateHud(); updateBrainState();
+    say("owner", q, null, null, null, "prompt");
+    var available = {};
+    bots.forEach(function (bot) { available[bot] = true; });
+    var skipped = LIVE_ORDER.filter(function (bot) { return bot !== "xcode" && !available[bot]; }).map(function (bot) { return SPEAKERS[bot].name; });
+    say("brain", "Live handoff chain: " + bots.map(function (bot) { return SPEAKERS[bot].name; }).join(" → ") +
+      (skipped.length ? ". No provider is ready for: " + skipped.join(", ") + "; those agents do no work on this run." : "") +
+      (/\b(ios|iphone|ipad|xcode|swift|app store)\b/i.test(q) ? "" : ". Xcode is not included because this is not an iOS task.") +
+      ". Each connected agent reviews the incoming handoff before its assigned text-only task; no files or tools are changed.", null, null, null, "page");
+    LIVE.ctx = "";
+    var previous = "Owner task: " + q + "\nUnavailable stages: " + (skipped.join(", ") || "none") + ".", handoffs = [], completed = 0;
+    try {
+      for (var i = 0; i < bots.length; i++) {
+        if (LIVE.stopped) { say("brain", "Stopped by Owner. No scripted reply was substituted.", null, null, "warn", "page"); break; }
+        if (LIVE.dead[LIVE.provider]) { say("brain", PROV[LIVE.provider].label + " is unavailable after rejecting the key. Remaining roles were not contacted.", null, null, "warn", "page"); break; }
+        if (LIVE.calls >= LIVE.callCap) { say("brain", "The page-call budget is used. Remaining roles were not contacted; reload to reset it.", null, null, "warn", "page"); break; }
+        var bot = bots[i], pv = LIVE.provider;
+        setPhase(bot === "gemini" ? 0 : bot === "muse" ? 1 : bot === "grokbot" ? 3 : 2);
+        $("#promptStatus").textContent = "Live: " + SPEAKERS[bot].name + " · " + PROV[pv].label + " · " + LIVE.models[pv] + " is responding…";
+        if (i === 0) handoff("owner", bot);
+        try {
+          if (LIVE.taskCalls >= 9) { say("brain", "The per-prompt limit of 9 real model calls was reached. Remaining bots were not contacted.", null, null, "warn", "page"); break; }
+          LIVE.taskCalls++;
+          var incoming = i === 0 ? "Owner" : SPEAKERS[bots[i - 1]].name, next = bots[i + 1] || null;
+          var reviewed = bot === "grokbot" ? handoffs.join("\n\n") : previous;
+          var result = await callModel(pv, systemFor(bot), liveStageTask(bot, q, reviewed, incoming, next), LIVE.maxTokens);
+          var text = redact(result.text.replace(/\s+/g, " ").trim()).text;
+          if (!text) throw new Error(result.why ? "the provider returned no text (" + result.why + ")" : "the provider returned an empty reply");
+          var tag = "live · " + PROV[pv].label + " · " + LIVE.models[pv] + " · unverified";
+          say(bot, text, null, null, null, tag);
+          completed++; previous = "HANDOFF FROM " + SPEAKERS[bot].name + " (" + PROV[pv].label + " · " + LIVE.models[pv] + "):\n" + text; handoffs.push(previous);
+          if (bot === "gemini") setPhase(1);
+          else if (bot === "muse") setPhase(2);
+          else if (bot === "grokbot") setPhase(4);
+          if (i + 1 < bots.length) handoff(bot, bots[i + 1]);
+        } catch (err) {
+          var failure = PROV[pv].label + " stage did not complete: " + redact(err.message).text + ". No scripted reply was substituted.";
+          say("brain", failure, null, null, "warn", "page");
+          previous = "HANDOFF STATUS FOR " + SPEAKERS[bot].name + ":\n" + failure; handoffs.push(previous);
+          if (i + 1 < bots.length) handoff(bot, bots[i + 1]);
+        }
+      }
+      if (completed) {
+        say("brain", completed + " live task stage(s) completed. Model work is text-only and unverified; Brain did not edit files or execute tools.", null, null, null, "page");
+        if (!$("#incog").checked && mem.settings.brain) {
+          var session = { id: "s" + (mem.nextSession++), ts: nowTs(), q: q, kws: [], accepted: [], uncovered: [], msgs: msgs.slice() };
+          mem.sessions.push(session); if (mem.sessions.length > MAX_SESSIONS) mem.sessions.shift();
+          var learned = { fresh: 0, reinforced: 0, updated: 0, stale: 0, blocked: 0, fx: [], touched: {} };
+          learnSession(session, learned); mem.runs++; syncGraph(); persist();
+        }
+        $("#promptStatus").textContent = completed + " live task stage(s) completed. The final report appears only if Grok Bot's call completed within the page budget. Model work is unverified text; no files or tools were changed.";
+      } else if (!LIVE.stopped) {
+        $("#promptStatus").textContent = "No model replied. Check the status messages and provider settings. No scripted answer was shown.";
+      }
+    } finally {
+      if (LIVE.stopped) $("#promptStatus").textContent = "Live task stopped. No further provider calls were made.";
+      ["#liveProvider", "#liveModel", "#liveKey", "#test-liveProvider", "#liveTokens", "#liveCap", "#liveRemember", "#liveForget"].forEach(function (selector) {
+        var control = $(selector); if (control) control.disabled = false;
+      });
+      running = false; busy = false; currentTask = ""; setPhase(4); updateBrainState(); render(); $("#sendPrompt").disabled = false; $("#promptText").disabled = false; updateHud();
+    }
+  }
+  function sendPrompt() {
+    var field = $("#promptText"), r = redact(field.value.trim());
+    if (!r.text) { $("#promptStatus").textContent = "Write a prompt before sending."; field.focus(); return; }
+    if (r.n) { mem.filtered += r.n; persist(); $("#promptStatus").textContent = "A key-like string was filtered before sending. Check the prompt before continuing."; }
+    field.value = ""; liveConversation(r.text);
+  }
+  $("#sendPrompt").addEventListener("click", sendPrompt);
+  $("#promptText").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); sendPrompt(); } });
+
   /* ---------- the Settings panel ---------- */
   function buildLiveUI() {
     var host = $("#liveSec"); if (!host) return;
-    var rows = Object.keys(PROV).map(function (p) {
-      return h("div", { class: "liverow" },
-        h("b", { text: PROV[p].label }),
-        h("label", { class: "sr", for: "key-" + p, text: PROV[p].label + " key" }),
-        h("input", { type: "password", id: "key-" + p, autocomplete: "off", spellcheck: "false", placeholder: PROV[p].hint, value: LIVE.keys[p] || "", oninput: function () { LIVE.keys[p] = this.value.trim(); LIVE.dead[p] = false; saveLive(); refreshBadge(); } }),
-        h("label", { class: "sr", for: "model-" + p, text: PROV[p].label + " model" }),
-        h("input", { type: "text", id: "model-" + p, value: LIVE.models[p], maxlength: "80", spellcheck: "false", oninput: function () { var v = this.value.trim(); if (/^[A-Za-z0-9._:\-]{1,80}$/.test(v)) { LIVE.models[p] = v; saveLive(); } } }),
-        h("button", { class: "small", type: "button", id: "test-" + p, text: "Test", onclick: function () { testProvider(p); } }),
-        h("span", { class: "note", id: "status-" + p, role: "status" }));
-    });
-    var maps = LIVE_BOTS.map(function (b) {
-      var sel = h("select", { id: "map-" + b, onchange: function () { LIVE.map[b] = this.value; saveLive(); refreshBadge(); } },
-        h("option", { value: "sim", text: "Scripted (no AI)" }), Object.keys(PROV).map(function (p) { return h("option", { value: p, text: PROV[p].label }); }));
-      sel.value = LIVE.map[b];
-      return h("label", { class: "mapcell", for: "map-" + b }, h("span", { text: SPEAKERS[b].name }), sel);
-    });
+    var providerSelect = h("select", { id: "liveProvider", onchange: function () {
+      LIVE.keys = {}; LIVE.dead = {}; LIVE.provider = this.value;
+      $("#liveKey").value = ""; $("#liveKey").placeholder = PROV[LIVE.provider].hint; $("#liveModel").value = LIVE.models[LIVE.provider];
+      $("#status-liveProvider").textContent = "Provider changed. Add one key for " + PROV[LIVE.provider].label + ".";
+      saveLive(); refreshBadge(); renderTeamList();
+    } }, Object.keys(PROV).map(function (p) { return h("option", { value: p, text: PROV[p].label }); }));
+    providerSelect.value = LIVE.provider;
+    var providerRow = h("div", { class: "live-connect" },
+      h("label", { class: "live-field", for: "liveProvider" }, "Provider", providerSelect),
+      h("label", { class: "live-field", for: "liveModel" }, "Model ID", h("input", { type: "text", id: "liveModel", value: LIVE.models[LIVE.provider], maxlength: "80", spellcheck: "false",
+        oninput: function () { var v = this.value.trim(); if (/^[A-Za-z0-9._:\-]{1,80}$/.test(v)) { LIVE.models[LIVE.provider] = v; saveLive(); } } })),
+      h("label", { class: "live-field", for: "liveKey" }, "API key", h("input", { type: "password", id: "liveKey", autocomplete: "off", spellcheck: "false", placeholder: PROV[LIVE.provider].hint,
+        value: LIVE.keys[LIVE.provider] || "", oninput: function () {
+          LIVE.keys = {}; if (this.value.trim()) LIVE.keys[LIVE.provider] = this.value.trim();
+          LIVE.dead = {}; saveLive(); refreshBadge(); renderTeamList();
+        } })),
+      h("button", { class: "small", type: "button", id: "test-liveProvider", text: "Test connection", onclick: function () { testProvider(LIVE.provider); } }),
+      h("span", { class: "note", id: "status-liveProvider", role: "status" }));
     host.append(
       h("h2", { text: "Live AI (optional · you pay the providers)" }),
-      h("label", { class: "switch", for: "liveOn" }, h("span", {}, h("b", { text: "Use real AI" }), h("span", { text: "Off: scripted simulation. On: each bot you map below speaks through a real model. It only works when you open index.html from your computer, not in the preview link. Turns itself off every time the page reloads." })),
+      h("label", { class: "switch", for: "liveOn" }, h("span", {}, h("b", { text: "Use real AI" }), h("span", { text: "Off: no provider calls. On: one selected model powers each role, reviews the previous handoff, performs its assigned text-only task, and hands it to the next role. Models have no repository or tool access. It only works when you open index.html from your computer, not in the preview link. Turns itself off every time the page reloads." })),
         h("input", { type: "checkbox", id: "liveOn", onchange: function () {
           if ((busy || running || brainRunning) && this.checked !== LIVE.on) { this.checked = LIVE.on; $("#liveMsg").textContent = "Wait for the current task to finish, then switch live mode."; return; }
           $("#liveMsg").textContent = ""; LIVE.on = this.checked; LIVE.stopped = false; $("#liveBox").hidden = !LIVE.on; refreshBadge(); afterLiveToggle();
         } })),
       h("p", { class: "note", id: "liveMsg", role: "status" }),
       h("div", { id: "liveBox", hidden: true },
-        h("p", { class: "note", text: "Create each key yourself on the provider's website and paste it here. Never paste a key in the chat. A key is kept in this tab only, unless you tick “remember” below. A normal task makes up to 9 short calls (up to 16 for an “Everyone, go” task). Prices differ by model, so check each provider's price page. Live tasks never repeat on their own: autopilot waits for you." }),
-        rows,
-        h("h2", { text: "Which company's AI voices which bot" }),
-        h("div", { class: "mapgrid" }, maps),
-        h("p", { class: "note", text: "Cursor, Muse, Grok Bot and Xcode have no public chat API that I know of (unverified), and Perplexity is not wired to its own API yet, so they stay scripted unless you map them to one of the four companies above." }),
+        h("p", { class: "note", text: "Choose one provider and use one API key. That provider's selected model powers all nine role prompts; it does not connect to separate apps such as Cursor, Xcode, or Muse, and the Perplexity role does not browse. Create the key yourself and enter it here—never paste a key in chat. It stays in this tab unless you choose Remember. Switching providers clears the previous key. A full task can make up to 9 short calls; the default page budget allows one full task. Provider prices vary by model." }),
+        providerRow,
+        h("p", { class: "note", text: "Set the model ID to one supported by your provider account. The model ID shown here is a starting value and may need updating. Test connection uses one paid API call." }),
         h("div", { class: "row" },
-          h("label", { class: "check", for: "liveTokens" }, "Token limit per reply ", h("input", { type: "number", id: "liveTokens", min: "20", max: "1000", value: String(LIVE.maxTokens), style: "width:80px", onchange: function () { LIVE.maxTokens = Math.max(20, Math.min(1000, Math.round(+this.value || 300))); this.value = LIVE.maxTokens; saveLive(); } })),
-          h("label", { class: "check", for: "liveCap" }, "Call limit per page load ", h("input", { type: "number", id: "liveCap", min: "1", max: "500", value: String(LIVE.callCap), style: "width:80px", onchange: function () { LIVE.callCap = Math.max(1, Math.min(500, Math.round(+this.value || 60))); this.value = LIVE.callCap; saveLive(); refreshBadge(); } }))),
+          h("label", { class: "check", for: "liveTokens" }, "Max output tokens per call ", h("input", { type: "number", id: "liveTokens", min: "20", max: "150", value: String(LIVE.maxTokens), style: "width:80px", onchange: function () { LIVE.maxTokens = Math.max(20, Math.min(150, Math.round(+this.value || 120))); this.value = LIVE.maxTokens; saveLive(); } })),
+          h("label", { class: "check", for: "liveCap" }, "Calls per page load (max 9) ", h("input", { type: "number", id: "liveCap", min: "1", max: "9", value: String(LIVE.callCap), style: "width:80px", onchange: function () { LIVE.callCap = Math.max(1, Math.min(9, Math.round(+this.value || 9))); this.value = LIVE.callCap; saveLive(); refreshBadge(); } }))),
         h("div", { class: "row" },
-          h("label", { class: "check", for: "liveRemember" }, h("input", { type: "checkbox", id: "liveRemember", onchange: function () { LIVE.remember = this.checked; saveLive(); } }), " Remember keys on this device (anyone using this browser could use them)"),
-          h("button", { class: "small danger", type: "button", id: "liveForget", text: "Forget keys now", onclick: function () { LIVE.keys = {}; LIVE.dead = {}; Object.keys(PROV).forEach(function (p) { $("#key-" + p).value = ""; }); try { localStorage.removeItem(LKEYS); } catch (e) {} refreshBadge(); } }),
+          h("label", { class: "check", for: "liveRemember" }, h("input", { type: "checkbox", id: "liveRemember", onchange: function () { LIVE.remember = this.checked; saveLive(); } }), " Remember this key on this device (anyone using this browser could use it)"),
+          h("button", { class: "small danger", type: "button", id: "liveForget", text: "Forget key now", onclick: function () { LIVE.keys = {}; LIVE.dead = {}; $("#liveKey").value = ""; try { localStorage.removeItem(LKEYS); } catch (e) {} refreshBadge(); renderTeamList(); } }),
           h("button", { class: "small primary", type: "button", id: "liveStop", text: "Stop live now", onclick: function () { LIVE.stopped = true; LIVE.ctls.forEach(function (c) { try { c.abort(); } catch (e) {} }); refreshBadge(); afterLiveToggle(); } })),
         h("p", { class: "report", id: "liveCounters", role: "status" }),
-        h("p", { class: "note", text: "Live mode sends the task text and the built-in sample lines (never your memory notes) to the companies you map, even for incognito tasks. Each bot's message says which model wrote it. The cited answer is still built and checked by this page's own code. This has only been tested with fake servers, and the default model names are unverified. Google takes the key in the web address, so it can show in your browser's network tab. OpenAI is asked not to store the prompts; xAI may keep them (unverified), so check each company's data settings." })));
+        h("p", { class: "note", text: "Live mode sends the task and incoming handoff to the selected provider, even for incognito tasks; Grok Bot receives the full prior chain. Saved memory is never sent. All roles use the same model, and each message names that provider and model. Model output is unverified; the page does not give models repository, browser, or build tools. Test connection and all automated checks use fake servers in development; no real provider service has been tested here. Google includes the key in the request URL, which may appear in browser network tools. Review the provider's data and pricing settings before sending." })));
     $("#liveRemember").checked = LIVE.remember; refreshBadge();
   }
   async function testProvider(p) {
-    var st = $("#status-" + p); st.textContent = "Testing…";
+    var st = $("#status-liveProvider"); st.textContent = "Testing…";
     try { var r = await callModel(p, "Reply with the single word OK.", "Say OK.", 40); st.textContent = r.text.trim() ? "Works. The model answered." : "Connected, but the reply was empty (try a larger token limit)."; }
     catch (e) { st.textContent = "Failed: " + e.message; }
     refreshBadge();
   }
   function afterLiveToggle() { if (typeof scheduleNext === "function") scheduleNext(); }
 
-  /* ================= Dispatch: one line makes everyone jump on a task ================= */
-  /* everyone leaps at once, with a packet of light from the Brain to each bot */
-  function jumpAll() {
-    light("brain");
-    NODES.forEach(function (n) {
-      var el = T[n.id].el; el.classList.remove("jump"); void el.offsetWidth; el.classList.add("jump");
-      setTimeout(function () { el.classList.remove("jump"); }, 1000);
-      handoff("brain", n.id);
-    });
-  }
-  /* each bot says how it would look at the task from its own specialty (a template; in Live AI mode a real model writes it) */
-  async function angleRound(q) {
-    say("brain", "Everyone, go. First, each bot looks at the task from its own specialty:", null, null, null, "page");
-    var order = ["grok", "grokbot", "claude", "chatgpt", "gemini", "perplexity", "cursor", "xcode", "muse"];
-    for (var i = 0; i < order.length; i++) {
-      var n = NODES.filter(function (x) { return x.id === order[i]; })[0]; if (!n) continue;
-      light(n.id);
-      await sayLive(n.id, n.angle.replace("{q}", function () { return clip(q, 90); }), "Your specialty: " + n.specialty + ". In at most two short sentences, give your angle on this task and one idea nobody else on the team would suggest. Do not state facts you were not given.");
-      await sleep(350);
-    }
-    await sleep(500);
-  }
-  var LINE_TAIL = " \u2014 Read AGENTS.md first and use your actual strength. Review in this order: (1) Gemini context check, (2) Muse independent audit, (3) collective review by Codex, Claude, Cursor and Perplexity. Codex brings all three checks to Grok Bot, who leads the full team across projects and makes the final PASS or FAIL. Owner controls Git push and merge. Never touch RedMed or put a key in chat.";
-  function updateLine() {
-    var r = redact($("#dispatchText").value.trim());
-    $("#dispatchLine").textContent = "TEAM TASK: " + (r.text || "<TASK>") + LINE_TAIL;
-    if (r.n) $("#dispatchMsg").textContent = "That looked like a password or key, so it is filtered out of the line. Please do not paste real secrets.";
-    else if (/filtered out of the line/.test($("#dispatchMsg").textContent)) $("#dispatchMsg").textContent = "";
-  }
-  function dispatchGo() {
-    var r = redact($("#dispatchText").value.trim());
-    if (!r.text) { $("#dispatchMsg").textContent = "Type one line first, then press Everyone, go."; $("#dispatchText").focus(); return; }
-    if (busy || running || brainRunning) { $("#dispatchMsg").textContent = "A task is still running. Wait for it to finish."; return; }
-    $("#dispatchMsg").textContent = ""; if (r.n) { mem.filtered += r.n; persist(); }
-    if (mode !== "team") setMode("team");
-    startTask(r.text, true, null, { dispatch: true });
-  }
-
   /* ================= Run one session ================= */
-  async function run(qRaw, opts) {
+  async function run(qRaw) {
     if (running || brainRunning) return;
     running = true; updateBrainState();
     $("#savedBar").hidden = true; viewingSaved = false;
     logEl.textContent = ""; msgs = [];
     var red = redact(qRaw), q = red.text, incog = $("#incog").checked;
-    transcript = [liveActive() ? "LIVE: some bots are voiced by real AI models (each message is labelled with its company and model). The sample lines, the cited answer and the pass/fail checks are produced by this page's own code. No web search ran." : "SIMULATION: no real AI or web search ran. The programs are scripted, and the sources are sample lines written for this demo from Brain's own rules and the Perplexity help article."];
+    transcript = [liveActive() ? "LIVE: connected roles use the selected provider model, with every model response labeled. The sample lines, citations, and pass/fail checks are produced by this page; no web search ran." : "LIVE AI OFF: no provider was contacted. This page's built-in roles and sample lines are scripted from the page rules and Perplexity help article; no web search ran."];
     var sess = null, ok = false, hand0 = HAND_N;
     try {
       SRC = buildSources();
@@ -1546,8 +1717,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
       LIVE.notices = {};
       LIVE.ctx = "Task: " + q + "\nLines kept:\n" + (ev.accepted.map(function (s, i) { return "[" + (i + 1) + "] " + s.label + ": " + clip(s.origFact || s.fact, 260); }).join("\n") || "(none)") + "\nUnanswered points: " + (ev.uncovered.join("; ") || "none");
       setPhase(0);
-      say("queue", (opts && opts.dispatch ? "Everyone, go: " : "Task: ") + q);
-      if (opts && opts.dispatch) { jumpAll(); await sleep(900); await angleRound(q); }
+      say("queue", "Task: " + q);
       if (red.n) { mem.filtered += red.n; say("brain", "Warning: that looked like a password or key, so I filtered it out and will not remember it. Please do not paste real secrets here.", null, null, "warn"); }
       light("brain"); await sleep(800);
       say("brain", "Task received. Four phases: Plan, Queries, Sources, Answer. I answer only from retrieved sources."
@@ -1594,7 +1764,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
       if (/\b(ios|iphone|ipad|xcode|swift|app store)\b/i.test(q)) { handoff("claude", "xcode"); say("xcode", "This is an iPhone-related task. I would build and test it on a Mac. This page only talks about it, so nothing was built."); await sleep(800); }
       handoff("muse", "claude"); await sleep(600);
       var mtxt = "Audit of everyone's work. Citation map: " + (ev.accepted.length ? ev.accepted.map(function (s, i) { return "[" + (i + 1) + "] = " + s.label; }).join(", ") : "none, nothing was kept") + ". "
-        + ev.uncovered.length + " point(s) of the question have no source. Conflict detection is not built into this simulation; the sample lines do not overlap on any number or date.";
+        + ev.uncovered.length + " point(s) of the question have no source. Conflict detection is not built into this page; the sample lines do not overlap on any number or date.";
       await sayLive("muse", mtxt, "Report your audit of everyone's work: " + mtxt);
       await sleep(1000);
 
@@ -1642,62 +1812,31 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     if (ok && sess && mem.settings.brain) { $("#modeHint").textContent = "Brain will learn from this when the task is over…"; await sleep(1400); await brainRun(); }
   }
 
-  /* ================= Autopilot: tasks run on their own ================= */
-  var SAMPLES = [
-    "Who is in charge of the repo, and who audits the work?",
-    "What does Brain learn from?",
-    "Does Brain send messages or take actions?",
-    "What does a Brain run do?",
-    "Who decides what ships and who merges?",
-    "What is the latest iPhone model price?"
-  ];
-  var playing = !/[?&]autoplay=0/.test(location.search) && !REDUCED, queueIdx = 0, autoTimer = 0, taskNo = 0, chipEls = [], busy = false;
-  SAMPLES.forEach(function (q, i) {
-    var c = h("button", { class: "chip", type: "button", "aria-pressed": "false", text: q, onclick: function () { startTask(q, true, i); } });
-    chipEls.push(c); $("#samples").append(c);
-  });
-  function setStatus(t) { $("#taskStatus").textContent = t; }
-  function startTask(q, manual, idx, opts) {
+  /* Real prompts run only after Owner presses Send prompt. */
+  var playing = false, queueIdx = 0, autoTimer = 0, taskNo = 0, busy = false;
+  var taskStatus = "Waiting for a prompt";
+  function setStatus(t) { taskStatus = t; }
+  function startTask(q, manual, idx) {
     if (busy || running || brainRunning) return;
-    busy = true; clearTimeout(autoTimer);
-    speed = parseFloat($("#speed").value); if (!isFinite(speed)) speed = 1;
+    busy = true;
     if (manual) tab("chat");
     if (idx != null) queueIdx = idx + 1;
     taskNo++; currentTask = q; updateHud();
-    chipEls.forEach(function (c, i) { c.setAttribute("aria-pressed", String(i === idx)); });
     setStatus("Task " + taskNo + " · running");
-    run(q, opts).then(afterTask, afterTask);
+    run(q).then(afterTask, afterTask);
   }
-  function nextTask(manual) {
-    if (manual !== true && liveActive()) { if (!busy) setStatus("Live mode: autopilot waits for you. Press Next task."); return; }
-    var i = queueIdx % SAMPLES.length; startTask(SAMPLES[i], false, i);
+  if (/[?&]autoplay=0/.test(location.search)) {
+    window.__brainTest = {
+      startTask: function (q) { startTask(q, true); },
+      setSpeed: function (value) { speed = value; },
+      getStatus: function () { return taskStatus; },
+      sendPrompt: sendPrompt
+    };
   }
   function afterTask() {
     busy = false; currentTask = ""; updateHud(); updateBrainState();
-    chipEls.forEach(function (c) { c.setAttribute("aria-pressed", "false"); });
-    setStatus(liveActive() ? "Task " + taskNo + " done · live mode waits for you · press Next task" : playing ? "Task " + taskNo + " done · next soon" : "Task " + taskNo + " done · paused");
-    scheduleNext();
+    setStatus("Task " + taskNo + " done");
   }
-  function scheduleNext() {
-    clearTimeout(autoTimer); if (!playing) return;
-    if (liveActive()) { if (!busy) setStatus("Live mode: autopilot waits for you. Press Next task."); return; }
-    autoTimer = setTimeout(function () { if (document.hidden || busy || running || brainRunning || viewingSaved) { scheduleNext(); return; } nextTask(); }, Math.max(700, 3800 * speed));
-  }
-  function showPlayState() { $("#playBtn").textContent = playing ? "Pause" : "Play"; $("#playBtn").setAttribute("aria-pressed", String(playing)); }
-  $("#playBtn").addEventListener("click", function () {
-    playing = !playing; showPlayState(); clearTimeout(autoTimer);
-    if (playing) { if (!busy && !running && !brainRunning) { setStatus("Starting"); autoTimer = setTimeout(nextTask, 500); } else scheduleNext(); }
-    else setStatus(running || brainRunning ? "Pausing after this task" : "Paused");
-  });
-  $("#nextBtn").addEventListener("click", function () { nextTask(true); });
-  $("#dispatchText").addEventListener("input", updateLine);
-  $("#dispatchText").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); dispatchGo(); } });
-  $("#dispatchGo").addEventListener("click", dispatchGo);
-  $("#dispatchCopy").addEventListener("click", function () { updateLine(); copyText($("#dispatchLine").textContent, $("#dispatchCopy")); });
-  updateLine();
-  showPlayState();
-  if (playing) { setStatus("Starting"); autoTimer = setTimeout(nextTask, 1600); }
-  else setStatus(REDUCED ? "Paused · reduced motion is on" : "Paused");
   $("#copyLog").addEventListener("click", function () { copyText(transcript.join("\n\n") || "(empty)", $("#copyLog")); });
   function copyText(text, btn) {
     var done = function (m) { var o = btn.textContent; btn.textContent = m; setTimeout(function () { btn.textContent = o; }, 1400); };
@@ -1727,17 +1866,16 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   $("#tab-mem").addEventListener("click", function () { tab("mem"); });
   $("#tab-set").addEventListener("click", function () { tab("set"); });
 
-  /* ================= Team tab: each bot's specialty, skills and angle ================= */
+  /* ================= Team tab: each bot's specialty and skills ================= */
   var LOOK = { lead: "filled", hub: "double line", collab: "thin line", audit: "dashed line" };
   function renderTeamList() {
     var ul = $("#teamList"); ul.textContent = "";
     NODES.forEach(function (n) {
-      var pv = LIVE.map[n.id], voice = LIVE_BOTS.indexOf(n.id) < 0 ? "always scripted" : (pv && pv !== "sim") ? "can be voiced by " + PROV[pv].label + " in Live AI" : "scripted unless you map it in Settings";
+      var voice = LIVE.keys[LIVE.provider] ? "role prompt uses " + PROV[LIVE.provider].label + " when Live AI is on" : "no provider key is connected";
       ul.append(h("li", { class: "entry", style: "--k:" + color(n.id) },
         h("div", { class: "hd" }, h("span", { class: "ttl", text: n.name }), h("span", { class: "tag t", text: LOOK[n.kind] }), h("span", { class: "tag", text: n.sub })),
         h("div", { class: "body" }, h("b", { text: "Specialty: " }), n.specialty),
         h("div", { class: "meta" }, h("span", { text: "Skills:" }), n.skills.map(function (k) { return h("span", { class: "tag", text: k }); })),
-        h("div", { class: "meta" }, h("span", { text: "Angle on a task: " + n.angle.replace("{q}", "your task") })),
         h("div", { class: "meta" }, h("span", { text: "Voice: " + voice })),
         h("div", { class: "row" }, h("button", { class: "small", type: "button", text: "Find on stage", onclick: function () { if (mode !== "team") setMode("team"); light(n.id); T[n.id].el.classList.add("jump"); setTimeout(function () { T[n.id].el.classList.remove("jump"); }, 1000); } }))));
     });
@@ -1754,12 +1892,53 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     });
   }
   function selectEntry(id, openTab) {
+    if (!byId(id)) return;
+    if (openTab && mode !== "graph") setMode("graph");
     G.sel = id; hotEdges(id);
-    if (openTab) { tab("mem"); filter = "all"; $("#memSearch").value = ""; }
-    render(); syncGraphSelection();
+    if (mode === "graph") {
+      focusId = id; camera.zoom = Math.max(camera.zoom, 2.1);
+      showMemoryFocus(id); markZooming();
+    }
+    render(); syncGraphSelection(); applyCamera();
     var li = document.querySelector('[data-eid="' + id + '"]'); if (li) li.scrollIntoView({ block: "nearest" });
   }
-  function syncGraphSelection() { Object.keys(G.nodes).forEach(function (id) { var e = byId(id); G.nodes[id].g.classList.toggle("sel", G.sel === id); if (e) G.nodes[id].lbl.textContent = (e.strength >= 5 || G.sel === id) ? clip(e.title, 18) : ""; }); hotEdges(G.sel); }
+  function showMemoryFocus(id) {
+    var e = byId(id), n = G.nodes[id];
+    if (!e || !n) return;
+    var sourceLabel = { session: "session", tool: "connected tool", file: "file", correction: "your correction" };
+    var sources = e.sources.map(function (s) {
+      var label = (sourceLabel[s.kind] || "source") + ": " + clip(s.label, 70);
+      return s.kind === "session" && s.ref
+        ? h("button", { class: "small", type: "button", text: label, onclick: function () { openSession(s.ref); } })
+        : h("span", { class: "tag", text: label });
+    });
+    var related = e.links.map(byId).filter(Boolean).slice(0, 6).map(function (other) {
+      return h("button", { class: "small", type: "button", text: other.title, onclick: function () { selectEntry(other.id, false); } });
+    });
+    memoryFocus.textContent = "";
+    memoryFocus.style.setProperty("--memory-color", "var(" + TYPE_VAR[e.type] + ")");
+    memoryFocus.append(
+      h("div", { class: "row spread" },
+        h("h2", { class: "focus-title", text: e.title, style: "color:var(" + TYPE_VAR[e.type] + ")" }),
+        h("button", { class: "small", type: "button", text: "Close", "aria-label": "Close memory details", onclick: function () { memoryFocus.hidden = true; } })),
+      h("div", { class: "focus-meta" },
+        h("span", { class: "tag t", text: e.skill ? "Skill · Concept" : TYPE_LABEL[e.type] }),
+        h("span", { class: "tag" + (e.status === "stale" ? " stale" : ""), text: e.status }),
+        h("span", { class: "tag", text: "seen " + e.strength + "×" })),
+      h("p", { class: "focus-note", text: e.note }),
+      h("div", { class: "note", text: "Sources" }),
+      h("div", { class: "focus-links" }, sources.length ? sources : [h("span", { class: "tag", text: "No saved source" })]),
+      related.length ? h("div", { class: "memory-related" },
+        h("div", { class: "note", text: "Related memories" }),
+        h("div", { class: "focus-links" }, related)) : "",
+      h("div", { class: "row" },
+        h("button", { class: "small primary", type: "button", text: "Open full entry", onclick: function () {
+          tab("mem"); filter = "all"; $("#memSearch").value = ""; render();
+          var card = document.querySelector('[data-eid="' + id + '"]'); if (card) card.scrollIntoView({ block: "nearest" });
+        } })));
+    memoryFocus.hidden = false;
+  }
+  function syncGraphSelection() { Object.keys(G.nodes).forEach(function (id) { var e = byId(id); G.nodes[id].g.classList.toggle("sel", G.sel === id); if (e) G.nodes[id].lbl.textContent = clip(e.title, 18); }); hotEdges(G.sel); }
   function openSession(id) {
     var s = mem.sessions.filter(function (x) { return x.id === id; })[0];
     tab("chat"); if (!s) { $("#savedLbl").textContent = "That session is no longer stored (only the last " + MAX_SESSIONS + " are kept)."; $("#savedBar").hidden = false; return; }
@@ -1773,7 +1952,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     });
     var related = e.links.map(byId).filter(Boolean).slice(0, 6).map(function (o) { return h("button", { type: "button", text: o.title, onclick: function () { selectEntry(o.id, false); } }); });
     var card = h("li", { class: "entry" + (G.sel === e.id ? " sel" : ""), style: "--k:" + k, "data-eid": e.id },
-      h("div", { class: "hd" }, h("span", { class: "ttl", text: e.title }), h("span", { class: "tag t", text: e.skill ? "Skill · Concept" : TYPE_LABEL[e.type] }),
+      h("div", { class: "hd" }, h("span", { class: "ttl", text: e.title, style: "color:" + k }), h("span", { class: "tag t", text: e.skill ? "Skill · Concept" : TYPE_LABEL[e.type], style: "color:" + k + ";border-color:" + k }),
         e.status === "stale" ? h("span", { class: "tag stale", text: "stale" }) : null, e.corrected ? h("span", { class: "tag", text: "corrected by you" }) : null,
         h("span", { class: "dots", title: "Seen " + e.strength + " time(s)", text: new Array(Math.min(5, e.strength) + 1).join("●") })),
       editingId === e.id
@@ -1800,16 +1979,14 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     var list = mem.entries.filter(function (e) { return (filter === "all" || (filter === "skill" ? e.skill : e.type === filter)) && (!q || (e.title + " " + e.note).toLowerCase().indexOf(q) >= 0); })
       .sort(function (a, b) { return b.seen - a.seen || b.strength - a.strength; });
     list.forEach(function (e) { ul.append(entryCard(e)); });
-    if (!list.length) ul.append(h("li", { class: "empty", text: mem.entries.length ? "Nothing matches. Clear the search or pick another filter." : "Memory is empty. Run a task, or add a note below." }));
+    if (!list.length) ul.append(h("li", { class: "empty", text: mem.entries.length ? "Nothing matches. Clear the search or pick another filter." : "Memory is empty. Send a prompt with Live AI enabled, or add a note below." }));
     var stale = mem.entries.filter(function (e) { return e.status === "stale"; }).length;
     $("#memCount").textContent = "Memory · " + mem.entries.length + " entries" + (stale ? " · " + stale + " stale" : "");
     $("#memWarn").hidden = storageOk;
     $("#runBadge").textContent = "runs: " + mem.runs;
     $("#clockNote").textContent = "Memory date: " + fmtDate(nowTs()) + (mem.dayShift ? " (demo clock +" + mem.dayShift + " days)" : "") + ". Entries not reinforced for " + STALE_DAYS + " days are marked stale on the next run. The 30 days and this demo clock are this page's own choice; the article gives no time rule.";
     $("#sensCount").textContent = mem.filtered ? mem.filtered + " password or key pattern(s) were filtered out so far." : "";
-    $("#setBrain").checked = mem.settings.brain; $("#setSources").checked = mem.settings.sources;
-    $("#cnDocs").checked = mem.settings.docs; $("#cnMsgs").checked = mem.settings.msgs; $("#cnTrk").checked = mem.settings.tracker;
-    ["cnDocs", "cnMsgs", "cnTrk"].forEach(function (id) { $("#" + id).disabled = !mem.settings.sources; });
+    $("#setBrain").checked = mem.settings.brain;
     updateBrainState();
   }
   function saveCorrection(id, text) {
@@ -1855,27 +2032,27 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
     $("#aTitle").value = ""; $("#aNote").value = "";
     $("#addWarn").textContent = warn ? "That looked like a password or key. The secret part was filtered out. Please do not paste real secrets." : "Added. Brain will count it on its next run.";
     persist(); syncGraph(); render(); nodeFx(e.id, "pop");
-    if (mem.settings.brain && !running) { speed = parseFloat($("#speed").value) || 0; setTimeout(brainRun, 900 * speed); }
+    if (mem.settings.brain && !running) setTimeout(brainRun, 900 * speed);
   });
 
   /* ---------- run buttons ---------- */
-  $("#runNow").addEventListener("click", function () { speed = parseFloat($("#speed").value) || 0; brainRun(); });
+  $("#runNow").addEventListener("click", function () { brainRun(); });
   $("#skip30").addEventListener("click", function () {
-    speed = parseFloat($("#speed").value) || 0; mem.dayShift = Math.min(3650, mem.dayShift + 30); persist(); render();
+    mem.dayShift = Math.min(3650, mem.dayShift + 30); persist(); render();
     if (mem.settings.brain) brainRun();
     else { $("#runReport").textContent = "Brain is off, so nothing was marked stale. Turn Brain on and run it to apply the new date."; }
   });
 
   /* ---------- settings ---------- */
   function setBool(id, key) { $(id).addEventListener("change", function () { mem.settings[key] = $(id).checked; persist(); render(); }); }
-  setBool("#setBrain", "brain"); setBool("#setSources", "sources"); setBool("#cnDocs", "docs"); setBool("#cnMsgs", "msgs"); setBool("#cnTrk", "tracker");
+  setBool("#setBrain", "brain");
   $("#saveInstr").addEventListener("click", function () { var r = redact($("#instr").value.trim().slice(0, 400)); mem.settings.instructions = r.text; $("#instr").value = r.text; if (r.n) mem.filtered += r.n; persist(); $("#instrMsg").textContent = r.n ? "Saved. A password or key was filtered out." : "Saved."; render(); });
   $("#resetMem").addEventListener("click", function () {
     var b = $("#resetMem");
     if (running || brainRunning) { $("#resetMsg").textContent = "Wait for the current session or Brain run to finish."; return; }
     if (b.dataset.armed !== "1") { b.dataset.armed = "1"; b.textContent = "Click again to erase everything"; setTimeout(function () { b.dataset.armed = ""; b.textContent = "Erase all memory and start over"; }, 3000); return; }
     b.dataset.armed = ""; b.textContent = "Erase all memory and start over";
-    var keepSettings = mem.settings; seedMem(); mem.settings = keepSettings; G.sel = null; persist(); syncGraph(); render(); $("#resetMsg").textContent = "Memory reset to the starter set.";
+    var keepSettings = mem.settings; seedMem(); mem.settings = keepSettings; G.sel = null; persist(); syncGraph(); render(); $("#resetMsg").textContent = "Memory erased.";
   });
 
   /* ---------- backup and restore ---------- */
@@ -1905,7 +2082,7 @@ input[type=number] { font: inherit; color: var(--fg); background: var(--bg); bor
   });
 
   /* ================= Boot ================= */
-  loadMem(); ensureTeamEntities(); persist(); loadLive();
+  loadMem(); persist(); loadLive();
   $("#instr").value = mem.settings.instructions;
   $("#aProgWrap").hidden = $("#aType").value !== "skill";
   buildLiveUI();
