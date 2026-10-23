@@ -56,6 +56,7 @@ Wording checked against the live article on 2026-10-21 (it says it was last modi
 
 ## Working rules
 
+- **MRI privacy:** the brain outline comes from Max's own MRI (see `mri/`). Only the traced outline numbers belong in this repo. Never add DICOM files, scan pictures (a side view shows the face), names, dates or IDs.
 - One branch per piece of work. Open a **draft** pull request. Nobody merges except Max.
 - Never commit passwords, API keys or private data. The page filters common key and password patterns before saving (best effort, not a guarantee) and warns when it sees one. If a real secret shows up in a file, stop and tell Max.
 - `index.html` stays a single self-contained file with no build step, so Max can open it by double-click.
